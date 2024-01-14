@@ -16,7 +16,7 @@ const SidebarMenuMain = () => {
       />
       
       <i className='ki-duotone ki-basket fs-2'></i>
-      <SidebarMenuItem title='Category' to='/categories' hasBullet={true}/>
+      {/* <SidebarMenuItem title='Category' to='/categories' hasBullet={true}/> */}
       <SidebarMenuItem to='/builder' icon='switch' title='Layout Builder' fontIcon='bi-layers' />
       <div className='menu-item'>
         <div className='menu-content pt-8 pb-2'>
@@ -98,6 +98,16 @@ const SidebarMenuMain = () => {
         <SidebarMenuItem to='/apps/chat/private-chat' title='Private Chat' hasBullet={true} />
         <SidebarMenuItem to='/apps/chat/group-chat' title='Group Chart' hasBullet={true} />
         <SidebarMenuItem to='/apps/chat/drawer-chat' title='Drawer Chart' hasBullet={true} />
+      </SidebarMenuItemWithSub>
+      <SidebarMenuItemWithSub
+        to='/apps/eCommerce'
+        title='eCommerce'
+        fontIcon='bi-chat-left'
+        icon='message-text-2'
+      >
+        <SidebarMenuItem to='/apps/eCommerce/categories' title='Category' hasBullet={true} />
+        {/* <SidebarMenuItem to='/apps/chat/group-chat' title='Group Chart' hasBullet={true} /> */}
+        {/* <SidebarMenuItem to='/apps/chat/drawer-chat' title='Drawer Chart' hasBullet={true} /> */}
       </SidebarMenuItemWithSub>
       <SidebarMenuItem
         to='/apps/user-management/users'

@@ -7,7 +7,8 @@ import {MenuTestPage} from '../pages/MenuTestPage'
 import {getCSSVariableValue} from '../../_metronic/assets/ts/_utils'
 import {WithChildren} from '../../_metronic/helpers'
 import BuilderPageWrapper from '../pages/layout-builder/BuilderPageWrapper'
-import { Categories } from '../modules/apps/eCommerce/Components/Catalog/Categories/category'
+import CategoriesPage from '../modules/apps/eCommerce/Catalog/Category/CategoriesPage'
+// import { Categories } from '../modules/apps/eCommerce/Catalog/Categories/category'
 
 
 const PrivateRoutes = () => {
@@ -24,7 +25,7 @@ const PrivateRoutes = () => {
         {/* Redirect to Dashboard after success login/registartion */}
         <Route path='auth/*' element={<Navigate to='/dashboard' />} />
         {/* Pages */}
-        <Route path='/categories' element={<Categories />} />
+        {/* <Route path='/categories' element={<Categories />} /> */}
         <Route path='dashboard' element={<DashboardWrapper />} />
         <Route path='builder' element={<BuilderPageWrapper />} />
         <Route path='menu-test' element={<MenuTestPage />} />
@@ -74,6 +75,14 @@ const PrivateRoutes = () => {
           element={
             <SuspensedView>
               <UsersPage />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path='apps/eCommerce/*'
+          element={
+            <SuspensedView>
+              <CategoriesPage />
             </SuspensedView>
           }
         />
