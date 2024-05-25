@@ -1,19 +1,19 @@
 
 import clsx from 'clsx'
 import {FC} from 'react'
-import {Category} from '../../core/_models'
+import {Categories} from '../../core/_models'
 import { toAbsoluteUrl } from '../../../../../../../../../_metronic/helpers'
 
 type Props = {
-  category: Category
+  Categories: Categories
 }
 
-const UserInfoCell: FC<Props> = ({category}) => (
+const CategoryInfoCell: FC<Props> = ({Categories}) => (
   <div className='d-flex align-items-center'>
     {/* begin:: Avatar */}
     <div className='symbol symbol-circle symbol-50px overflow-hidden me-3'>
       <a href='#'>
-        {category.imgCover ? (
+        {/* {category.imgCover ? (
           <div className='symbol-label'>
             <img src={toAbsoluteUrl(`media/${category.imgCover}`)} alt={category.name} className='w-100' />
           </div>
@@ -27,16 +27,18 @@ const UserInfoCell: FC<Props> = ({category}) => (
           >
             {category.available}
           </div>
-        )}
+        )} */}
       </a>
     </div>
+        {console.log("UserInfoCell => Categories",Categories)}
     <div className='d-flex flex-column'>
       <a href='#' className='text-gray-800 text-hover-primary mb-1'>
-        {category.name}
+        {Categories?.name}
+
       </a>
-      <span>{category.description}</span>
+      {/* <span>{Categories?.description}</span> */}
     </div>
   </div>
 )
 
-export {UserInfoCell}
+export {CategoryInfoCell}

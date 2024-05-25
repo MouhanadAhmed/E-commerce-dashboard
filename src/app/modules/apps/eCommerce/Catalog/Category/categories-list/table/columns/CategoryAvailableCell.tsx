@@ -4,37 +4,40 @@ import {useMutation, useQueryClient} from 'react-query'
 import {useListView} from '../../core/ListViewProvider'
 import {useQueryResponse} from '../../core/QueryResponseProvider'
 import { ID, KTIcon, QUERIES } from '../../../../../../../../../_metronic/helpers'
-import { deleteCategory } from '../../core/_requests'
+import { updateCategory } from '../../core/_requests'
 import { MenuComponent } from '../../../../../../../../../_metronic/assets/ts/components'
 
 type Props = {
-  id: ID
+  id: ID,
+  available:string,
 }
 
-const UserActionsCell: FC<Props> = ({id}) => {
-  const {setItemIdForUpdate} = useListView()
+const CategoryAvailableCell: FC<Props> = ({id,available}) => {
+  const {setItemIdForUpdate,itemIdForUpdate} = useListView()
   const {query} = useQueryResponse()
   const queryClient = useQueryClient()
-
+  // console.log(id)
   useEffect(() => {
     MenuComponent.reinitialization()
   }, [])
 
   const openEditModal = () => {
-    setItemIdForUpdate(id)
+    setItemIdForUpdate(null);
+    // setItemIdForUpdate({id});
+    // console.log(id,itemIdForUpdate)
   }
 
-  const deleteItem = useMutation(() => deleteCategory(id), {
+  const updateCategoryAvailable = useMutation(() => updateCategory(id,{available:!available}), {
     // 💡 response of the mutation is passed to onSuccess
     onSuccess: () => {
       // ✅ update detail view directly
-      queryClient.invalidateQueries([`${QUERIES.USERS_LIST}-${query}`])
+      queryClient.invalidateQueries([`${QUERIES.CATEGORIES_LIST}-${query}`])
     },
   })
 
   return (
     <>
-      <a
+      {/* <a
         href='#'
         className='btn btn-light btn-active-light-primary btn-sm'
         data-kt-menu-trigger='click'
@@ -42,30 +45,24 @@ const UserActionsCell: FC<Props> = ({id}) => {
       >
         Actions
         <KTIcon iconName='down' className='fs-5 m-0' />
-      </a>
+      </a> */}
       {/* begin::Menu */}
       <div
-        className='menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7 w-125px py-4'
+        className='d-flex justify-content-center menu-rounded menu-gray-600 menu-state-bg-light-primary fw-bold fs-7  py-4'
         data-kt-menu='true'
       >
         {/* begin::Menu item */}
-        <div className='menu-item px-3'>
-          <a className='menu-link px-3' onClick={openEditModal}>
-            Edit
-          </a>
+        <div className='menu-item form-check form-switch px-3 d-flex justify-content-center align-items-center'>
+          <input type="checkbox" name="available" className='mx-2 form-check-input' role="switch" id={id} defaultChecked={available} onClick={async () => await updateCategoryAvailable.mutateAsync()}/>
+          {/* <label htmlFor="available">available</label> */}
         </div>
+        {/* end::Menu item */}
+        {/* begin::Menu item */}
+   
         {/* end::Menu item */}
 
         {/* begin::Menu item */}
-        <div className='menu-item px-3'>
-          <a
-            className='menu-link px-3'
-            data-kt-users-table-filter='delete_row'
-            onClick={async () => await deleteItem.mutateAsync()}
-          >
-            Delete
-          </a>
-        </div>
+      
         {/* end::Menu item */}
       </div>
       {/* end::Menu */}
@@ -73,4 +70,4 @@ const UserActionsCell: FC<Props> = ({id}) => {
   )
 }
 
-export {UserActionsCell}
+export {CategoryAvailableCell}

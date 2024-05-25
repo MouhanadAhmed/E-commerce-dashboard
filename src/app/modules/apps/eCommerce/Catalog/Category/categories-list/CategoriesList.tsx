@@ -7,7 +7,8 @@ import { ToolbarWrapper } from '../../../../../../../_metronic/layout/components
 import { Content } from '../../../../../../../_metronic/layout/components/content'
 import { CategoriesListHeader } from './components/header/CategoriesListHeader'
 import { CategoriesTable } from './table/CategoriesTable'
-
+import { DndProvider } from 'react-dnd'
+import { HTML5Backend } from 'react-dnd-html5-backend'
 const CategoriesList = () => {
   const {itemIdForUpdate} = useListView()
   return (
@@ -27,7 +28,9 @@ const CategoriesListWrapper = () => (
       <ListViewProvider>
         <ToolbarWrapper />
         <Content>
+        <DndProvider backend={HTML5Backend}>
           <CategoriesList />
+          </DndProvider>
         </Content>
       </ListViewProvider>
     </QueryResponseProvider>

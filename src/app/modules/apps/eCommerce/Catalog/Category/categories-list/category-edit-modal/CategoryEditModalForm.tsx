@@ -15,16 +15,13 @@ type Props = {
 }
 
 const editUserSchema = Yup.object().shape({
-  email: Yup.string()
-    .email('Wrong email format')
-    .min(3, 'Minimum 3 symbols')
-    .required('Email is required'),
+  order: Yup.number()
+    .min(0, 'Order can\'t be negative'),
   name: Yup.string()
     .min(3, 'Minimum 3 symbols')
     .required('Name is required'),
     description: Yup.string()
     .min(3, 'Minimum 3 symbols')
-    .required('description is required'),
 })
 
 const CategoryEditModalForm: FC<Props> = ({category, isCategoryLoading}) => {
@@ -33,8 +30,8 @@ const CategoryEditModalForm: FC<Props> = ({category, isCategoryLoading}) => {
 
   const [categoryForEdit] = useState<Category>({
     ...category,
-    available: category.available || initialCategory.available,
-    name: category.name || initialCategory.name,
+    available: category.available || "",
+    name: category.name || "",
   })
 
   const cancel = (withRefresh?: boolean) => {
@@ -69,7 +66,7 @@ const CategoryEditModalForm: FC<Props> = ({category, isCategoryLoading}) => {
 
   return (
     <>
-      <form id='kt_modal_add_user_form' className='form' onSubmit={formik.handleSubmit} noValidate>
+      <form id='kt_modal_add_user_form' className='form ' onSubmit={formik.handleSubmit} noValidate>
         {/* begin::Scroll */}
         <div
           className='d-flex flex-column scroll-y me-n7 pe-7'
@@ -84,18 +81,18 @@ const CategoryEditModalForm: FC<Props> = ({category, isCategoryLoading}) => {
           {/* begin::Input group */}
           <div className='fv-row mb-7'>
             {/* begin::Label */}
-            <label className='d-block fw-bold fs-6 mb-5'>Avatar</label>
+            <label className='d-block fw-bold fs-6 ms-2 mb-5'>ImgCover</label>
             {/* end::Label */}
 
             {/* begin::Image input */}
             <div
-              className='image-input image-input-outline'
+              className='image-input image-input-outline ms-2'
               data-kt-image-input='true'
               style={{backgroundImage: `url('${blankImg}')`}}
             >
               {/* begin::Preview existing imgCover */}
               <div
-                className='image-input-wrapper w-125px h-125px'
+                className='image-input-wrapper w-125px h-125px ms-2'
                 style={{backgroundImage: `url('${userAvatarImg}')`}}
               ></div>
               {/* end::Preview existing imgCover */}
@@ -147,7 +144,7 @@ const CategoryEditModalForm: FC<Props> = ({category, isCategoryLoading}) => {
           {/* begin::Input group */}
           <div className='fv-row mb-7'>
             {/* begin::Label */}
-            <label className='required fw-bold fs-6 mb-2'>Full Name</label>
+            <label className='required fw-bold fs-6 ps-2 mb-2'>Name</label>
             {/* end::Label */}
 
             {/* begin::Input */}
@@ -157,7 +154,7 @@ const CategoryEditModalForm: FC<Props> = ({category, isCategoryLoading}) => {
               type='text'
               name='name'
               className={clsx(
-                'form-control form-control-solid mb-3 mb-lg-0',
+                'form-control form-control-solid mb-3 ms-2 mb-lg-0',
                 {'is-invalid': formik.touched.name && formik.errors.name},
                 {
                   'is-valid': formik.touched.name && !formik.errors.name,
@@ -177,10 +174,43 @@ const CategoryEditModalForm: FC<Props> = ({category, isCategoryLoading}) => {
           </div>
           {/* end::Input group */}
 
+          
+
           {/* begin::Input group */}
           <div className='fv-row mb-7'>
             {/* begin::Label */}
-            <label className='required fw-bold fs-6 mb-2'>Email</label>
+            <label className='required fw-bold fs-6  ms-2 mb-2'>Order</label>
+            {/* end::Label */}
+
+            {/* begin::Input */}
+            <input
+              placeholder='order'
+              {...formik.getFieldProps('order')}
+              className={clsx(
+                'form-control form-control-solid mb-3 mb-lg-0 ms-2',
+                {'is-invalid': formik.touched.order && formik.errors.order},
+                {
+                  'is-valid': formik.touched.order && !formik.errors.order,
+                }
+              )}
+              type='text'
+              name='order'
+              autoComplete='off'
+              disabled={formik.isSubmitting || isCategoryLoading}
+            />
+            {/* end::Input */}
+            {formik.touched.order && formik.errors.order && (
+              <div className='fv-plugins-message-container'>
+                <span role='alert'>{formik.errors.order}</span>
+              </div>
+            )}
+          </div>
+          {/* end::Input group */}
+
+          {/* begin::Input group */}
+          <div className='fv-row mb-7'>
+            {/* begin::Label */}
+            <label className='required fw-bold fs-6 mb-2 ms-2'>Description</label>
             {/* end::Label */}
 
             {/* begin::Input */}
@@ -188,13 +218,13 @@ const CategoryEditModalForm: FC<Props> = ({category, isCategoryLoading}) => {
               placeholder='description'
               {...formik.getFieldProps('description')}
               className={clsx(
-                'form-control form-control-solid mb-3 mb-lg-0',
+                'form-control form-control-solid mb-3 mb-lg-0 ms-2',
                 {'is-invalid': formik.touched.description && formik.errors.description},
                 {
                   'is-valid': formik.touched.description && !formik.errors.description,
                 }
               )}
-              type='description'
+              type='text'
               name='description'
               autoComplete='off'
               disabled={formik.isSubmitting || isCategoryLoading}
@@ -208,155 +238,35 @@ const CategoryEditModalForm: FC<Props> = ({category, isCategoryLoading}) => {
           </div>
           {/* end::Input group */}
 
+
           {/* begin::Input group */}
-          <div className='mb-7'>
+          <div className='fv-row mb-7'>
             {/* begin::Label */}
-            <label className='required fw-bold fs-6 mb-5'>Role</label>
+            <label className='required fw-bold fs-6 mb-2 ms-2'>Available</label>
             {/* end::Label */}
-            {/* begin::Roles */}
-            {/* begin::Input row */}
-            <div className='d-flex fv-row'>
-              {/* begin::Radio */}
-              <div className='form-check form-check-custom form-check-solid'>
-                {/* begin::Input */}
-                <input
-                  className='form-check-input me-3'
-                  {...formik.getFieldProps('role')}
-                  name='role'
-                  type='radio'
-                  value='Administrator'
-                  id='kt_modal_update_role_option_0'
-                  disabled={formik.isSubmitting || isCategoryLoading}
-                />
 
-                {/* end::Input */}
-                {/* begin::Label */}
-                <label className='form-check-label' htmlFor='kt_modal_update_role_option_0'>
-                  <div className='fw-bolder text-gray-800'>Administrator</div>
-                  <div className='text-gray-600'>
-                    Best for business owners and company administrators
-                  </div>
-                </label>
-                {/* end::Label */}
+            {/* begin::Input */}
+            <select
+              {...formik.getFieldProps('available')}
+              className={clsx(
+                'form-control form-control-solid mb-3 mb-lg-0 ms-2',
+                {'is-invalid': formik.touched.description && formik.errors.description},
+                {
+                  'is-valid': formik.touched.description && !formik.errors.description,
+                }
+              )}
+              name='available'
+              autoComplete='off'
+              disabled={formik.isSubmitting || isCategoryLoading}>
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+            </select>
+            {/* end::Input */}
+            {formik.touched.available && formik.errors.available && (
+              <div className='fv-plugins-message-container'>
+                <span role='alert'>{formik.errors.available}</span>
               </div>
-              {/* end::Radio */}
-            </div>
-            {/* end::Input row */}
-            <div className='separator separator-dashed my-5'></div>
-            {/* begin::Input row */}
-            <div className='d-flex fv-row'>
-              {/* begin::Radio */}
-              <div className='form-check form-check-custom form-check-solid'>
-                {/* begin::Input */}
-                <input
-                  className='form-check-input me-3'
-                  {...formik.getFieldProps('order')}
-                  name='order'
-                  type='radio'
-                  id='kt_modal_update_role_option_1'
-                  disabled={formik.isSubmitting || isCategoryLoading}
-                />
-                {/* end::Input */}
-                {/* begin::Label */}
-                <label className='form-check-label' htmlFor='kt_modal_update_role_option_1'>
-                  <div className='fw-bolder text-gray-800'>Developer</div>
-                  <div className='text-gray-600'>
-                    Best for developers or people primarily using the API
-                  </div>
-                </label>
-                {/* end::Label */}
-              </div>
-              {/* end::Radio */}
-            </div>
-            {/* end::Input row */}
-            <div className='separator separator-dashed my-5'></div>
-            {/* begin::Input row */}
-            <div className='d-flex fv-row'>
-              {/* begin::Radio */}
-              <div className='form-check form-check-custom form-check-solid'>
-                {/* begin::Input */}
-                <input
-                  className='form-check-input me-3'
-                  {...formik.getFieldProps('role')}
-                  name='order'
-                  type='radio'
-                  id='kt_modal_update_role_option_2'
-                  checked={formik.values.order === 2}
-                  disabled={formik.isSubmitting || isCategoryLoading}
-                />
-
-                {/* end::Input */}
-                {/* begin::Label */}
-                <label className='form-check-label' htmlFor='kt_modal_update_role_option_2'>
-                  <div className='fw-bolder text-gray-800'>Analyst</div>
-                  <div className='text-gray-600'>
-                    Best for people who need full access to analytics data, but don't need to update
-                    business settings
-                  </div>
-                </label>
-                {/* end::Label */}
-              </div>
-              {/* end::Radio */}
-            </div>
-            {/* end::Input row */}
-            <div className='separator separator-dashed my-5'></div>
-            {/* begin::Input row */}
-            <div className='d-flex fv-row'>
-              {/* begin::Radio */}
-              <div className='form-check form-check-custom form-check-solid'>
-                {/* begin::Input */}
-                <input
-                  className='form-check-input me-3'
-                  {...formik.getFieldProps('role')}
-                  name='order'
-                  type='radio'
-                  id='kt_modal_update_role_option_3'
-                  checked={formik.values.order === 3}
-                  disabled={formik.isSubmitting || isCategoryLoading}
-                />
-                {/* end::Input */}
-                {/* begin::Label */}
-                <label className='form-check-label' htmlFor='kt_modal_update_role_option_3'>
-                  <div className='fw-bolder text-gray-800'>Support</div>
-                  <div className='text-gray-600'>
-                    Best for employees who regularly refund payments and respond to disputes
-                  </div>
-                </label>
-                {/* end::Label */}
-              </div>
-              {/* end::Radio */}
-            </div>
-            {/* end::Input row */}
-            <div className='separator separator-dashed my-5'></div>
-            {/* begin::Input row */}
-            <div className='d-flex fv-row'>
-              {/* begin::Radio */}
-              <div className='form-check form-check-custom form-check-solid'>
-                {/* begin::Input */}
-                <input
-                  className='form-check-input me-3'
-                  {...formik.getFieldProps('role')}
-                  name='order'
-                  type='radio'
-                  id='kt_modal_update_role_option_4'
-                  checked={formik.values.order === 4}
-                  disabled={formik.isSubmitting || isCategoryLoading}
-                />
-                {/* end::Input */}
-                {/* begin::Label */}
-                <label className='form-check-label' htmlFor='kt_modal_update_role_option_4'>
-                  <div className='fw-bolder text-gray-800'>Trial</div>
-                  <div className='text-gray-600'>
-                    Best for people who need to preview content data, but don't need to make any
-                    updates
-                  </div>
-                </label>
-                {/* end::Label */}
-              </div>
-              {/* end::Radio */}
-            </div>
-            {/* end::Input row */}
-            {/* end::Roles */}
+            )}
           </div>
           {/* end::Input group */}
         </div>

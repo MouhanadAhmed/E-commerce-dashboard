@@ -3,8 +3,9 @@ import {Dispatch, SetStateAction} from 'react'
 export type ID = undefined | null | number
 
 export type PaginationState = {
-  page: number
-  items_per_page: 10 | 30 | 50 | 100
+  page?: string
+  PageCount?: number
+  TotalCount?: number
   links?: Array<{label: string; active: boolean; url: string | null; page: number | null}>
 }
 
@@ -22,6 +23,20 @@ export type SearchState = {
 }
 
 export type Response<T> = {
+  message?: string
+  data?: T
+  payload?: {
+    message?: string
+    errors?: {
+      [key: string]: Array<string>
+    }
+    pagination?: PaginationState
+    page?: string
+    PageCount?: number
+    TotalCount?: number
+  }
+}
+export type ListResponse<T> = {
   data?: T
   payload?: {
     message?: string
@@ -40,8 +55,8 @@ export type QueryRequestContextProps = {
 }
 
 export const initialQueryState: QueryState = {
-  page: 1,
-  items_per_page: 10,
+  page: "1",
+  PageCount: 10,
 }
 
 export const initialQueryRequest: QueryRequestContextProps = {

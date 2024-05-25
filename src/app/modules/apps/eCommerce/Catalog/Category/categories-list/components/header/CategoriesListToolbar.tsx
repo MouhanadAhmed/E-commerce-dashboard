@@ -2,9 +2,9 @@ import { KTIcon } from '../../../../../../../../../_metronic/helpers'
 import {useListView} from '../../core/ListViewProvider'
 import {UsersListFilter} from './UsersListFilter'
 
-const UsersListToolbar = () => {
+const CategoriesListToolbar = () => {
   const {setItemIdForUpdate} = useListView()
-  const openAddUserModal = () => {
+  const openAddCategoryModal = () => {
     setItemIdForUpdate(null)
   }
 
@@ -20,13 +20,13 @@ const UsersListToolbar = () => {
       {/* end::Export */}
 
       {/* begin::Add user */}
-      <button type='button' className='btn btn-primary' onClick={openAddUserModal}>
+      <button type='button' className='btn btn-primary' onClick={openAddCategoryModal}>
         <KTIcon iconName='plus' className='fs-2' />
-        Add User
+        Add Category
       </button>
       {/* end::Add user */}
     </div>
   )
 }
 
-export {UsersListToolbar}
+export {CategoriesListToolbar}
