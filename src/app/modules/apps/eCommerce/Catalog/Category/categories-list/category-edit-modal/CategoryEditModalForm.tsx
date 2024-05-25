@@ -5,7 +5,7 @@ import clsx from 'clsx'
 import {useListView} from '../core/ListViewProvider'
 import {UsersListLoading} from '../components/loading/UsersListLoading'
 import {useQueryResponse} from '../core/QueryResponseProvider'
-import { Category, initialCategory } from '../core/_models'
+import { Categories as Category } from '../core/_models'
 import { createCategory, updateCategory } from '../core/_requests'
 import { isNotEmpty, toAbsoluteUrl } from '../../../../../../../../_metronic/helpers'
 
@@ -30,7 +30,7 @@ const CategoryEditModalForm: FC<Props> = ({category, isCategoryLoading}) => {
 
   const [categoryForEdit] = useState<Category>({
     ...category,
-    available: category.available || "",
+    available: category.available || true,
     name: category.name || "",
   })
 
@@ -51,7 +51,7 @@ const CategoryEditModalForm: FC<Props> = ({category, isCategoryLoading}) => {
       setSubmitting(true)
       try {
         if (isNotEmpty(values._id)) {
-          await updateCategory(values)
+          await updateCategory(values?._id,values)
         } else {
           await createCategory(values)
         }

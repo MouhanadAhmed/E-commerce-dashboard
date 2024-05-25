@@ -9,8 +9,8 @@ import { Modal, Button } from 'react-bootstrap'
 // import 'bootstrap/dist/css/bootstrap.min.css'
 
 type Props = {
-  id: ID,
-  available: string,
+  id: string | undefined,
+  available: boolean,
 }
 
 const UserActionsCell: FC<Props> = ({ id }) => {

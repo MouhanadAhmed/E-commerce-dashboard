@@ -6,6 +6,7 @@ export type PaginationState = {
   page?: string
   PageCount?: number
   TotalCount?: number
+  items_per_page?: number;
   links?: Array<{label: string; active: boolean; url: string | null; page: number | null}>
 }
 

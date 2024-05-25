@@ -1,6 +1,4 @@
 import {Column} from 'react-table'
-import {CategoryInfoCell} from './CategoryInfoCell'
-import {UserLastLoginCell} from './UserLastLoginCell'
 import {CategoryNameCell} from './CategoryNameCell'
 import {UserActionsCell} from './CategoryActionsCell'
 import {UserSelectionCell} from './UserSelectionCell'
@@ -12,6 +10,7 @@ import { CategoryOrderCell } from './CategoryOrderCell'
 import { CategoryAvailableCell } from './CategoryAvailableCell'
 import { CategoryReOrderCell } from './CategoryReOrderCell'
 
+          
 const usersColumns: ReadonlyArray<Column<Categories>> = [
   {
     Header: (props) => <UserSelectionHeader tableProps={props} />,
@@ -19,7 +18,7 @@ const usersColumns: ReadonlyArray<Column<Categories>> = [
     Cell: ({...props}) => <UserSelectionCell id={props.data[props.row.index]._id} />,
   },
   {
-    Header: (props) => <CategoryCustomHeader tableProps={props} title='reOrder' className='min-w-25px ' />,
+    Header: (props) => <CategoryCustomHeader tableProps={props} title='reOrder' name='reOrder' className='min-w-25px ' />,
     id: 'reOrder',
     Cell: () => <CategoryReOrderCell  />,
   },
@@ -27,16 +26,16 @@ const usersColumns: ReadonlyArray<Column<Categories>> = [
     Header: (props) => <CategoryCustomHeader tableProps={props} title='Name' name="name" className='min-w-100px' />,
     id: 'name',
     
-    Cell: ({...props}) => <CategoryNameCell  value={props.data[props.row.index].name} name={props.data[props.row.index].name} />,
+    Cell: ({...props}) => <CategoryNameCell   name={props.data[props.row.index].name} />,
   },
   {
-    Header: (props) => <CategoryCustomHeader tableProps={props} title='order' className='min-w-25px ' />,
+    Header: (props) => <CategoryCustomHeader tableProps={props} title='order' name='order' className='min-w-25px ' />,
     id: 'order',
     Cell: ({...props}) => <CategoryOrderCell order={props.data[props.row.index].order} />,
   },
   {
     Header: (props) => (
-      <CategoryCustomHeader tableProps={props} title='description' className='min-w-125px' />
+      <CategoryCustomHeader tableProps={props} title='description' name='description' className='min-w-125px' />
     ),
     id: 'description',
     Cell: ({...props}) => <CategoryDescCell description={props.data[props.row.index].description} />,
@@ -56,17 +55,17 @@ const usersColumns: ReadonlyArray<Column<Categories>> = [
   // },
   {
     Header: (props) => (
-      <CategoryCustomHeader tableProps={props} title='Actions' className='text-center  min-w-100px' />
+      <CategoryCustomHeader tableProps={props} title='Actions' name='Actions' className='text-center  min-w-100px' />
     ),
     id: 'actions',
     Cell: ({...props}) => <UserActionsCell id={props.data[props.row.index]._id} available={props.data[props.row.index].available} />,
   },
   {
     Header: (props) => (
-      <CategoryCustomHeader tableProps={props} title='available' className='text-center  min-w-100px' />
+      <CategoryCustomHeader tableProps={props} title='available'name='available' className='text-center  min-w-100px' />
     ),
     id: 'available',
-    Cell: ({...props}) => <CategoryAvailableCell id={props.data[props.row.index]._id} available={props.data[props.row.index].available} value={props.data[props.row.index].available}/>,
+    Cell: ({...props}) => <CategoryAvailableCell id={props.data[props.row.index]._id} available={props.data[props.row.index].available} />,
   },
 ]
 

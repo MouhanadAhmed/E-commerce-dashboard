@@ -1,8 +1,7 @@
 import { Response } from "../../../../../../../../_metronic/helpers"
 
 export type Categories = {
-
-
+  imgCover?: string
   _id?: string
   name?: string
   slug?: string
@@ -19,8 +18,8 @@ export type Categories = {
   available: boolean,
   createdAt?: string
   updatedAt?: string
-  deleted:boolean,
-  __v:number
+  deleted?:boolean,
+  __v?:number
 }
 
 

@@ -8,8 +8,8 @@ import { updateCategory } from '../../core/_requests'
 import { MenuComponent } from '../../../../../../../../../_metronic/assets/ts/components'
 
 type Props = {
-  id: ID,
-  available:string,
+  id: string | undefined,
+  available: boolean ,
 }
 
 const CategoryAvailableCell: FC<Props> = ({id,available}) => {

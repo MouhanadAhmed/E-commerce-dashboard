@@ -21,12 +21,13 @@ const UsersListPagination = () => {
   const pagination = useQueryResponsePagination()
   const isLoading = useQueryResponseLoading()
   const {updateState} = useQueryRequest()
-  const updatePage = (page: number | undefined | null) => {
-    if (!page || isLoading || pagination.page === page) {
+  const pageNum = Number(pagination.page);
+  const updatePage = (page: string | undefined | null) => {
+    if (!page || isLoading || pagination.page == page) {
       return
     }
 
-    updateState({page, items_per_page: pagination.items_per_page || 10})
+    updateState({page:page ||'1', PageCount: pagination.PageCount || 10})
   }
 
   const PAGINATION_PAGES_COUNT = 5
@@ -53,14 +54,13 @@ const UsersListPagination = () => {
     pageLinks.push(previousLink)
 
     if (
-      pagination.page <= Math.round(PAGINATION_PAGES_COUNT / 2) ||
-      scopedLinks.length <= PAGINATION_PAGES_COUNT
+      pagination.page && pagination.page <= Math.round(PAGINATION_PAGES_COUNT / 2)
     ) {
       pageLinks = [...pageLinks, ...scopedLinks.slice(0, PAGINATION_PAGES_COUNT)]
     }
 
     if (
-      pagination.page > scopedLinks.length - halfOfPagesCount &&
+      pageNum > scopedLinks.length - halfOfPagesCount &&
       scopedLinks.length > PAGINATION_PAGES_COUNT
     ) {
       pageLinks = [
@@ -71,16 +71,16 @@ const UsersListPagination = () => {
 
     if (
       !(
-        pagination.page <= Math.round(PAGINATION_PAGES_COUNT / 2) ||
+        pageNum <= Math.round(PAGINATION_PAGES_COUNT / 2) ||
         scopedLinks.length <= PAGINATION_PAGES_COUNT
       ) &&
-      !(pagination.page > scopedLinks.length - halfOfPagesCount)
+      !(pageNum > scopedLinks.length - halfOfPagesCount)
     ) {
       pageLinks = [
         ...pageLinks,
         ...scopedLinks.slice(
-          pagination.page - 1 - halfOfPagesCount,
-          pagination.page + halfOfPagesCount
+          pageNum - 1 - halfOfPagesCount,
+          pageNum + halfOfPagesCount
         ),
       ]
     }
@@ -100,7 +100,7 @@ const UsersListPagination = () => {
           <ul className='pagination'>
             <li
               className={clsx('page-item', {
-                disabled: isLoading || pagination.page === 1,
+                disabled: isLoading || pageNum == 1,
               })}
             >
               <a onClick={() => updatePage(1)} style={{cursor: 'pointer'}} className='page-link'>
@@ -115,7 +115,7 @@ const UsersListPagination = () => {
                 <li
                   key={link.label}
                   className={clsx('page-item', {
-                    active: pagination.page === link.page,
+                    active: pageNum === link.page,
                     disabled: isLoading,
                     previous: link.label === 'Previous',
                     next: link.label === 'Next',
@@ -135,7 +135,7 @@ const UsersListPagination = () => {
               ))}
             <li
               className={clsx('page-item', {
-                disabled: isLoading || pagination.page === (pagination.links?.length || 3) - 2,
+                disabled: isLoading || pageNum === (pagination.links?.length || 3) - 2,
               })}
             >
               <a

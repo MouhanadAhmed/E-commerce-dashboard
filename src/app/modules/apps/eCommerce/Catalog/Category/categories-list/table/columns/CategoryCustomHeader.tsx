@@ -9,6 +9,7 @@ type Props = {
   className?: string
   title?: string
   tableProps: PropsWithChildren<HeaderProps<Categories>>
+  name: string;
 }
 const CategoryCustomHeader: FC<Props> = ({className, title, tableProps}) => {
   const id = tableProps.column.id

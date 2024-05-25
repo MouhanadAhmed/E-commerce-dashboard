@@ -46,7 +46,7 @@ const createCategory = (Category: Categories): Promise<Categories | undefined> =
     .then((response: Response<Categories>) => response.data);
 };
 
-const updateCategory = (CategoryId: ID,Category: object): Promise<Categories | undefined> => {
+const updateCategory = (CategoryId: string| undefined,Category: object): Promise<Categories | undefined> => {
   return axios
     .put(`${CATEGORY_URL}/${CategoryId}`, Category)
     .then((response: AxiosResponse<Response<Categories>>) => response.data)
