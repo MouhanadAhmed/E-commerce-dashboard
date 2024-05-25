@@ -5,7 +5,7 @@ import clsx from 'clsx'
 import {useListView} from '../core/ListViewProvider'
 import {UsersListLoading} from '../components/loading/UsersListLoading'
 import {useQueryResponse} from '../core/QueryResponseProvider'
-import { Category, initialCategory } from '../core/_models'
+import { Categories as Category, initialCategory } from '../core/_models'
 import { createCategory, updateCategory } from '../core/_requests'
 import { isNotEmpty, toAbsoluteUrl } from '../../../../../../../../_metronic/helpers'
 

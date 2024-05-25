@@ -21,12 +21,12 @@ const UsersListPagination = () => {
   const pagination = useQueryResponsePagination()
   const isLoading = useQueryResponseLoading()
   const {updateState} = useQueryRequest()
-  const updatePage = (page: number | undefined | null) => {
-    if (!page || isLoading || pagination.page === page) {
+  const updatePage = (page: string | undefined | null) => {
+    if (!page || isLoading || pagination.page == page) {
       return
     }
 
-    updateState({page, items_per_page: pagination.items_per_page || 10})
+    updateState({page, PageCount: pagination.PageCount || 10})
   }
 
   const PAGINATION_PAGES_COUNT = 5
