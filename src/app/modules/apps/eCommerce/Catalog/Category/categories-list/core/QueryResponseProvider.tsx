@@ -13,9 +13,9 @@ import {
 } from '../../../../../../../../_metronic/helpers'
 import {useQueryRequest} from './QueryRequestProvider'
 import { getCategories } from './_requests'
-import { Category } from './_models'
+import { Categories } from './_models'
 
-const QueryResponseContext = createResponseContext<Category>(initialQueryResponse)
+const QueryResponseContext = createResponseContext<Categories>(initialQueryResponse)
 const QueryResponseProvider: FC<WithChildren> = ({children}) => {
   const {state} = useQueryRequest()
   const [query, setQuery] = useState<string>(stringifyRequestQuery(state))
@@ -32,9 +32,9 @@ const QueryResponseProvider: FC<WithChildren> = ({children}) => {
     refetch,
     data: response,
   } = useQuery(
-    `${QUERIES.USERS_LIST}-${query}`,
+    `${QUERIES.CATEGORIES_LIST}-${query}`,
     () => {
-      return getCategories(query)
+      return getCategories()
     },
     {cacheTime: 0, keepPreviousData: true, refetchOnWindowFocus: false}
   )

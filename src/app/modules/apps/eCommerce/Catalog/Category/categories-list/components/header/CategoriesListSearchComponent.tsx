@@ -4,7 +4,7 @@ import {useEffect, useState} from 'react'
 import {useQueryRequest} from '../../core/QueryRequestProvider'
 import { useDebounce, initialQueryState, KTIcon } from '../../../../../../../../../_metronic/helpers'
 
-const UsersListSearchComponent = () => {
+const CategoriesListSearchComponent = () => {
   const {updateState} = useQueryRequest()
   const [searchTerm, setSearchTerm] = useState<string>('')
   // Debounce search term so that it only gives us latest value ...
@@ -32,7 +32,7 @@ const UsersListSearchComponent = () => {
           type='text'
           data-kt-user-table-filter='search'
           className='form-control form-control-solid w-250px ps-14'
-          placeholder='Search user'
+          placeholder='Search Category'
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
@@ -42,4 +42,4 @@ const UsersListSearchComponent = () => {
   )
 }
 
-export {UsersListSearchComponent}
+export {CategoriesListSearchComponent}
