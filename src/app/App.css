@@ -1,0 +1,10 @@
+.draggable-item {
+    cursor: move;
+    user-select: none;
+    transition: transform 0.2s ease-in-out;
+  }
+  
+  .draggable-item.dragging {
+    transform: scale(1.1);
+  }
+  

@@ -14,8 +14,8 @@ function isNotEmpty(obj: unknown) {
 function stringifyRequestQuery(state: QueryState): string {
   const pagination = qs.stringify(state, {filter: ['page', 'items_per_page'], skipNulls: true})
   const sort = qs.stringify(state, {filter: ['sort', 'order'], skipNulls: true})
-  const search = isNotEmpty(state.search)
-    ? qs.stringify(state, {filter: ['search'], skipNulls: true})
+  const search = isNotEmpty(state.keyword)
+    ? qs.stringify(state, {filter: ['keyword'], skipNulls: true})
     : ''
 
   const filter = state.filter

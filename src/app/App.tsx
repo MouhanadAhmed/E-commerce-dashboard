@@ -5,7 +5,7 @@ import {LayoutProvider, LayoutSplashScreen} from '../_metronic/layout/core'
 import {MasterInit} from '../_metronic/layout/MasterInit'
 import {AuthInit} from './modules/auth'
 import {ThemeModeProvider} from '../_metronic/partials'
-
+import './App.css'; 
 const App = () => {
   return (
     <Suspense fallback={<LayoutSplashScreen />}>

@@ -106,6 +106,11 @@ const SidebarMenuMain = () => {
         icon='message-text-2'
       >
         <SidebarMenuItem to='/apps/eCommerce/categories' title='Category' hasBullet={true} />
+        <SidebarMenuItem to='/apps/eCommerce/subCategories' title='SubCategory' hasBullet={true} />
+        <SidebarMenuItem to='/apps/eCommerce/childSubCategories' title='ChildSubCategory' hasBullet={true} />
+        <SidebarMenuItem to='/apps/eCommerce/types' title='Types' hasBullet={true} />
+        <SidebarMenuItem to='/apps/eCommerce/extras' title='Extras' hasBullet={true} />
+        <SidebarMenuItem to='/apps/eCommerce/branchs' title='Branchs' hasBullet={true} />
         {/* <SidebarMenuItem to='/apps/chat/group-chat' title='Group Chart' hasBullet={true} /> */}
         {/* <SidebarMenuItem to='/apps/chat/drawer-chat' title='Drawer Chart' hasBullet={true} /> */}
       </SidebarMenuItemWithSub>

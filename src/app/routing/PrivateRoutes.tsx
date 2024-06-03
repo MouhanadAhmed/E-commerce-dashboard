@@ -8,6 +8,11 @@ import {getCSSVariableValue} from '../../_metronic/assets/ts/_utils'
 import {WithChildren} from '../../_metronic/helpers'
 import BuilderPageWrapper from '../pages/layout-builder/BuilderPageWrapper'
 import CategoriesPage from '../modules/apps/eCommerce/Catalog/Category/CategoriesPage'
+import SubCategoriesPage from '../modules/apps/eCommerce/Catalog/SubCategory/SubCategoriesPage'
+import TypesPage from '../modules/apps/eCommerce/Catalog/Type/Type'
+import ExtrasPage from '../modules/apps/eCommerce/Catalog/Extra/ExtrasPage'
+import BranchsPage from '../modules/apps/eCommerce/Catalog/Branch/BranchsPage'
+import ChildSubCategoriesPage from '../modules/apps/eCommerce/Catalog/ChildSubCategory/ChildSubCategoriesPage'
 // import { Categories } from '../modules/apps/eCommerce/Catalog/Categories/category'
 
 
@@ -83,9 +88,22 @@ const PrivateRoutes = () => {
           element={
             <SuspensedView>
               <CategoriesPage />
+              <SubCategoriesPage />
+              <ChildSubCategoriesPage/>
+              <TypesPage/>
+              <ExtrasPage/>
+              <BranchsPage/>
             </SuspensedView>
           }
         />
+        {/* <Route
+          path='apps/eCommerce/subCategory/*'
+          element={
+            <SuspensedView>
+              <SubCategoriesPage />
+            </SuspensedView>
+          }
+        /> */}
         {/* Page Not Found */}
         <Route path='*' element={<Navigate to='/error/404' />} />
       </Route>

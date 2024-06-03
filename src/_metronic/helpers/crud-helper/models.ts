@@ -20,7 +20,7 @@ export type FilterState = {
 }
 
 export type SearchState = {
-  search?: string
+  keyword?: string
 }
 
 export type Response<T> = {
