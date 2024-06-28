@@ -1,6 +1,6 @@
 import {Route, Routes, Outlet, Navigate} from 'react-router-dom'
 import { PageLink, PageTitle } from '../../../../../../_metronic/layout/core'
-import { CategoriesListWrapper } from './categories-list/CategoriesList'
+import { TypesListWrapper } from './categories-list/TypesList'
 
 const typesBreadcrumbs: Array<PageLink> = [
   {
@@ -26,7 +26,7 @@ const TypesPage = () => {
           element={
             <>
               <PageTitle breadcrumbs={typesBreadcrumbs}>Types list</PageTitle>
-              <CategoriesListWrapper />
+              <TypesListWrapper />
             </>
           }
         />

@@ -5,7 +5,11 @@ import react from '@vitejs/plugin-react-swc'
 export default defineConfig({
   plugins: [react()],
   base: "/E-commerce-dashboard/",
+  server: {
+    port: 9000, // Change this to your desired port number
+  },
   build: {
     chunkSizeWarningLimit: 3000,
   },
+  
 })

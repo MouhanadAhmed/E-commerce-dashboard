@@ -5,10 +5,10 @@ import clsx from 'clsx'
 import {useListView} from '../core/ListViewProvider'
 import {UsersListLoading} from '../components/loading/UsersListLoading'
 import {useQueryResponse} from '../core/QueryResponseProvider'
-import { Categories as Category } from '../core/_models'
-import { createCategory, updateCategory } from '../core/_requests'
+import { Extras as Category } from '../core/_models'
+import { createExtra, updateExtra } from '../core/_requests'
 import { isNotEmpty, toAbsoluteUrl } from '../../../../../../../../_metronic/helpers'
-
+import Flatpickr from "react-flatpickr";
 type Props = {
   isCategoryLoading: boolean
   category: Category
@@ -21,7 +21,19 @@ const editUserSchema = Yup.object().shape({
     .min(3, 'Minimum 3 symbols')
     .required('Name is required'),
     description: Yup.string()
-    .min(3, 'Minimum 3 symbols')
+    .min(3, 'Minimum 3 symbols'),
+
+    // name:Yup.string().min(2).max(30).required(),
+    price:Yup.number().min(0).optional(),
+    available:Yup.boolean().optional(),
+    stock:Yup.string().optional(),
+    qty:Yup.number().min(0).optional(),
+    priceAfterDiscount:Yup.number().min(0).optional(),
+    priceAfterExpirest:Yup.string().optional(),
+    // description:Yup.string().min(3).max(100).optional(),
+    sold:Yup.number().min(0).optional(),
+    // imgCover:Yup.string().hex().length(24).optional(),
+    // order:Yup.number().min(1).optional()
 })
 
 const CategoryEditModalForm: FC<Props> = ({category, isCategoryLoading}) => {
@@ -51,9 +63,10 @@ const CategoryEditModalForm: FC<Props> = ({category, isCategoryLoading}) => {
       setSubmitting(true)
       try {
         if (isNotEmpty(values._id)) {
-          await updateCategory(values?._id,values)
+          await updateExtra(values?._id,values)
         } else {
-          await createCategory(values)
+          console.log('values',values)
+          await createExtra(values)
         }
       } catch (ex) {
         console.error(ex)
@@ -174,7 +187,36 @@ const CategoryEditModalForm: FC<Props> = ({category, isCategoryLoading}) => {
           </div>
           {/* end::Input group */}
 
-          
+           {/* begin::Input group */}
+           <div className='fv-row mb-7'>
+            {/* begin::Label */}
+            <label className='required fw-bold fs-6 mb-2 ms-2'>Description</label>
+            {/* end::Label */}
+
+            {/* begin::Input */}
+            <input
+              placeholder='description'
+              {...formik.getFieldProps('description')}
+              className={clsx(
+                'form-control form-control-solid mb-3 mb-lg-0 ms-2',
+                {'is-invalid': formik.touched.description && formik.errors.description},
+                {
+                  'is-valid': formik.touched.description && !formik.errors.description,
+                }
+              )}
+              type='text'
+              name='description'
+              autoComplete='off'
+              disabled={formik.isSubmitting || isCategoryLoading}
+            />
+            {/* end::Input */}
+            {formik.touched.description && formik.errors.description && (
+              <div className='fv-plugins-message-container'>
+                <span role='alert'>{formik.errors.description}</span>
+              </div>
+            )}
+          </div>
+          {/* end::Input group */}
 
           {/* begin::Input group */}
           <div className='fv-row mb-7'>
@@ -207,36 +249,181 @@ const CategoryEditModalForm: FC<Props> = ({category, isCategoryLoading}) => {
           </div>
           {/* end::Input group */}
 
-          {/* begin::Input group */}
-          <div className='fv-row mb-7'>
+         {/* begin::Input group */}
+         <div className='fv-row mb-7'>
             {/* begin::Label */}
-            <label className='required fw-bold fs-6 mb-2 ms-2'>Description</label>
+            <label className=' fw-bold fs-6 ps-2 mb-2'>Stock</label>
             {/* end::Label */}
 
             {/* begin::Input */}
             <input
-              placeholder='description'
-              {...formik.getFieldProps('description')}
+              placeholder='Stock'
+              {...formik.getFieldProps('stock')}
+              type='text'
+              name='stock'
               className={clsx(
-                'form-control form-control-solid mb-3 mb-lg-0 ms-2',
-                {'is-invalid': formik.touched.description && formik.errors.description},
+                'form-control form-control-solid mb-3 ms-2 mb-lg-0',
+                {'is-invalid': formik.touched.stock && formik.errors.stock},
                 {
-                  'is-valid': formik.touched.description && !formik.errors.description,
+                  'is-valid': formik.touched.stock && !formik.errors.stock,
                 }
               )}
-              type='text'
-              name='description'
               autoComplete='off'
               disabled={formik.isSubmitting || isCategoryLoading}
             />
-            {/* end::Input */}
-            {formik.touched.description && formik.errors.description && (
+            {formik.touched.stock && formik.errors.stock && (
               <div className='fv-plugins-message-container'>
-                <span role='alert'>{formik.errors.description}</span>
+                <div className='fv-help-block'>
+                  <span role='alert'>{formik.errors.stock}</span>
+                </div>
               </div>
             )}
+            {/* end::Input */}
           </div>
           {/* end::Input group */}
+
+ {/* begin::Input group */}
+ <div className='fv-row mb-7'>
+            {/* begin::Label */}
+            <label className=' fw-bold fs-6 ps-2 mb-2'>Qty</label>
+            {/* end::Label */}
+
+            {/* begin::Input */}
+            <input
+              placeholder='Quantity'
+              {...formik.getFieldProps('qty')}
+              type='text'
+              name='qty'
+              className={clsx(
+                'form-control form-control-solid mb-3 ms-2 mb-lg-0',
+                {'is-invalid': formik.touched.qty && formik.errors.qty},
+                {
+                  'is-valid': formik.touched.qty && !formik.errors.qty,
+                }
+              )}
+              autoComplete='off'
+              disabled={formik.isSubmitting || isCategoryLoading}
+            />
+            {formik.touched.qty && formik.errors.qty && (
+              <div className='fv-plugins-message-container'>
+                <div className='fv-help-block'>
+                  <span role='alert'>{formik.errors.qty}</span>
+                </div>
+              </div>
+            )}
+            {/* end::Input */}
+          </div>
+          {/* end::Input group */}
+
+
+            {/* begin::Input group */}
+            <div className='fv-row mb-7'>
+            {/* begin::Label */}
+            <label className=' fw-bold fs-6 ps-2 mb-2'>Price</label>
+            {/* end::Label */}
+
+            {/* begin::Input */}
+            <input
+              placeholder='Price'
+              {...formik.getFieldProps('price')}
+              type='text'
+              name='price'
+              className={clsx(
+                'form-control form-control-solid mb-3 ms-2 mb-lg-0',
+                {'is-invalid': formik.touched.price && formik.errors.price},
+                {
+                  'is-valid': formik.touched.price && !formik.errors.price,
+                }
+              )}
+              autoComplete='off'
+              disabled={formik.isSubmitting || isCategoryLoading}
+            />
+            {formik.touched.price && formik.errors.price && (
+              <div className='fv-plugins-message-container'>
+                <div className='fv-help-block'>
+                  <span role='alert'>{formik.errors.price}</span>
+                </div>
+              </div>
+            )}
+            {/* end::Input */}
+          </div>
+          {/* end::Input group */}
+
+            {/* begin::Input group */}
+            <div className='fv-row mb-7'>
+            {/* begin::Label */}
+            <label className=' fw-bold fs-6 ps-2 mb-2'>Price After Discount</label>
+            {/* end::Label */}
+
+            {/* begin::Input */}
+            <input
+              placeholder='Price After Discount'
+              {...formik.getFieldProps('priceAfterDiscount')}
+              type='text'
+              name='priceAfterDiscount'
+              className={clsx(
+                'form-control form-control-solid mb-3 ms-2 mb-lg-0',
+                {'is-invalid': formik.touched.priceAfterDiscount && formik.errors.priceAfterDiscount},
+                {
+                  'is-valid': formik.touched.priceAfterDiscount && !formik.errors.priceAfterDiscount,
+                }
+              )}
+              autoComplete='off'
+              disabled={formik.isSubmitting || isCategoryLoading}
+            />
+            {formik.touched.priceAfterDiscount && formik.errors.priceAfterDiscount && (
+              <div className='fv-plugins-message-container'>
+                <div className='fv-help-block'>
+                  <span role='alert'>{formik.errors.priceAfterDiscount}</span>
+                </div>
+              </div>
+            )}
+            {/* end::Input */}
+          </div>
+          {/* end::Input group */}
+
+
+
+
+
+
+            {/* begin::Input group */}
+            <div className='fv-row mb-7'>
+            {/* begin::Label */}
+            <label className=' fw-bold fs-6 ps-2 mb-2'>Discount Expiry Date</label>
+            {/* end::Label */}
+
+            {/* begin::Input */}
+            <Flatpickr
+              placeholder='Discount Expiry Date'
+              value={formik.values.priceAfterExpirest}
+              // data-enable-time
+                options={{ dateFormat: 'Y-m-d' }}
+                // value={formik.values.priceAfterExpirest}
+              onChange={(date) => formik.setFieldValue('priceAfterExpirest', date[0].toISOString())}
+              // {...formik.getFieldProps('priceAfterExpirest')}
+              type='text'
+              name='priceAfterExpirest'
+              dateFormat="z"
+              className={clsx(
+                'form-control form-control-solid mb-3 ms-2 mb-lg-0',
+                
+              )}
+              autoComplete='off'
+              disabled={formik.isSubmitting || isCategoryLoading}
+            />
+            {formik.touched.priceAfterExpirest && formik.errors.priceAfterExpirest && (
+              <div className='fv-plugins-message-container'>
+                <div className='fv-help-block'>
+                  <span role='alert'>{formik.errors.priceAfterExpirest}</span>
+                </div>
+              </div>
+            )}
+            {/* end::Input */}
+          </div>
+          {/* end::Input group */}
+
+
 
 
           {/* begin::Input group */}

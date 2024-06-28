@@ -1,6 +1,8 @@
 import {ListViewProvider, useListView} from './core/ListViewProvider'
 import {QueryRequestProvider} from './core/QueryRequestProvider'
+import { QueryRequestProvider as BranchRequest } from '../../Branch/branches-list/core/QueryRequestProvider'
 import {QueryResponseProvider} from './core/QueryResponseProvider'
+import { QueryResponseProvider as BranchQuery } from '../../Branch/branches-list/core/QueryResponseProvider'
 import {CategoryEditModal} from './category-edit-modal/CategoryEditModal'
 import { KTCard } from '../../../../../../../_metronic/helpers'
 import { ToolbarWrapper } from '../../../../../../../_metronic/layout/components/toolbar'
@@ -14,7 +16,7 @@ const CategoriesList = () => {
   return (
     <>
       <KTCard>
-        <CategoriesListHeader />
+        {/* <CategoriesListHeader /> */}
         <CategoriesTable />
       </KTCard>
       {itemIdForUpdate !== undefined && <CategoryEditModal />}
@@ -25,14 +27,19 @@ const CategoriesList = () => {
 const CategoriesListWrapper = () => (
   <QueryRequestProvider>
     <QueryResponseProvider>
+      <BranchRequest>
+      <BranchQuery>
+      
       <ListViewProvider>
         <ToolbarWrapper />
-        <Content>
         <DndProvider backend={HTML5Backend}>
+        <Content>
           <CategoriesList />
-          </DndProvider>
         </Content>
+          </DndProvider>
       </ListViewProvider>
+      </BranchQuery>
+      </BranchRequest>
     </QueryResponseProvider>
   </QueryRequestProvider>
 )

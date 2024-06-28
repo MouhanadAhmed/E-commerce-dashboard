@@ -22,6 +22,15 @@ export type Categories = {
   __v?:number
 }
 
+export type Products = {
+  name?: string,
+  _id?: string,
+  category?:[{
+    order?:number,
+    id?:string|null
+  }],
+  id?:string|null
+}
 
 
 export type CategoriesQueryResponse = Response<Array<Categories>>

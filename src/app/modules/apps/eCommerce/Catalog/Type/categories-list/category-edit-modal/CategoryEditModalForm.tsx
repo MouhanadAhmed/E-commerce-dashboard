@@ -5,9 +5,9 @@ import clsx from 'clsx'
 import {useListView} from '../core/ListViewProvider'
 import {UsersListLoading} from '../components/loading/UsersListLoading'
 import {useQueryResponse} from '../core/QueryResponseProvider'
-import { Categories as Category } from '../core/_models'
-import { createCategory, updateCategory } from '../core/_requests'
-import { isNotEmpty, toAbsoluteUrl } from '../../../../../../../../_metronic/helpers'
+import { Types as Category } from '../core/_models'
+import { createType, updateType } from '../core/_requests'
+import { isNotEmpty } from '../../../../../../../../_metronic/helpers'
 
 type Props = {
   isCategoryLoading: boolean
@@ -15,13 +15,13 @@ type Props = {
 }
 
 const editUserSchema = Yup.object().shape({
-  order: Yup.number()
-    .min(0, 'Order can\'t be negative'),
+  // order: Yup.number()
+  //   .min(0, 'Order can\'t be negative'),
   name: Yup.string()
     .min(3, 'Minimum 3 symbols')
     .required('Name is required'),
-    description: Yup.string()
-    .min(3, 'Minimum 3 symbols')
+    // description: Yup.string()
+    // .min(3, 'Minimum 3 symbols')
 })
 
 const CategoryEditModalForm: FC<Props> = ({category, isCategoryLoading}) => {
@@ -30,8 +30,6 @@ const CategoryEditModalForm: FC<Props> = ({category, isCategoryLoading}) => {
 
   const [categoryForEdit] = useState<Category>({
     ...category,
-    available: category.available || true,
-    name: category.name || "",
   })
 
   const cancel = (withRefresh?: boolean) => {
@@ -41,8 +39,8 @@ const CategoryEditModalForm: FC<Props> = ({category, isCategoryLoading}) => {
     setItemIdForUpdate(undefined)
   }
 
-  const blankImg = toAbsoluteUrl('media/svg/avatars/blank.svg')
-  const userAvatarImg = toAbsoluteUrl(`media/${categoryForEdit.imgCover}`)
+  // const blankImg = toAbsoluteUrl('media/svg/avatars/blank.svg')
+  // const userAvatarImg = toAbsoluteUrl(`media/${categoryForEdit.imgCover}`)
 
   const formik = useFormik({
     initialValues: categoryForEdit,
@@ -51,9 +49,11 @@ const CategoryEditModalForm: FC<Props> = ({category, isCategoryLoading}) => {
       setSubmitting(true)
       try {
         if (isNotEmpty(values._id)) {
-          await updateCategory(values?._id,values)
+          await updateType(values?._id,values)
         } else {
-          await createCategory(values)
+          console.log("values",values)
+          delete values.available
+          await createType(values)
         }
       } catch (ex) {
         console.error(ex)
@@ -79,66 +79,7 @@ const CategoryEditModalForm: FC<Props> = ({category, isCategoryLoading}) => {
           data-kt-scroll-offset='300px'
         >
           {/* begin::Input group */}
-          <div className='fv-row mb-7'>
-            {/* begin::Label */}
-            <label className='d-block fw-bold fs-6 ms-2 mb-5'>ImgCover</label>
-            {/* end::Label */}
-
-            {/* begin::Image input */}
-            <div
-              className='image-input image-input-outline ms-2'
-              data-kt-image-input='true'
-              style={{backgroundImage: `url('${blankImg}')`}}
-            >
-              {/* begin::Preview existing imgCover */}
-              <div
-                className='image-input-wrapper w-125px h-125px ms-2'
-                style={{backgroundImage: `url('${userAvatarImg}')`}}
-              ></div>
-              {/* end::Preview existing imgCover */}
-
-              {/* begin::Label */}
-              {/* <label
-              className='btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow'
-              data-kt-image-input-action='change'
-              data-bs-toggle='tooltip'
-              title='Change imgCover'
-            >
-              <i className='bi bi-pencil-fill fs-7'></i>
-
-              <input type='file' name='imgCover' accept='.png, .jpg, .jpeg' />
-              <input type='hidden' name='avatar_remove' />
-            </label> */}
-              {/* end::Label */}
-
-              {/* begin::Cancel */}
-              {/* <span
-              className='btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow'
-              data-kt-image-input-action='cancel'
-              data-bs-toggle='tooltip'
-              title='Cancel imgCover'
-            >
-              <i className='bi bi-x fs-2'></i>
-            </span> */}
-              {/* end::Cancel */}
-
-              {/* begin::Remove */}
-              {/* <span
-              className='btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow'
-              data-kt-image-input-action='remove'
-              data-bs-toggle='tooltip'
-              title='Remove imgCover'
-            >
-              <i className='bi bi-x fs-2'></i>
-            </span> */}
-              {/* end::Remove */}
-            </div>
-            {/* end::Image input */}
-
-            {/* begin::Hint */}
-            {/* <div className='form-text'>Allowed file types: png, jpg, jpeg.</div> */}
-            {/* end::Hint */}
-          </div>
+          
           {/* end::Input group */}
 
           {/* begin::Input group */}
@@ -176,99 +117,12 @@ const CategoryEditModalForm: FC<Props> = ({category, isCategoryLoading}) => {
 
           
 
-          {/* begin::Input group */}
-          <div className='fv-row mb-7'>
-            {/* begin::Label */}
-            <label className='required fw-bold fs-6  ms-2 mb-2'>Order</label>
-            {/* end::Label */}
+         
 
-            {/* begin::Input */}
-            <input
-              placeholder='order'
-              {...formik.getFieldProps('order')}
-              className={clsx(
-                'form-control form-control-solid mb-3 mb-lg-0 ms-2',
-                {'is-invalid': formik.touched.order && formik.errors.order},
-                {
-                  'is-valid': formik.touched.order && !formik.errors.order,
-                }
-              )}
-              type='text'
-              name='order'
-              autoComplete='off'
-              disabled={formik.isSubmitting || isCategoryLoading}
-            />
-            {/* end::Input */}
-            {formik.touched.order && formik.errors.order && (
-              <div className='fv-plugins-message-container'>
-                <span role='alert'>{formik.errors.order}</span>
-              </div>
-            )}
-          </div>
-          {/* end::Input group */}
-
-          {/* begin::Input group */}
-          <div className='fv-row mb-7'>
-            {/* begin::Label */}
-            <label className='required fw-bold fs-6 mb-2 ms-2'>Description</label>
-            {/* end::Label */}
-
-            {/* begin::Input */}
-            <input
-              placeholder='description'
-              {...formik.getFieldProps('description')}
-              className={clsx(
-                'form-control form-control-solid mb-3 mb-lg-0 ms-2',
-                {'is-invalid': formik.touched.description && formik.errors.description},
-                {
-                  'is-valid': formik.touched.description && !formik.errors.description,
-                }
-              )}
-              type='text'
-              name='description'
-              autoComplete='off'
-              disabled={formik.isSubmitting || isCategoryLoading}
-            />
-            {/* end::Input */}
-            {formik.touched.description && formik.errors.description && (
-              <div className='fv-plugins-message-container'>
-                <span role='alert'>{formik.errors.description}</span>
-              </div>
-            )}
-          </div>
-          {/* end::Input group */}
+          
 
 
-          {/* begin::Input group */}
-          <div className='fv-row mb-7'>
-            {/* begin::Label */}
-            <label className='required fw-bold fs-6 mb-2 ms-2'>Available</label>
-            {/* end::Label */}
-
-            {/* begin::Input */}
-            <select
-              {...formik.getFieldProps('available')}
-              className={clsx(
-                'form-control form-control-solid mb-3 mb-lg-0 ms-2',
-                {'is-invalid': formik.touched.description && formik.errors.description},
-                {
-                  'is-valid': formik.touched.description && !formik.errors.description,
-                }
-              )}
-              name='available'
-              autoComplete='off'
-              disabled={formik.isSubmitting || isCategoryLoading}>
-                <option value="true">Yes</option>
-                <option value="false">No</option>
-            </select>
-            {/* end::Input */}
-            {formik.touched.available && formik.errors.available && (
-              <div className='fv-plugins-message-container'>
-                <span role='alert'>{formik.errors.available}</span>
-              </div>
-            )}
-          </div>
-          {/* end::Input group */}
+         
         </div>
         {/* end::Scroll */}
 

@@ -1,83 +1,83 @@
 import axios, { AxiosResponse } from "axios";
 import { ID, Response, initialQueryRequest,  } from "../../../../../../../../_metronic/helpers";
-import { CategoriesQueryResponse, Categories } from "./_models";
+import { TypesQueryResponse, Types } from "./_models";
 
 
 // const {state} = useQueryRequest()
 const API_URL = import.meta.env.VITE_APP_THEME_API_URL;
-const CATEGORY_URL = `${API_URL}/category`;
-const GET_CATEGORIES_URL = `${API_URL}/category?deleted=false`;
-const GET_ARCHIVED_CATEGORIES_URL = `${API_URL}/category?deleted=true`;
+const TYPES_URL = `${API_URL}/type`;
+const GET_TYPES_URL = `${API_URL}/type?deleted=false`;
+const GET_ARCHIVED_TYPES_URL = `${API_URL}/type?deleted=true`;
 let baseUrl ="";
-console.log("initialQueryRequest.state",initialQueryRequest.state)
+// console.log("initialQueryRequest.state",initialQueryRequest.state)
 if (initialQueryRequest.state && typeof initialQueryRequest.state === 'object') {
   const queryString = Object.entries(initialQueryRequest.state)
   .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
   .join('&');
-  baseUrl=GET_CATEGORIES_URL+'&'+queryString
+  baseUrl=GET_TYPES_URL+'&'+queryString
 }
-const getCategories = (query:string): Promise<CategoriesQueryResponse> => {
+const getTypes = (query?:string): Promise<TypesQueryResponse> => {
   console.log(query);
-  baseUrl=GET_CATEGORIES_URL+'&'+query
+  baseUrl=GET_TYPES_URL+'&'+query
   return axios
-    .get(`${baseUrl?baseUrl:GET_CATEGORIES_URL}`)
+    .get(`${query != undefined?baseUrl:GET_TYPES_URL}`)
     .then(((response) => {
-      // console.log("_requests => categories",response.data.data)
+      // console.log("_requests => Types",response.data.data)
       return response.data}));
 };
-const getArchivedCategories = (): Promise<CategoriesQueryResponse> => {
+const getArchivedTypes = (query?:string): Promise<TypesQueryResponse> => {
   // console.log(initialQueryRequest.state)
   return axios
-    .get(`${baseUrl?baseUrl:GET_ARCHIVED_CATEGORIES_URL}`)
+    .get(`${query != undefined?baseUrl:GET_ARCHIVED_TYPES_URL}`)
     .then(((response) => {
-      console.log("_requests => categories",response.data.data)
+      console.log("_requests => archived Types",response.data.data)
       return response.data}));
 };
 
-const getCategoryById = (id: ID): Promise<Categories | undefined> => {
+const getTypeById = (id: ID): Promise<Types | undefined> => {
   return axios
-    .get(`${CATEGORY_URL}/${id}`)
-    .then((response: AxiosResponse<Response<Categories>>) => response.data)
-    .then((response: Response<Categories>) => response.data);
+    .get(`${TYPES_URL}/${id}`)
+    .then((response: AxiosResponse<Response<Types>>) => response.data)
+    .then((response: Response<Types>) => response.data);
 };
 
-const createCategory = (Category: Categories): Promise<Categories | undefined> => {
+const createType = (Category: Types): Promise<Types | undefined> => {
   return axios
-    .post(CATEGORY_URL, Category)
-    .then((response: AxiosResponse<Response<Categories>>) => response.data)
-    .then((response: Response<Categories>) => response.data);
+    .post(TYPES_URL, Category)
+    .then((response: AxiosResponse<Response<Types>>) => response.data)
+    .then((response: Response<Types>) => response.data);
 };
 
-const updateCategory = (CategoryId: string| undefined,Category: object): Promise<Categories | undefined> => {
+const updateType = (CategoryId: string| undefined,Category: object): Promise<Types | undefined> => {
   return axios
-    .put(`${CATEGORY_URL}/${CategoryId}`, Category)
-    .then((response: AxiosResponse<Response<Categories>>) => response.data)
-    .then((response: Response<Categories>) => response.data);
+    .put(`${TYPES_URL}/${CategoryId}`, Category)
+    .then((response: AxiosResponse<Response<Types>>) => response.data)
+    .then((response: Response<Types>) => response.data);
 };
 
-const updateCategoryOrder = (CategoryId: ID,Order: number): Promise<Categories | undefined> => {
+const updateTypeOrder = (CategoryId: ID,Order: number): Promise<Types | undefined> => {
   return axios
-    .patch(`${CATEGORY_URL}/${CategoryId}`, {order:Order})
-    .then((response: AxiosResponse<Response<Categories>>) => response.data)
-    .then((response: Response<Categories>) => response.data);
+    .patch(`${TYPES_URL}/${CategoryId}`, {order:Order})
+    .then((response: AxiosResponse<Response<Types>>) => response.data)
+    .then((response: Response<Types>) => response.data);
 };
 
-const deleteCategory = (userId: ID): Promise<void> => {
-  return axios.delete(`${CATEGORY_URL}/${userId}`).then(() => {});
+const deleteType = (userId: ID): Promise<void> => {
+  return axios.delete(`${TYPES_URL}/${userId}`).then(() => {});
 };
 
-const deleteSelectedCategories = (userIds: Array<ID>): Promise<void> => {
-  const requests = userIds.map((id) => axios.delete(`${CATEGORY_URL}/${id}`));
+const deleteSelectedTypes = (userIds: Array<ID>): Promise<void> => {
+  const requests = userIds.map((id) => axios.delete(`${TYPES_URL}/${id}`));
   return axios.all(requests).then(() => {});
 };
 
 export {
-  getCategories,
-  getArchivedCategories,
-  deleteCategory,
-  deleteSelectedCategories,
-  getCategoryById,
-  createCategory,
-  updateCategory,
-  updateCategoryOrder
+  getTypes,
+  getArchivedTypes,
+  deleteType,
+  deleteSelectedTypes,
+  getTypeById,
+  createType,
+  updateType,
+  updateTypeOrder
 };

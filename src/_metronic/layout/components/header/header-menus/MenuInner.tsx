@@ -1,28 +1,37 @@
 import {useIntl} from 'react-intl'
 import {MenuItem} from './MenuItem'
 import {MenuInnerWithSub} from './MenuInnerWithSub'
-import {MegaMenu} from './MegaMenu'
+// import {MegaMenu} from './MegaMenu'
 
 export function MenuInner() {
   const intl = useIntl()
   return (
     <>
       <MenuItem title={intl.formatMessage({id: 'MENU.DASHBOARD'})} to='/dashboard' />
-      <MenuItem title='Layout Builder' to='/builder' />
-      <MenuItem title='Category' to='/categories' />
-      <MenuItem title='SubCategory' to='/subCategories' />
-      <MenuItem title='ChildSubCategory' to='/childSubCategories' />
-      <MenuItem title='Type' to='/types' />
-      <MenuItem title='Extra' to='/extras' />
-      <MenuItem title='Branch' to='/branchs' />
+      {/* <MenuItem title='Layout Builder' to='/builder' /> */}
       <MenuInnerWithSub
+        isMega={true}
+        title='Catalog'
+        to='/mega-menu'
+        menuPlacement='bottom-start'
+        menuTrigger='click'
+      >
+      <MenuItem title='Category' to='/apps/eCommerce/categories' />
+      <MenuItem title='SubCategory' to='/apps/eCommerce/subCategories' />
+      <MenuItem title='ChildSubCategory' to='/apps/eCommerce/childSubCategories' />
+      <MenuItem title='Type' to='/apps/eCommerce/types' />
+      <MenuItem title='Extra' to='/apps/eCommerce/extras' />
+      <MenuItem title='Branch' to='/apps/eCommerce/branches' />
+
+      </MenuInnerWithSub>
+      {/* <MenuInnerWithSub
         title='Crafted'
         to='/crafted'
         menuPlacement='bottom-start'
         menuTrigger='click'
-      >
+      > */}
         {/* PAGES */}
-        <MenuInnerWithSub
+        {/* <MenuInnerWithSub
           title='Pages'
           to='/crafted/pages'
           fontIcon='bi-archive'
@@ -59,10 +68,10 @@ export function MenuInner() {
             <MenuItem to='/crafted/pages/wizards/horizontal' title='Horizontal' hasBullet={true} />
             <MenuItem to='/crafted/pages/wizards/vertical' title='Vertical' hasBullet={true} />
           </MenuInnerWithSub>
-        </MenuInnerWithSub>
+        </MenuInnerWithSub> */}
 
         {/* ACCOUNT */}
-        <MenuInnerWithSub
+        {/* <MenuInnerWithSub
           title='Accounts'
           to='/crafted/accounts'
           fontIcon='bi-person'
@@ -72,10 +81,10 @@ export function MenuInner() {
         >
           <MenuItem to='/crafted/account/overview' title='Overview' hasBullet={true} />
           <MenuItem to='/crafted/account/settings' title='Settings' hasBullet={true} />
-        </MenuInnerWithSub>
+        </MenuInnerWithSub> */}
 
         {/* ERRORS */}
-        <MenuInnerWithSub
+        {/* <MenuInnerWithSub
           title='Errors'
           to='/error'
           fontIcon='bi-sticky'
@@ -85,10 +94,10 @@ export function MenuInner() {
         >
           <MenuItem to='/error/404' title='Error 404' hasBullet={true} />
           <MenuItem to='/error/500' title='Error 500' hasBullet={true} />
-        </MenuInnerWithSub>
+        </MenuInnerWithSub> */}
 
         {/* Widgets */}
-        <MenuInnerWithSub
+        {/* <MenuInnerWithSub
           title='Widgets'
           to='/crafted/widgets'
           fontIcon='bi-layers'
@@ -102,12 +111,12 @@ export function MenuInner() {
           <MenuItem to='/crafted/widgets/mixed' title='Mixed' hasBullet={true} />
           <MenuItem to='/crafted/widgets/tables' title='Tables' hasBullet={true} />
           <MenuItem to='/crafted/widgets/feeds' title='Feeds' hasBullet={true} />
-        </MenuInnerWithSub>
-      </MenuInnerWithSub>
+        </MenuInnerWithSub> */}
+      {/* </MenuInnerWithSub> */}
 
-      <MenuInnerWithSub title='Apps' to='/apps' menuPlacement='bottom-start' menuTrigger='click'>
+      {/* <MenuInnerWithSub title='Apps' to='/apps' menuPlacement='bottom-start' menuTrigger='click'> */}
         {/* PAGES */}
-        <MenuInnerWithSub
+        {/* <MenuInnerWithSub
           title='Chat'
           to='/apps/chat'
           icon='message-text-2'
@@ -118,11 +127,11 @@ export function MenuInner() {
           <MenuItem to='/apps/chat/private-chat' title='Private Chat' hasBullet={true} />
           <MenuItem to='/apps/chat/group-chat' title='Group Chart' hasBullet={true} />
           <MenuItem to='/apps/chat/drawer-chat' title='Drawer Chart' hasBullet={true} />
-        </MenuInnerWithSub>
-        <MenuItem icon='abstract-28' to='/apps/user-management/users' title='User management' />
-      </MenuInnerWithSub>
+        </MenuInnerWithSub> */}
+        {/* <MenuItem icon='abstract-28' to='/apps/user-management/users' title='User management' /> */}
+      {/* </MenuInnerWithSub> */}
 
-      <MenuInnerWithSub
+      {/* <MenuInnerWithSub
         isMega={true}
         title='Layouts'
         to='/mega-menu'
@@ -130,7 +139,7 @@ export function MenuInner() {
         menuTrigger='click'
       >
         <MegaMenu />
-      </MenuInnerWithSub>
+      </MenuInnerWithSub> */}
     </>
   )
 }

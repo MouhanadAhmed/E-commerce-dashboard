@@ -12,15 +12,17 @@ import {
   WithChildren,
 } from '../../../../../../../../_metronic/helpers'
 import {useQueryRequest} from './QueryRequestProvider'
-import { getSubCategories } from './_requests'
+import { getArchivedSubCategories, getSubCategories } from './_requests'
 import { SubCategories } from './_models'
 
 const QueryResponseContext = createResponseContext<SubCategories>(initialQueryResponse)
 const QueryResponseProvider: FC<WithChildren> = ({children}) => {
   const {state} = useQueryRequest()
   const [query, setQuery] = useState<string>(stringifyRequestQuery(state))
-  const [searchQuery, setSearchQuery] = useState<string|null>()
+  // const [searchQuery, setSearchQuery] = useState<string|null>()
   const updatedQuery = useMemo(() => stringifyRequestQuery(state), [state])
+  const [archivedQuery, setArchivedQuery] = useState<string>(stringifyRequestQuery(state))
+  const updatedArchivedQuery = useMemo(() => stringifyRequestQuery(state), [state])
 
   useEffect(() => {
     if (query !== updatedQuery) {
@@ -28,23 +30,25 @@ const QueryResponseProvider: FC<WithChildren> = ({children}) => {
         setQuery(query.replace(/search=/, 'keyword='));
 
       }
-    console.log('query',decodeURIComponent(query))
+    // console.log('query',decodeURIComponent(query))
 
       // .replace(/search=/, 'keyword=')
       setQuery(decodeURIComponent(updatedQuery))
     }
   }, [updatedQuery])
-  // useEffect(()=>{
-    
-  //   console.log('query',query, typeof stringifyRequestQuery(state))
-  //   const searchQueryStr = stringifyRequestQuery(state).match(/search=([^&]*)/);
-  //   setSearchQuery(searchQueryStr? searchQueryStr[1] : null)
-  //   console.log('searchQuery',searchQuery)
-  // },[query])
+  useEffect(() => {
+    if (archivedQuery !== updatedArchivedQuery) {
+      if(archivedQuery.match(/search=([^&]*)/)){
+        setArchivedQuery(archivedQuery.replace(/search=/, 'keyword='))
+      }
+      console.log('archivedQuery', decodeURIComponent(archivedQuery))
+      setArchivedQuery(decodeURIComponent(updatedArchivedQuery))
+    }
+  }, [updatedArchivedQuery])
   const {
-    isFetching,
-    refetch,
-    data: response,
+    isFetching: isFetchingSubCategories,
+    refetch: refetchSubCategories,
+    data: responseSubCategories,
   } = useQuery(
     `${QUERIES.SUB_CATEGORIES_LIST}-${query}`,
     () => {
@@ -53,8 +57,23 @@ const QueryResponseProvider: FC<WithChildren> = ({children}) => {
     {cacheTime: 0, keepPreviousData: true, refetchOnWindowFocus: false}
   )
 
+  const {
+    isFetching: isFetchingArchived,
+    refetch: refetchArchived,
+    data: responseArchived,
+  } = useQuery(
+    `${QUERIES.ARCHIVED_SUB_CATEGORIES_LIST}-${archivedQuery}`,
+    () => getArchivedSubCategories(archivedQuery),
+    { cacheTime: 0, keepPreviousData: true, refetchOnWindowFocus: false }
+  )
+
   return (
-    <QueryResponseContext.Provider value={{isLoading: isFetching, refetch, response, query}}>
+    <QueryResponseContext.Provider value={{
+      isLoading: isFetchingSubCategories || isFetchingArchived,
+      refetch: () => { refetchSubCategories(); refetchArchived() },
+      response: { active: responseSubCategories, archived: responseArchived },
+      query,
+      }}>
       {children}
     </QueryResponseContext.Provider>
   )
@@ -65,10 +84,18 @@ const useQueryResponse = () => useContext(QueryResponseContext)
 const useQueryResponseData = () => {
   const {response} = useQueryResponse()
   if (!response) {
-    return []
+    return { active: [], archived: [] }
   }
 
-  return response?.data || []
+  return {
+    active: response?.active?.data || [],
+    archived: response?.archived?.data || []
+  }
+}
+
+const useQueryRefetch = () => {
+  const { refetch } = useQueryResponse()
+  return refetch
 }
 
 const useQueryResponsePagination = () => {
@@ -91,6 +118,7 @@ const useQueryResponseLoading = (): boolean => {
 }
 
 export {
+  useQueryRefetch,
   QueryResponseProvider,
   useQueryResponse,
   useQueryResponseData,

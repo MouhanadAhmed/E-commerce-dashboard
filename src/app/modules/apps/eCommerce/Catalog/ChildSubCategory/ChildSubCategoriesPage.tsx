@@ -1,6 +1,6 @@
 import {Route, Routes, Outlet, Navigate} from 'react-router-dom'
 import { PageLink, PageTitle } from '../../../../../../_metronic/layout/core'
-import { ChildSubCategoriesListWrapper } from './Subcategories-list/ChildSubCategoriesList'
+import { ChildSubCategoriesListWrapper } from './ChildSubcategories-list/ChildSubCategoriesList'
 
 const subCategoriesBreadcrumbs: Array<PageLink> = [
   {

@@ -1,6 +1,6 @@
 import {Route, Routes, Outlet, Navigate} from 'react-router-dom'
 import { PageLink, PageTitle } from '../../../../../../_metronic/layout/core'
-import { CategoriesListWrapper } from './categories-list/CategoriesList'
+import { ExtrasListWrapper } from './categories-list/ExtrasList'
 
 const extrasBreadcrumbs: Array<PageLink> = [
   {
@@ -26,7 +26,7 @@ const ExtrasPage = () => {
           element={
             <>
               <PageTitle breadcrumbs={extrasBreadcrumbs}>Extras list</PageTitle>
-              <CategoriesListWrapper />
+              <ExtrasListWrapper />
             </>
           }
         />

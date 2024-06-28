@@ -9,12 +9,16 @@ import { SubCategoriesListHeader } from './components/header/SubCategoriesListHe
 import { SubCategoriesTable } from './table/SubCategoriesTable'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
+import { QueryRequestProvider as BranchRequest } from '../../Branch/branches-list/core/QueryRequestProvider'
+import { QueryResponseProvider as BranchQuery } from '../../Branch/branches-list/core/QueryResponseProvider'
+import { QueryResponseProvider  as CategoryQuery} from '../../Category/categories-list/core/QueryResponseProvider'
+import { QueryRequestProvider  as CategoryRequest } from '../../Category/categories-list/core/QueryRequestProvider'
 const SubCategoriesList = () => {
   const {itemIdForUpdate} = useListView()
   return (
     <>
       <KTCard>
-        <SubCategoriesListHeader />
+        {/* <SubCategoriesListHeader /> */}
         <SubCategoriesTable />
       </KTCard>
       {itemIdForUpdate !== undefined && <SubCategoryEditModal />}
@@ -25,6 +29,11 @@ const SubCategoriesList = () => {
 const SubCategoriesListWrapper = () => (
   <QueryRequestProvider>
     <QueryResponseProvider>
+    <BranchRequest>
+    <BranchQuery>
+    <CategoryRequest>
+    <CategoryQuery>
+    
       <ListViewProvider>
         <ToolbarWrapper />
         <Content>
@@ -33,6 +42,11 @@ const SubCategoriesListWrapper = () => (
           </DndProvider>
         </Content>
       </ListViewProvider>
+    </CategoryQuery>
+    </CategoryRequest>
+    </BranchQuery>
+    </BranchRequest>
+
     </QueryResponseProvider>
   </QueryRequestProvider>
 )

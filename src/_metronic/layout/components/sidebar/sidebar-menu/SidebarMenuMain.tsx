@@ -18,12 +18,12 @@ const SidebarMenuMain = () => {
       <i className='ki-duotone ki-basket fs-2'></i>
       {/* <SidebarMenuItem title='Category' to='/categories' hasBullet={true}/> */}
       <SidebarMenuItem to='/builder' icon='switch' title='Layout Builder' fontIcon='bi-layers' />
-      <div className='menu-item'>
+      {/* <div className='menu-item'>
         <div className='menu-content pt-8 pb-2'>
           <span className='menu-section text-muted text-uppercase fs-8 ls-1'>Crafted</span>
         </div>
-      </div>
-      <SidebarMenuItemWithSub
+      </div> */}
+      {/* <SidebarMenuItemWithSub
         to='/crafted/pages'
         title='Pages'
         fontIcon='bi-archive'
@@ -57,8 +57,8 @@ const SidebarMenuMain = () => {
           />
           <SidebarMenuItem to='/crafted/pages/wizards/vertical' title='Vertical' hasBullet={true} />
         </SidebarMenuItemWithSub>
-      </SidebarMenuItemWithSub>
-      <SidebarMenuItemWithSub
+      </SidebarMenuItemWithSub> */}
+      {/* <SidebarMenuItemWithSub
         to='/crafted/accounts'
         title='Accounts'
         icon='profile-circle'
@@ -83,13 +83,13 @@ const SidebarMenuMain = () => {
         <SidebarMenuItem to='/crafted/widgets/mixed' title='Mixed' hasBullet={true} />
         <SidebarMenuItem to='/crafted/widgets/tables' title='Tables' hasBullet={true} />
         <SidebarMenuItem to='/crafted/widgets/feeds' title='Feeds' hasBullet={true} />
-      </SidebarMenuItemWithSub>
+      </SidebarMenuItemWithSub> */}
       <div className='menu-item'>
         <div className='menu-content pt-8 pb-2'>
           <span className='menu-section text-muted text-uppercase fs-8 ls-1'>Apps</span>
         </div>
       </div>
-      <SidebarMenuItemWithSub
+      {/* <SidebarMenuItemWithSub
         to='/apps/chat'
         title='Chat'
         fontIcon='bi-chat-left'
@@ -98,7 +98,7 @@ const SidebarMenuMain = () => {
         <SidebarMenuItem to='/apps/chat/private-chat' title='Private Chat' hasBullet={true} />
         <SidebarMenuItem to='/apps/chat/group-chat' title='Group Chart' hasBullet={true} />
         <SidebarMenuItem to='/apps/chat/drawer-chat' title='Drawer Chart' hasBullet={true} />
-      </SidebarMenuItemWithSub>
+      </SidebarMenuItemWithSub> */}
       <SidebarMenuItemWithSub
         to='/apps/eCommerce'
         title='eCommerce'
@@ -110,16 +110,16 @@ const SidebarMenuMain = () => {
         <SidebarMenuItem to='/apps/eCommerce/childSubCategories' title='ChildSubCategory' hasBullet={true} />
         <SidebarMenuItem to='/apps/eCommerce/types' title='Types' hasBullet={true} />
         <SidebarMenuItem to='/apps/eCommerce/extras' title='Extras' hasBullet={true} />
-        <SidebarMenuItem to='/apps/eCommerce/branchs' title='Branchs' hasBullet={true} />
+        <SidebarMenuItem to='/apps/eCommerce/branches' title='Branches' hasBullet={true} />
         {/* <SidebarMenuItem to='/apps/chat/group-chat' title='Group Chart' hasBullet={true} /> */}
         {/* <SidebarMenuItem to='/apps/chat/drawer-chat' title='Drawer Chart' hasBullet={true} /> */}
       </SidebarMenuItemWithSub>
-      <SidebarMenuItem
+      {/* <SidebarMenuItem
         to='/apps/user-management/users'
         icon='abstract-28'
         title='User management'
         fontIcon='bi-layers'
-      />
+      /> */}
       <div className='menu-item'>
         <a
           target='_blank'

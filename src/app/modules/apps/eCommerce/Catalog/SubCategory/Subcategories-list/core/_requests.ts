@@ -12,23 +12,25 @@ let baseUrl ="";
 console.log("initialQueryRequest.state",initialQueryRequest.state)
 if (initialQueryRequest.state && typeof initialQueryRequest.state === 'object') {
   const queryString = Object.entries(initialQueryRequest.state)
-  .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+  .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value as string)}`)
   .join('&');
   baseUrl=GET_SUB_CATEGORIES_URL+'&'+queryString
 }
-const getSubCategories = (query:string): Promise<SubCategoriesQueryResponse> => {
-  console.log(query);
+const getSubCategories = (query?:string): Promise<SubCategoriesQueryResponse> => {
+  // console.log(query);
   baseUrl=GET_SUB_CATEGORIES_URL+'&'+query
   return axios
-    .get(`${baseUrl?baseUrl:GET_SUB_CATEGORIES_URL}`)
+    .get(`${query != undefined?baseUrl:GET_SUB_CATEGORIES_URL}`)
     .then(((response) => {
       // console.log("_requests => categories",response.data.data)
       return response.data}));
 };
-const getArchivedSubCategories = (): Promise<SubCategoriesQueryResponse> => {
+const getArchivedSubCategories = (query?:string): Promise<SubCategoriesQueryResponse> => {
   // console.log(initialQueryRequest.state)
+  baseUrl=GET_ARCHIVED_SUB_CATEGORIES_URL+'&'+query
+
   return axios
-    .get(`${baseUrl?baseUrl:GET_ARCHIVED_SUB_CATEGORIES_URL}`)
+    .get(`${query != undefined?baseUrl:GET_ARCHIVED_SUB_CATEGORIES_URL}`)
     .then(((response) => {
       console.log("_requests => subCategory",response.data.data)
       return response.data}));
@@ -71,7 +73,36 @@ const deleteSelectedSubCategories = (userIds: Array<ID>): Promise<void> => {
   return axios.all(requests).then(() => {});
 };
 
+const getAllProductsInSubCategory = (categoryId: string): Promise<[]> =>{
+  return axios
+  .get(`${API_URL}/product/subCategory/${categoryId}?fields=name,subCategory`)
+  .then(((response) => {
+    // console.log("_requests => categories",response.data.data)
+    return response.data}));
+}
+
+const updateProductOrderInSubCategory = (categoryId: string,productId: string,order:number): Promise<[]> =>{
+  return axios
+  .put(`${API_URL}/product/subCategory/${productId}`,{order:order,SubCategory:categoryId})
+}
+
+const getAllChildsInSubCategory = (categoryId: string): Promise<[]> =>{
+  return axios
+  .get(`${API_URL}/childSubCategory/subCategory/${categoryId}?fields=name,subCategory`)
+  .then(((response) => {
+    // console.log("_requests => categories",response.data.data)
+    return response.data}));
+}
+const updateChildSubOrderInSubCategory = (categoryId: string,productId: string,order:number): Promise<[]> =>{
+  return axios
+  .put(`${API_URL}/childSubCategory/subCategory/${productId}`,{order:order,subCategory:categoryId})
+}
+
 export {
+  updateChildSubOrderInSubCategory,
+  getAllChildsInSubCategory,
+  updateProductOrderInSubCategory,
+  getAllProductsInSubCategory,
   getSubCategories,
   getArchivedSubCategories,
   deleteSubCategory,

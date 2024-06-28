@@ -12,23 +12,24 @@ let baseUrl ="";
 console.log("initialQueryRequest.state",initialQueryRequest.state)
 if (initialQueryRequest.state && typeof initialQueryRequest.state === 'object') {
   const queryString = Object.entries(initialQueryRequest.state)
-  .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+  .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value as string)}`)
   .join('&');
   baseUrl=GET_CATEGORIES_URL+'&'+queryString
 }
-const getCategories = (query:string): Promise<CategoriesQueryResponse> => {
+const getCategories = (query?:string): Promise<CategoriesQueryResponse> => {
   console.log(query);
   baseUrl=GET_CATEGORIES_URL+'&'+query
   return axios
-    .get(`${baseUrl?baseUrl:GET_CATEGORIES_URL}`)
+    .get(`${query != undefined?baseUrl:GET_CATEGORIES_URL}`)
     .then(((response) => {
       // console.log("_requests => categories",response.data.data)
       return response.data}));
 };
-const getArchivedCategories = (): Promise<CategoriesQueryResponse> => {
+const getArchivedCategories = (query?:string): Promise<CategoriesQueryResponse> => {
   // console.log(initialQueryRequest.state)
+  baseUrl=GET_ARCHIVED_CATEGORIES_URL+'&'+query
   return axios
-    .get(`${baseUrl?baseUrl:GET_ARCHIVED_CATEGORIES_URL}`)
+    .get(`${query != undefined?baseUrl:GET_ARCHIVED_CATEGORIES_URL}`)
     .then(((response) => {
       console.log("_requests => categories",response.data.data)
       return response.data}));
@@ -70,8 +71,42 @@ const deleteSelectedCategories = (userIds: Array<ID>): Promise<void> => {
   const requests = userIds.map((id) => axios.delete(`${CATEGORY_URL}/${id}`));
   return axios.all(requests).then(() => {});
 };
+const updateSelectedCategories = (userIds: Array<ID>,Category: object): Promise<void> => {
+  const requests = userIds.map((id) => axios.put(`${CATEGORY_URL}/${id}`, Category));
+  return axios.all(requests).then(() => {});
+};
+
+const getAllProductsInCategory = (categoryId: string): Promise<[]> =>{
+  return axios
+  .get(`${API_URL}/product/category/${categoryId}?fields=name,category`)
+  .then(((response) => {
+    // console.log("_requests => categories",response.data.data)
+    return response.data}));
+}
+
+const updateProductOrderInCategory = (categoryId: string,productId: string,order:number): Promise<[]> =>{
+  return axios
+  .put(`${API_URL}/product/category/${productId}`,{order:order,Category:categoryId})
+}
+
+const getAllSubCategoriesInCategory = (categoryId: string): Promise<[]> =>{
+  return axios
+  .get(`${API_URL}/subCategory/category/${categoryId}?fields=name,category`)
+  .then(((response) => {
+    // console.log("_requests => categories",response.data.data)
+    return response.data}));
+}
+
+const updateSubCategoryOrderInCategory = (categoryId: string,productId: string,order:number): Promise<[]> =>{
+  return axios
+  .put(`${API_URL}/subCategory/category/${productId}`,{order:order,category:categoryId})
+}
 
 export {
+  updateSubCategoryOrderInCategory,
+  getAllSubCategoriesInCategory,
+  updateProductOrderInCategory,
+  getAllProductsInCategory,
   getCategories,
   getArchivedCategories,
   deleteCategory,
@@ -79,5 +114,6 @@ export {
   getCategoryById,
   createCategory,
   updateCategory,
-  updateCategoryOrder
+  updateCategoryOrder,
+  updateSelectedCategories
 };

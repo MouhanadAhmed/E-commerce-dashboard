@@ -1,6 +1,6 @@
 import {Dispatch, SetStateAction} from 'react'
 
-export type ID = undefined | null | number
+export type ID = undefined | null | number | string
 
 export type PaginationState = {
   page?: string
@@ -24,6 +24,8 @@ export type SearchState = {
 }
 
 export type Response<T> = {
+  archived: any
+  active: any
   message?: string
   data?: T
   payload?: {
@@ -75,8 +77,8 @@ export type QueryResponseContextProps<T> = {
 export const initialQueryResponse = {refetch: () => {}, isLoading: false, query: ''}
 
 export type ListViewContextProps = {
-  selected: Array<ID>
-  onSelect: (selectedId: ID) => void
+  selected: Array<ID| string>
+  onSelect: (selectedId: ID|string) => void
   onSelectAll: () => void
   clearSelected: () => void
   // NULL => (CREATION MODE) | MODAL IS OPENED

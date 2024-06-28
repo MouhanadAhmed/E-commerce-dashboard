@@ -1,6 +1,6 @@
 import {useQuery} from 'react-query'
 import {useListView} from '../core/ListViewProvider'
-import {getCategoryById} from '../core/_requests'
+import {getExtraById} from '../core/_requests'
 import { QUERIES, isNotEmpty } from '../../../../../../../../_metronic/helpers'
 import { CategoryEditModalForm } from './CategoryEditModalForm'
 
@@ -12,9 +12,9 @@ const CategoryEditModalFormWrapper = () => {
     data: category,
     error,
   } = useQuery(
-    `${QUERIES.CATEGORIES_LIST}-category-${itemIdForUpdate}`,
+    `${QUERIES.EXTRAS_LIST}-extra-${itemIdForUpdate}`,
     () => {
-      return getCategoryById(itemIdForUpdate)
+      return getExtraById(itemIdForUpdate)
     },
     {
       cacheTime: 0,
