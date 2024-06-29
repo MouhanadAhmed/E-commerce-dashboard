@@ -111,6 +111,7 @@ const SidebarMenuMain = () => {
         <SidebarMenuItem to='/apps/eCommerce/types' title='Types' hasBullet={true} />
         <SidebarMenuItem to='/apps/eCommerce/extras' title='Extras' hasBullet={true} />
         <SidebarMenuItem to='/apps/eCommerce/branches' title='Branches' hasBullet={true} />
+        <SidebarMenuItem to='/apps/eCommerce/products' title='Products' hasBullet={true} />
         {/* <SidebarMenuItem to='/apps/chat/group-chat' title='Group Chart' hasBullet={true} /> */}
         {/* <SidebarMenuItem to='/apps/chat/drawer-chat' title='Drawer Chart' hasBullet={true} /> */}
       </SidebarMenuItemWithSub>

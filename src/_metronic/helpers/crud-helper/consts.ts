@@ -12,6 +12,8 @@ const QUERIES = {
   ARCHIVED_TYPES_LIST:'archived-types-list',
   EXTRAS_LIST:'extras-list',
   ARCHIVED_EXTRAS_LIST:'archived-extras-list',
+  PRODUCTS_LIST:'products-list',
+  ARCHIVED_PRODUCTS_LIST:'archived-products-list',
 }
 
 export {QUERIES}
