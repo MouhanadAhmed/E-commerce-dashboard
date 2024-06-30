@@ -14,6 +14,7 @@ import ExtrasPage from '../modules/apps/eCommerce/Catalog/Extra/ExtrasPage'
 import ChildSubCategoriesPage from '../modules/apps/eCommerce/Catalog/ChildSubCategory/ChildSubCategoriesPage'
 import BranchesPage from '../modules/apps/eCommerce/Catalog/Branch/BranchesPage'
 import ProductsPage from '../modules/apps/eCommerce/Catalog/Product/ProductsPage'
+import ProductForm from '../modules/apps/eCommerce/Catalog/Product/products-list/AddProduct/ProductForm'
 // import { Categories } from '../modules/apps/eCommerce/Catalog/Categories/category'
 
 
@@ -95,6 +96,7 @@ const PrivateRoutes = () => {
               <ExtrasPage/>
               <BranchesPage />
               <ProductsPage/>
+              <ProductForm/>
             </SuspensedView>
           }
         />

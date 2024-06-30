@@ -102,16 +102,35 @@ const SidebarMenuMain = () => {
       <SidebarMenuItemWithSub
         to='/apps/eCommerce'
         title='eCommerce'
-        fontIcon='bi-chat-left'
-        icon='message-text-2'
+        fontIcon='bi-basket2-fill'
+        icon='basket'
       >
+         <SidebarMenuItemWithSub
+        to='/apps/eCommerce'
+        title='Menu Management'
+        // fontIcon='bi-basket2-fill'
+        icon='menu'
+      >
+
         <SidebarMenuItem to='/apps/eCommerce/categories' title='Category' hasBullet={true} />
         <SidebarMenuItem to='/apps/eCommerce/subCategories' title='SubCategory' hasBullet={true} />
         <SidebarMenuItem to='/apps/eCommerce/childSubCategories' title='ChildSubCategory' hasBullet={true} />
         <SidebarMenuItem to='/apps/eCommerce/types' title='Types' hasBullet={true} />
         <SidebarMenuItem to='/apps/eCommerce/extras' title='Extras' hasBullet={true} />
         <SidebarMenuItem to='/apps/eCommerce/branches' title='Branches' hasBullet={true} />
-        <SidebarMenuItem to='/apps/eCommerce/products' title='Products' hasBullet={true} />
+        <SidebarMenuItemWithSub
+        to='/apps/eCommerce/products'
+        title='Products'
+        fontIcon='bi-file-ppt'
+        icon='cube-2'
+        // hasBullet={true} 
+        
+      >
+
+        <SidebarMenuItem to='/apps/eCommerce/products' title='Products List' hasBullet={true} />
+        <SidebarMenuItem to='/apps/eCommerce/productForm' title='Add Product' hasBullet={true} />
+      </SidebarMenuItemWithSub>
+      </SidebarMenuItemWithSub>
         {/* <SidebarMenuItem to='/apps/chat/group-chat' title='Group Chart' hasBullet={true} /> */}
         {/* <SidebarMenuItem to='/apps/chat/drawer-chat' title='Drawer Chart' hasBullet={true} /> */}
       </SidebarMenuItemWithSub>

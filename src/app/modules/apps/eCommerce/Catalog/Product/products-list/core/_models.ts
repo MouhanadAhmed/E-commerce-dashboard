@@ -53,6 +53,7 @@ export type Product = {
     optionGroup?:string
   }[],
   minQty?:number,
+  quantity?:number,
   dimensions?:string,
   rewardPoint?:string,
   sold?:number,

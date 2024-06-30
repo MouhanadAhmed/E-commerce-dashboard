@@ -11,10 +11,13 @@ export function MenuInner() {
       {/* <MenuItem title='Layout Builder' to='/builder' /> */}
       <MenuInnerWithSub
         isMega={true}
-        title='Catalog'
+        title='Menu Management'
         to='/mega-menu'
         menuPlacement='bottom-start'
-        menuTrigger='click'
+        // menuTrigger='click'
+        hasArrow={true}
+        // menuPlacement='right-start'
+        menuTrigger={`{default:'click', lg: 'hover'}`}
       >
       <MenuItem title='Category' to='/apps/eCommerce/categories' />
       <MenuItem title='SubCategory' to='/apps/eCommerce/subCategories' />
@@ -23,6 +26,7 @@ export function MenuInner() {
       <MenuItem title='Extra' to='/apps/eCommerce/extras' />
       <MenuItem title='Branch' to='/apps/eCommerce/branches' />
       <MenuItem title='Product' to='/apps/eCommerce/products' />
+      <MenuItem title='ProductForm' to='/apps/eCommerce/productForm' />
 
       </MenuInnerWithSub>
       {/* <MenuInnerWithSub
