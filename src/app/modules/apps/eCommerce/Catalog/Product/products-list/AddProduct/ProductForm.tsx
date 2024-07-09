@@ -601,7 +601,7 @@ values.childSubCategory = values?.childSubCategory?.map((childSubCategory) => ({
               name='available'
               autoComplete='off'
               type="checkbox"
-              defaultChecked={productForEdit.available}
+              defaultChecked={productForEdit?.available}
               // defaultChecked={productForEdit !== undefined?productForEdit.available:false}
             //   disabled={formik.isSubmitting || isProductLoading}
                 // {/* <option value="true">Yes</option>
@@ -1072,7 +1072,7 @@ values.childSubCategory = values?.childSubCategory?.map((childSubCategory) => ({
               name='showWeight'
               autoComplete='off'
               type="checkbox"
-              defaultChecked={productForEdit.showWeight}
+              defaultChecked={productForEdit?.showWeight}
             //   disabled={formik.isSubmitting || isProductLoading}
                 // {/* <option value="true">Yes</option>
                 // <option value="false">No</option> */}
