@@ -9,7 +9,7 @@ const SUB_CATEGORY_URL = `${API_URL}/subCategory`;
 const GET_SUB_CATEGORIES_URL = `${API_URL}/subCategory?deleted=false`;
 const GET_ARCHIVED_SUB_CATEGORIES_URL = `${API_URL}/subCategory?deleted=true`;
 let baseUrl ="";
-console.log("initialQueryRequest.state",initialQueryRequest.state)
+// console.log("initialQueryRequest.state",initialQueryRequest.state)
 if (initialQueryRequest.state && typeof initialQueryRequest.state === 'object') {
   const queryString = Object.entries(initialQueryRequest.state)
   .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value as string)}`)
@@ -32,7 +32,7 @@ const getArchivedSubCategories = (query?:string): Promise<SubCategoriesQueryResp
   return axios
     .get(`${query != undefined?baseUrl:GET_ARCHIVED_SUB_CATEGORIES_URL}`)
     .then(((response) => {
-      console.log("_requests => subCategory",response.data.data)
+      // console.log("_requests => subCategory",response.data.data)
       return response.data}));
 };
 

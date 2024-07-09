@@ -9,7 +9,7 @@ const PRODUCT_URL = `${API_URL}/product`;
 const GET_PRODUCTS_URL = `${API_URL}/product?deleted=false`;
 const GET_ARCHIVED_PRODUCTS_URL = `${API_URL}/product?deleted=true`;
 let baseUrl ="";
-console.log("initialQueryRequest.state",initialQueryRequest.state)
+// console.log("initialQueryRequest.state",initialQueryRequest.state)
 if (initialQueryRequest.state && typeof initialQueryRequest.state === 'object') {
   const queryString = Object.entries(initialQueryRequest.state)
   .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value as string)}`)
@@ -17,7 +17,7 @@ if (initialQueryRequest.state && typeof initialQueryRequest.state === 'object') 
   baseUrl=GET_PRODUCTS_URL+'&'+queryString
 }
 const getProducts = (query?:string): Promise<ProductsQueryResponse> => {
-  console.log(query);
+  // console.log(query);
   baseUrl=GET_PRODUCTS_URL+'&'+query
   return axios
     .get(`${query != undefined?baseUrl:GET_PRODUCTS_URL}`)
@@ -31,15 +31,16 @@ const getArchivedProducts = (query?:string): Promise<ProductsQueryResponse> => {
   return axios
     .get(`${query != undefined?baseUrl:GET_ARCHIVED_PRODUCTS_URL}`)
     .then(((response) => {
-      console.log("_requests => Product",response.data.data)
+      // console.log("_requests => Product",response.data.data)
       return response.data}));
 };
 
-const getProductById = (id: ID): Promise<Product | undefined> => {
-  return axios
-    .get(`${PRODUCT_URL}/${id}`)
-    .then((response: AxiosResponse<Response<Product>>) => response.data)
-    .then((response: Response<Product>) => response.data);
+const getProductById = async (id: ID) => {
+  const response = await axios
+    .get(`${PRODUCT_URL}/${id}`);
+  const response_1 = response.data;
+  console.log('res',response)
+  return response_1.Product;
 };
 
 const createProduct = (Category: Product): Promise<Product | undefined> => {

@@ -9,7 +9,7 @@ const CHILD_SUB_CATEGORY_URL = `${API_URL}/childSubCategory`;
 const GET_CHILD_SUB_CATEGORIES_URL = `${API_URL}/childSubCategory?deleted=false`;
 const GET_CHILD_ARCHIVED_SUB_CATEGORIES_URL = `${API_URL}/childSubCategory?deleted=true`;
 let baseUrl ="";
-console.log("initialQueryRequest.state",initialQueryRequest.state)
+// console.log("initialQueryRequest.state",initialQueryRequest.state)
 if (initialQueryRequest.state && typeof initialQueryRequest.state === 'object') {
   const queryString = Object.entries(initialQueryRequest.state)
   .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value as string)}`)
@@ -31,7 +31,7 @@ const getArchivedChildSubCategories = (query?:string): Promise<ChildSubCategorie
   return axios
     .get(`${query != undefined?baseUrl:GET_CHILD_ARCHIVED_SUB_CATEGORIES_URL}`)
     .then(((response) => {
-      console.log("_requests => subCategory",response.data.data)
+      // console.log("_requests => subCategory",response.data.data)
       return response.data}));
 };
 

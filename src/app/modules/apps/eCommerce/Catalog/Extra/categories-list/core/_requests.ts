@@ -17,7 +17,7 @@ if (initialQueryRequest.state && typeof initialQueryRequest.state === 'object') 
   baseUrl=GET_EXTRAS_URL+'&'+queryString
 }
 const getExtras = (query?:string): Promise<ExtrasQueryResponse> => {
-  console.log(query);
+  // console.log(query);
   baseUrl=GET_EXTRAS_URL+'&'+query
   return axios
     .get(`${query !== undefined?baseUrl:GET_EXTRAS_URL}`)

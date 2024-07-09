@@ -10,7 +10,7 @@ const productsBreadcrumbs: Array<PageLink> = [
     isActive: false,
   },
   {
-    title: '',
+    title: 'Products list',
     path: '',
     isSeparator: true,
     isActive: false,

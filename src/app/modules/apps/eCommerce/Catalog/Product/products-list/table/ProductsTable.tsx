@@ -26,6 +26,8 @@ import { useMutation,useQuery,useQueryClient } from 'react-query';
 import { QUERIES } from '../../../../../../../../_metronic/helpers';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import SettingsIcon from '@mui/icons-material/Settings';
 import * as Yup from 'yup'
 import { Modal } from 'react-bootstrap'
 import {useListView} from '../core/ListViewProvider'
@@ -39,6 +41,7 @@ import { getArchivedSubCategories, getSubCategories } from '../../../SubCategory
 import { getArchivedChildSubCategories, getChildSubCategories } from '../../../ChildSubCategory/ChildSubcategories-list/core/_requests';
 import { getArchivedExtras, getExtras } from '../../../Extra/categories-list/core/_requests';
 import { getArchivedTypes, getTypes } from '../../../Type/categories-list/core/_requests';
+import { Link } from 'react-router-dom';
 
 const ProductsTable = () => {
 
@@ -155,7 +158,7 @@ const ProductsTable = () => {
   const memoizedExtras = useMemo(() => extras.map(extra => ({ value: extra._id, label: extra.name })), [extras]);
   const memoizedTypes = useMemo(() => types.map(type => ({ value: type._id, label: type.name })), [types]);
 
-
+  const parser = new DOMParser();
   const columns = useMemo<MRT_ColumnDef<Product>[]>(
     //column definitions...
     () => [
@@ -178,6 +181,13 @@ const ProductsTable = () => {
         accessorKey: 'description',
         header: 'Description',
         size: 100, 
+        Cell: ({cell}) => {
+          const tempElement = document.createElement('div');
+tempElement.innerHTML = cell.getValue();
+const innerText = tempElement.textContent || tempElement.innerText;
+        console.log('doc',innerText.trim())
+        return <span>{innerText.trim()}</span> 
+        }
       },
       {
         accessorKey: 'order',
@@ -1084,16 +1094,22 @@ const ProductsTable = () => {
             <DeleteIcon />
           </IconButton>
         </Tooltip>
-        <Tooltip title="Arrange products">
-          <IconButton color="success" 
+        <Tooltip title="Edit product Forum">
+        <Link to={`/apps/eCommerce/productForm/${row.original._id}`}>
+        
+          <IconButton color="info" 
           onClick={() =>{
-            setCategoriesDelete(row.original);
-            handleArrangeProductsClick(); 
+            console.log('row.original',row.original)
+            
+            // setCategoriesDelete(row.original);
+            // handleArrangeProductsClick(); 
             // table.toggleAllRowsSelected(false) 
           }}
           >
-            <i className="fa-brands fa-2xl text-primary fa-product-hunt"></i>
+            {/* <i className="fa-brands fa-2xl text-primary fa-product-hunt"></i> */}
+          <SettingsIcon/>
           </IconButton>
+        </Link>
         </Tooltip>
         <Tooltip title="Arrange SubCategories">
           <IconButton color="warning" 

@@ -1,13 +1,13 @@
 import blankImage from '../../../../../../../../_metronic/assets/images/blank-image.svg'
-import {FC, useEffect, useMemo, useState} from 'react'
+import {FC, useEffect, useMemo, useRef, useState} from 'react';
 import * as Yup from 'yup'
 import {useFormik} from 'formik'
 import clsx from 'clsx'
 import {useListView} from '../core/ListViewProvider'
 import {UsersListLoading} from '../components/loading/UsersListLoading'
 import {useQueryResponse} from '../core/QueryResponseProvider'
-import { Product  } from '../core/_models'
-import { createProduct, updateProduct } from '../core/_requests'
+import { Product,initialProduct  } from '../core/_models'
+import { createProduct, getProductById, updateProduct } from '../core/_requests'
 import { isNotEmpty, toAbsoluteUrl } from '../../../../../../../../_metronic/helpers'
 import { useQueryResponseData as branchesData } from '../../../Branch/branches-list/core/QueryResponseProvider';
 import { useQueryResponseData as categoriesData } from '../../../Category/categories-list/core/QueryResponseProvider';
@@ -22,12 +22,87 @@ import { getArchivedChildSubCategories, getChildSubCategories } from '../../../C
 import { getArchivedExtras, getExtras } from '../../../Extra/categories-list/core/_requests';
 import { getArchivedTypes, getTypes } from '../../../Type/categories-list/core/_requests';
 import Select from 'react-select'
-
+import BranchesForm from './branchesForm';
+import DescTableForm from './DescTableForm'
+import ReactQuill, { Quill } from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import { useParams } from 'react-router-dom';
 type Props = {
-    isProductLoading: boolean
-    product: Product
+    // isProductLoading: boolean
+    product?: Product
   }
 
+  const CustomToolbar = () => (
+    <div id="toolbar">
+      <select className="ql-header" defaultValue="" onChange={e => e.persist()}>
+        <option value="1"></option>
+        <option value="2"></option>
+        <option value="3"></option>
+        <option value="4"></option>
+        <option value="5"></option>
+        <option value="6"></option>
+        <option value=""></option>
+      </select>
+      <select className="ql-font" defaultValue="" onChange={e => e.persist()}>
+        <option value="serif"></option>
+        <option value="monospace"></option>
+        <option value=""></option>
+      </select>
+      <select className="ql-list" defaultValue="" onChange={e => e.persist()}>
+        <option value="ordered"></option>
+        <option value="bullet"></option>
+      </select>
+      <button className="ql-bold"></button>
+      <button className="ql-italic"></button>
+      <button className="ql-underline"></button>
+      <select className="ql-color">
+        <option value="#e60000" selected></option>
+        <option value="#000000"></option>
+        <option value="#e60000"></option>
+        <option value="#ff9900"></option>
+        <option value="#ffff00"></option>
+        <option value="#008a00"></option>
+        <option value="#0066cc"></option>
+        <option value="#9933ff"></option>
+        <option value="#ffffff"></option>
+      </select>
+      <select className="ql-background" onChange={e => e.persist()}>
+        <option value="#000000"></option>
+        <option value="#e60000"></option>
+        <option value="#ff9900"></option>
+        <option value="#ffff00"></option>
+        <option value="#008a00"></option>
+        <option value="#0066cc"></option>
+        <option value="#9933ff"></option>
+        <option value="#ffffff"></option>
+      </select>
+      <button className="ql-link"></button>
+      <button className="ql-image"></button>
+      <button className="ql-clean"></button>
+    </div>
+  );
+
+  const customColors = [
+    '#e60000', '#000000', '#ff9900', '#ffff00', '#008a00',
+    '#0066cc', '#9933ff', '#ffffff', '#facccc', '#ffebcc',
+    '#ffffcc', '#cce8cc', '#cce0f5', '#ebd6ff', '#bbbbbb',
+    '#f06666', '#ffc266', '#ffff66', '#66b966', '#66a3e0',
+    '#c285ff', '#888888', '#a10000', '#b26b00', '#b2b200',
+    '#006100', '#0047b2', '#6b24b2', '#444444', '#5c0000',
+    '#663d00', '#666600', '#003700', '#002966', '#3d1466'
+  ];
+  const modules = {
+    toolbar: [
+      [{ 'header': [1, 2, 3, 4, 5, 6, false] }], // Add all header options
+    //   [{ 'font': [] }],
+      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+      ['bold', 'italic', 'underline'],
+      [{ 'color': customColors }, { 'background': [] }],
+      ['link', 'image'],
+      ['clean']
+    ],
+  };
+  
 // Define the nested schemas first
 const category = Yup.object().shape({
     category: Yup.string().matches(/^[0-9a-fA-F]{24}$/, 'Must be a valid hex string of length 24').optional(),
@@ -54,6 +129,20 @@ const category = Yup.object().shape({
     order: Yup.number().min(1).optional(),
     sold: Yup.number().min(1).optional(),
   });
+
+   type Branch = {
+    branch:string,
+    price?:string,
+    available?: boolean,
+    stock?: string,
+    priceAfterDiscount?: string,
+    priceAfterExpiresAt?: string,
+    order?: string,
+    sold?: string,
+    _id:string,
+    name?:string
+  }
+
   
   const extras = Yup.object().shape({
     extra: Yup.string().matches(/^[0-9a-fA-F]{24}$/, 'Must be a valid hex string of length 24').optional(),
@@ -79,8 +168,8 @@ const category = Yup.object().shape({
   // main schema
   const editProductSchema = Yup.object().shape({
     name: Yup.string().min(2).max(100).required('Name is required'),
-    description: Yup.string().min(10).optional(),
-    shortDesc: Yup.string().min(10).optional(),
+    description: Yup.string().optional(),
+    shortDesc: Yup.string().optional(),
     metaTags: Yup.array().of(Yup.string()).transform((value, originalValue) => (typeof originalValue === 'string' ? [originalValue] : originalValue)).optional(),
     category: Yup.array().of(category).transform((value, originalValue) => (Array.isArray(originalValue) ? originalValue : [originalValue])).optional(),
     subCategory: Yup.array().of(subCategory).transform((value, originalValue) => (Array.isArray(originalValue) ? originalValue : [originalValue])).optional(),
@@ -107,13 +196,18 @@ const category = Yup.object().shape({
     deleted: Yup.boolean().optional(),
     order: Yup.number().min(0).optional(),
     quantity: Yup.number().min(0).optional(),
-    ratingAverage: Yup.number().min(1).optional(),
-    ratingCount: Yup.number().min(0).optional(),
+    _id:Yup.string().optional(),
+    // ratingAverage: Yup.number().min(1).optional(),
+    // ratingCount: Yup.number().min(0).optional(),
   });
 
 
-const ProductForm: FC<Props>= ({product, isProductLoading}) => {
-
+const ProductForm: FC<Props>= ({product}) => {
+    const{id}= useParams();
+    console.log('id',id)
+    const descTableRef=useRef();
+    const [content, setContent] = useState('');
+  const quillRef = useRef(null);
     const {active : activeBranches,archived : archivedBranches} = branchesData();
     const {active : activeCategories,archived : archivedCategories} = categoriesData();
     const {active : activeSubCategories,archived : archivedSubCategories} = subcategoriesData();
@@ -136,14 +230,76 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
     const [editType, setEditType]=useState();
     const [book, setBook]=useState();
     const [bookAt, setBookAt]=useState();
+    const [updatedBranches, setUpdatedBranches]=useState();
+    // const [numberOfItems,setNumberOfItmes] =useState(0);
+    const [activeTab, setActiveTab] = useState('general');
+    const [items, setItems] = useState([]);
     
-    const [productForEdit] = useState<Product>({
-        ...product,
-        // available: category.available || true,
-        // name: category.name || "",
-      })
+    const [productForEdit,setProductForEdit] = useState()
+
+    const handleChange = (value) => {
+        setContent(value);
+      };
+    // useEffect(() => {
+    //     // Update the items array whenever numberOfItems changes
+    //     setItems(Array.from({ length: numberOfItems }, (_, index) => ({
+    //       name: '',
+    //       value: '',
+    //       order: ''
+    //     })));
+    //   }, [numberOfItems]);
+    // const handleInputChange = (index, field, value) => {
+    //     const newItems = items.map((item, i) => 
+    //       i === index ? { ...item, [field]: value } : item
+    //     );
+    //     setItems(newItems);
+    //   };
     
+    //   const handleDelete = (index) => {
+    //     const newItems = items.filter((_, i) => i !== index);
+    //     setItems(newItems);
+    //   };
+    
+    //   const handleSubmit = () => {
+    //     console.log(items);
+    //     // Do something with the items array
+    //   };
+
+    // useEffect(() => {
+    //     // setNewBranches(initialBranches);
+    //     // console.log('useEffect product',updatedBranches)
+    // }, [setUpdatedBranches,updatedBranches]);
+
+      const handleTabClick = (tab:string) => {
+        setActiveTab(tab);
+      };
+    
+      useEffect(()=>{
+        const fetchProduct = async()=> {
+
+            try {
+                console.log("id",id)
+                const data = await getProductById(id);
+                console.log('data',data)
+                setProductForEdit(data);
+                formik.setValues(data)
+                // formik.setInitialValue(data)
+                console.log(formik.initialValues)
+            } catch (error) {
+                console.error('Error fetching product', error);
+            }
+        }
+        if(id !== 'new') {
+            fetchProduct()
+            console.log('product',productForEdit)
+
+        }else{
+            setProductForEdit(initialProduct)
+        }
+      },[id,setProductForEdit])
+
       useEffect(() => {
+
         const fetchBranches = async () => {
           try {
             const resActive = await getBranches();
@@ -214,32 +370,145 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
       const memoizedExtras = useMemo(() => extras.map(extra => ({ value: extra._id, label: extra.name })), [extras]);
       const memoizedTypes = useMemo(() => types.map(type => ({ value: type._id, label: type.name })), [types]);
 
-      const formik = useFormik({
-        initialValues: productForEdit,
+ 
+      const initialBranches = memoizedBranches.map((branch,index)=>{
+        return {
+            key: index,
+            branch: branch.value,
+            price:"",
+            available: false,
+            stock: "",
+            priceAfterDiscount: '',
+            priceAfterExpiresAt: '',
+            order: '',
+            sold: '',
+            _id:index.toLocaleString(),
+            name:branch.label,
+        }
+      })
+      initialProduct.branch=initialBranches
+
+      const keysToRemove = ["key", "name", "_id"];
+    //   setProductForEdit()
+    // const [updatedBranchees,setUpdatedBranchees] = useState(...initialBranches)
+    const formik = useFormik({
+      enableReinitialize:true,
+        initialValues: {name: productForEdit ? productForEdit.name : initialProduct.name,
+          ...(productForEdit && productForEdit._id ? { _id: productForEdit._id } : {}),
+          ...(productForEdit && productForEdit.slug ? { slug: productForEdit.slug } : {}),
+          ...(productForEdit && productForEdit.description ? { description: productForEdit.description } : {}),
+          ...(productForEdit && productForEdit.shortDesc ? { shortDesc: productForEdit.shortDesc } : {}),
+          ...(productForEdit && productForEdit.metaTags ? { metaTags: productForEdit.metaTags } : {}),
+          ...(productForEdit && productForEdit.price ? { price: productForEdit.price } : {}),
+          ...(productForEdit && productForEdit.showWeight ? { showWeight: productForEdit.showWeight } : {}),
+          ...(productForEdit && productForEdit.weight ? { weight: productForEdit.weight } : {}),
+          ...(productForEdit && productForEdit.dimensions ? { dimensions: productForEdit.dimensions } : {}),
+          ...(productForEdit && productForEdit.quantity ? { quantity: productForEdit.quantity } : {}),
+          ...(productForEdit && productForEdit.minQty ? { minQty: productForEdit.minQty } : {}),
+          ...(productForEdit && productForEdit.stock ? { stock: productForEdit.stock } : {}),
+          ...(productForEdit && productForEdit.sold ? { sold: productForEdit.sold } : {}),
+          ...(productForEdit && productForEdit.book ? { book: productForEdit.book } : {}),
+          ...(productForEdit && productForEdit.extras ? { extras: productForEdit?.extras?.map((option)=>({ value: option.extra._id, label: option.extra.name }) ) } : []),
+          ...(productForEdit && productForEdit.types ? { types: productForEdit?.types?.map((option)=>({ value: option._id, label: option.name }) ) } : []),
+          ...(productForEdit && productForEdit.metaTags ? { metaTags: productForEdit.metaTags } : []),
+          ...(productForEdit && productForEdit.descTableName ? { descTableName: productForEdit.descTableName } : {}),
+          ...(productForEdit && productForEdit.available ? { available: productForEdit.available } : {}),
+          ...(productForEdit && productForEdit.deleted ? { deleted: productForEdit.deleted } : {}),
+          ...(productForEdit && productForEdit.order ? { order: productForEdit.order } : {}),
+          ...(productForEdit && productForEdit.category ? { category: productForEdit?.category?.map((option)=>({ value: option.category._id, label: option.category.name }) ) } : []),
+          ...(productForEdit && productForEdit.subCategory ? { subCategory: productForEdit?.subCategory?.map((option)=>({ value: option.subCategory._id, label: option.subCategory.name }) ) } : []),
+          ...(productForEdit && productForEdit.childSubCategory ? { childSubCategory: productForEdit?.childSubCategory?.map((option)=>({ value: option.childSubCategory._id, label: option.childSubCategory.name }) ) } : []),
+        },
         validationSchema: editProductSchema,
         onSubmit: async (values, {setSubmitting}) => {
+          console.log('values',values)
+            // e.stopPropagation();
+            // e.preventDefault();
           setSubmitting(true)
           try {
+            if(updatedBranches !== undefined) {
+                const newArray = updatedBranches.map(obj => {
+                    const newObj = { ...obj };
+                    keysToRemove.forEach(key => delete newObj[key]);
+                    return newObj;
+                  });
+                values.branch =newArray
+            }else {
+                const newArray = initialBranches.map(obj => {
+                    const newObj = { ...obj };
+                    keysToRemove.forEach(key => delete newObj[key]);
+                    return newObj;
+                  });
+                values.branch =newArray;
+            }
+            values.description=content;
+            items.length != 0 ? values.descTable=items:"";
+            values.types=values?.types?.map((type)=>type.value);
+            values.extras=values?.extras?.map((extra)=>({extra:extra.value}));
+            values.category = values?.category?.map((item) => ({ category: item.value }));
+values.subCategory = values?.subCategory?.map((subCategory) => ({ subCategory: subCategory.value }));
+values.childSubCategory = values?.childSubCategory?.map((childSubCategory) => ({ childSubCategory: childSubCategory.value }));
+
+            console.log('values',values)
             if (isNotEmpty(values._id)) {
               await updateProduct(values?._id,values)
             } else {
-              await createProduct(values)
+              // await createProduct(values)
             }
           } catch (ex) {
             console.error(ex)
           } finally {
-            setSubmitting(true)
+            // setSubmitting(true)
             // cancel(true)
           }
         },
       })
 
+      if(id !== 'new' && productForEdit == undefined){
+
+        return <div>Loading...</div>;
+        
+      }
   return (
     <>
-          <form id='kt_modal_add_product_form' className='form ' onSubmit={formik.handleSubmit} noValidate>
+          <form id='kt_modal_add_product_form' className='form ' onSubmit={ formik.handleSubmit} noValidate>
         {/* begin::Scroll */}
         <div className                = "container p-8">
-        <h3 className                 = 'fw-bolder p-4'>Add Product</h3>
+            <div className=" d-flex justify-content-between align-items-center">
+
+        <h3 className                 = ' fw-bolder p-4'>Add Product</h3>
+              {/* begin::Actions */}
+              <div className='text-center '>
+          <button
+            type='reset'
+            // onClick={}
+            className='btn btn-light me-3'
+            data-kt-users-modal-action='cancel'
+            disabled={formik.isSubmitting }
+          >
+            Discard
+          </button>
+
+          <button
+            type='submit'
+            className='btn btn-primary'
+            data-kt-users-modal-action='submit'
+            disabled={
+              // formik.isSubmitting ||
+                !formik.isValid || !formik.touched}
+          >
+            <span className='indicator-label'>Submit</span>
+            {(formik.isSubmitting ) && (
+              <span className='indicator-progress'>
+                Please wait...{' '}
+                <span className='spinner-border spinner-border-sm align-middle ms-2'></span>
+              </span>
+            )}
+          </button>
+        </div>
+        {/* end::Actions */}
+
+            </div>
         <div className                = "row">
           <div className="col-md-3">
 
@@ -251,20 +520,20 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
 
             {/* begin::Image input */}
             <div
-              className='image-input image-input-outline ms-2'
+              className='image-input image-input-outline  '
               data-kt-image-input='true'
               style={{backgroundImage: `url('${blankImage}')`}}
             >
               {/* begin::Preview existing imgCover */}
               <div
-                className='image-input-wrapper w-125px h-125px ms-2'
+                className='image-input-wrapper  ms-2 '
                 style={{backgroundImage: `url('${blankImage}')`}}
               ></div>
               {/* end::Preview existing imgCover */}
 
               {/* begin::Label */}
               <label
-              className='btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow'
+              className='btn btn-icon btn-circle btn-active-color-primary w-25 h-25 bg-body shadow'
               data-kt-image-input-action='change'
               data-bs-toggle='tooltip'
               title='Change imgCover'
@@ -278,7 +547,7 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
 
               {/* begin::Cancel */}
               <span
-              className='btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow'
+              className='btn btn-icon btn-circle btn-active-color-primary w-25 h-25 bg-body shadow'
               data-kt-image-input-action='cancel'
               data-bs-toggle='tooltip'
               title='Cancel imgCover'
@@ -289,7 +558,7 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
 
               {/* begin::Remove */}
               <span
-              className='btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow'
+              className='btn btn-icon btn-circle btn-active-color-primary w-25 h-25 bg-body shadow'
               data-kt-image-input-action='remove'
               data-bs-toggle='tooltip'
               title='Remove imgCover'
@@ -321,6 +590,7 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
             {/* begin::Input */}
             <input 
               {...formik.getFieldProps('available')}
+            // value={formik.initialValues?.available}
               className={clsx(
                 ' form-check-input mb-3 mb-lg-0 ms-2 border border-2',
                 {'is-invalid': formik.touched.available && formik.errors.available},
@@ -331,7 +601,8 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
               name='available'
               autoComplete='off'
               type="checkbox"
-              defaultChecked={false}
+              defaultChecked={productForEdit.available}
+              // defaultChecked={productForEdit !== undefined?productForEdit.available:false}
             //   disabled={formik.isSubmitting || isProductLoading}
                 // {/* <option value="true">Yes</option>
                 // <option value="false">No</option> */}
@@ -365,7 +636,7 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
               name='deleted'
               autoComplete='off'
               type="checkbox"
-              defaultChecked={false}
+              defaultChecked={productForEdit !== undefined?productForEdit.deleted:false}
             //   disabled={formik.isSubmitting || isProductLoading}
                 // {/* <option value="true">Yes</option>
                 // <option value="false">No</option> */}
@@ -405,7 +676,8 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
               type='text'
               name='order'
               autoComplete='off'
-              disabled={formik.isSubmitting || isProductLoading}
+              disabled={formik.isSubmitting }
+              // defaultValue={productForEdit !== undefined? productForEdit.order:""}
             />
             {/* end::Input */}
             {formik.touched.order && formik.errors.order && (
@@ -443,6 +715,8 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
                setEditCategory(updatedCategories) 
                // table.setEditingCell(row.id, 'branch', updatedBranches);
               }}
+              // defaultInputValue={productForEdit.category?productForEdit.category.map((option) => option.category.name):''}
+              // defaultValue={productForEdit !== undefined?productForEdit?.category?.map((option)=>({ value: option.category._id, label: option.category.name }) ): '' }
             />
             {/* end::Input */}
             {formik.touched.category && formik.errors.category && (
@@ -479,6 +753,8 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
                setEditSubCategory(updatedSubCategories) 
                // table.setEditingCell(row.id, 'branch', updatedBranches);
               }}
+              // defaultValue={productForEdit !== undefined?productForEdit?.subCategory?.map((option)=>({ value: option.subCategory._id, label: option.subCategory.name }) ): '' }
+
             />
             {/* end::Input */}
             {formik.touched.subCategory && formik.errors.subCategory && (
@@ -516,6 +792,8 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
                setEditChildSubCategory(updatedChildSubCategories) 
                // table.setEditingCell(row.id, 'branch', updatedBranches);
               }}
+              defaultValue={productForEdit !== undefined?productForEdit?.childSubCategory?.map((option)=>({ value: option.childSubCategory._id, label: option.childSubCategory.name }) ): '' }
+
             />
             {/* end::Input */}
             {formik.touched.childSubCategory && formik.errors.childSubCategory && (
@@ -539,12 +817,55 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
                 </li>
             </ul> */}
 
-            <p className="d-inline-flex gap-1">
+            {/* <p className="d-inline-flex gap-1">
             <button className="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target=".multi-collapse" aria-expanded="false" aria-controls="multiCollapseGeneral multiCollapseAdvanced">General</button>
             <button className="btn btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target=".multi-collapse" aria-expanded="false" aria-controls="multiCollapseGeneral multiCollapseAdvanced">Advanced</button>
-            </p>
-
-            <div className="collapse show multi-collapse" id="multiCollapseGeneral">
+            <button className="btn btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target=".multi-collapse" aria-expanded="false" aria-controls="multiCollapseGeneral multiCollapseAdvanced">Branches</button>
+            <button className="btn btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target=".multi-collapse" aria-expanded="false" aria-controls="multiCollapseGeneral multiCollapseAdvanced">Description Table</button>
+            </p> */}
+         {/* begin:: Tabs group */}
+        <ul className="nav nav-tabs" id="myTab" role="tablist">
+        <li className="nav-item" role="presentation">
+          <button
+          type="button"
+            className={`nav-link ${activeTab === 'general' ? 'active' : ''}`}
+            onClick={() => handleTabClick('general')}
+          >
+            General
+          </button>
+        </li>
+        <li className="nav-item" role="presentation">
+          <button
+          type="button"
+            className={`nav-link ${activeTab === 'advanced' ? 'active' : ''}`}
+            onClick={() => handleTabClick('advanced')}
+          >
+            Advanced
+          </button>
+        </li>
+        <li className="nav-item" role="presentation">
+          <button
+          type="button"
+            className={`nav-link ${activeTab === 'branches' ? 'active' : ''}`}
+            onClick={() => handleTabClick('branches')}
+          >
+            Branches
+          </button>
+        </li>
+        <li className="nav-item" role="presentation">
+          <button
+          type="button"
+            className={`nav-link ${activeTab === 'descTable' ? 'active' : ''}`}
+            onClick={() => handleTabClick('descTable')}
+          >
+            Description Table
+          </button>
+        </li>
+      </ul>
+         {/* end:: Tabs group */}
+            
+             {/* begin:: General group */}
+            <div className={`collapse ${activeTab === 'general' ? 'active show' : ''}`} id="general">
 
 
             {/* begin:: General group */}
@@ -564,6 +885,7 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
             <input
               placeholder='Product Name'
               {...formik.getFieldProps('name')}
+            // value={formik.values?.name}
               type='text'
               name='name'
               className={clsx(
@@ -574,7 +896,8 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
                 }
               )}
               autoComplete='off'
-              disabled={formik.isSubmitting || isProductLoading}
+              disabled={formik.isSubmitting }
+              // defaultValue={productForEdit !== undefined?productForEdit.name: initialProduct.name }
             />
             {formik.touched.name && formik.errors.name && (
               <div className='fv-plugins-message-container'>
@@ -595,7 +918,9 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
             {/* end::Label */}
 
             {/* begin::Input */}
-            <textarea 
+            {/* <textarea 
+            // id="summernote" 
+            // name="editordata"
               placeholder='description'
               {...formik.getFieldProps('description')}
               className={clsx(
@@ -608,14 +933,26 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
             //   type='text'
               name='description'
               autoComplete='off'
-              disabled={formik.isSubmitting || isProductLoading}
-            />
+              disabled={formik.isSubmitting }
+            /> */}
+            
             {/* end::Input */}
             {formik.touched.description && formik.errors.description && (
               <div className='fv-plugins-message-container'>
                 <span role='alert'>{formik.errors.description}</span>
               </div>
             )}
+            <ReactQuill theme="snow" 
+            modules={modules} 
+            // value={content} 
+            // defaultValue={productForEdit !== undefined?productForEdit.description: initialProduct.description }
+
+            placeholder='description'
+            name='description'
+            {...formik.getFieldProps('description')}
+            // onChange={setValue} 
+            onChange={handleChange} 
+            />
             <div className="form-text px-4">Set a description to the product for better visibility.</div>
 
             
@@ -643,7 +980,9 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
                 }
               )}
               autoComplete='off'
-              disabled={formik.isSubmitting || isProductLoading}
+              disabled={formik.isSubmitting }
+            // defaultValue={productForEdit !== undefined?productForEdit.shortDesc: initialProduct.shortDesc }
+
             />
             {formik.touched.shortDesc && formik.errors.shortDesc && (
               <div className='fv-plugins-message-container'>
@@ -684,7 +1023,9 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
               type='text'
               name='price'
               autoComplete='off'
-              disabled={formik.isSubmitting || isProductLoading}
+              disabled={formik.isSubmitting }
+            // defaultValue={productForEdit !== undefined?productForEdit.price: initialProduct.price }
+
             />
             {/* end::Input */}
             {formik.touched.price && formik.errors.price && (
@@ -731,10 +1072,12 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
               name='showWeight'
               autoComplete='off'
               type="checkbox"
-              defaultChecked={false}
+              defaultChecked={productForEdit.showWeight}
             //   disabled={formik.isSubmitting || isProductLoading}
                 // {/* <option value="true">Yes</option>
                 // <option value="false">No</option> */}
+                // defaultChecked={productForEdit !== undefined?productForEdit.showWeight: initialProduct.showWeight }
+            
             />
             {/* end::Input */}
             {formik.touched.showWeight && formik.errors.showWeight && (
@@ -767,7 +1110,9 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
               type='text'
               name='weight'
               autoComplete='off'
-              disabled={formik.isSubmitting || isProductLoading}
+              disabled={formik.isSubmitting }
+              // defaultValue={productForEdit !== undefined?productForEdit.weight: initialProduct.weight }
+
             />
             {/* end::Input */}
             {formik.touched.weight && formik.errors.weight && (
@@ -789,7 +1134,7 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
             {/* begin::Input */}
             <input
               placeholder='Dimensions'
-              {...formik.getFieldProps('weight')}
+              {...formik.getFieldProps('dimensions')}
               className={clsx(
                 'form-control form-control-solid mb-3 mb-lg-0 ms-2 border border-2',
                 {'is-invalid': formik.touched.dimensions && formik.errors.dimensions},
@@ -800,7 +1145,9 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
               type='text'
               name='dimensions'
               autoComplete='off'
-              disabled={formik.isSubmitting || isProductLoading}
+              disabled={formik.isSubmitting }
+              // defaultValue={productForEdit !== undefined?productForEdit.dimensions: initialProduct.dimensions }
+
             />
             {/* end::Input */}
             {formik.touched.dimensions && formik.errors.dimensions && (
@@ -817,45 +1164,12 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
         </div>
         {/* end:: Weight & Dimensions group */}
 
-        {/* begin:: Branch Input group */}
-        <div className="shadow-sm rounded-end rounded p-6 mb-8">
-          <div className='fv-row mb-7'>
-            {/* begin::Label */}
-            <label className=' fw-bolder fs-4   ms-3 mb-2'>Branch</label>
-            {/* end::Label */}
 
-            {/* begin::Input */}
-            <Select
-            // className='react-select-styled'
-            // classNamePrefix='react-select'
-            isMulti
-            options={memoizedBranches}
-              placeholder='Branch'
-              {...formik.getFieldProps('branch')}
-              className={clsx(
-                'form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2',
-              )}
-              name='branch'
-              onChange={(selected) => {
-                const updatedBranches = selected ? selected.map((option) => option.value  ) : [];
-              //  console.log('updatedBranches',updatedBranches)
-               setEditBranch(updatedBranches) 
-               // table.setEditingCell(row.id, 'branch', updatedBranches);
-              }}
-            />
-            {/* end::Input */}
-            {formik.touched.branch && formik.errors.branch && (
-              <div className='fv-plugins-message-container'>
-                <span role='alert'>{formik.errors.branch}</span>
-              </div>
-            )}
-          </div>
-        </div>
-        {/* end:: Branch Input group */}
             </div>
+            {/* end:: General group */}
 
           {/* begin:: Advanced group */}
-            <div className="collapse multi-collapse" id="multiCollapseAdvanced">
+            <div className={`collapse ${activeTab === 'advanced' ? 'active show' : ''}`} id="advanced">
 
           {/* begin:: Inventory group */}
           <div className        = " shadow-sm rounded-end rounded p-6 mb-8">
@@ -884,7 +1198,9 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
                 }
               )}
               autoComplete='off'
-              disabled={formik.isSubmitting || isProductLoading}
+              disabled={formik.isSubmitting }
+              // defaultValue={productForEdit !== undefined?productForEdit.quantity: initialProduct.quantity }
+
             />
             {formik.touched.quantity && formik.errors.quantity && (
               <div className='fv-plugins-message-container'>
@@ -920,7 +1236,9 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
                 }
               )}
               autoComplete='off'
-              disabled={formik.isSubmitting || isProductLoading}
+              disabled={formik.isSubmitting }
+              // defaultValue={productForEdit !== undefined?productForEdit.minQty: initialProduct.minQty }
+
             />
             {formik.touched.minQty && formik.errors.minQty && (
               <div className='fv-plugins-message-container'>
@@ -946,7 +1264,7 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
               {...formik.getFieldProps('stock')}
               type='checkbox'
               name='stock'
-              defaultChecked
+              // defaultChecked
               className={clsx(
                 'form-check-input mb-3 ms-2 mb-lg-0 border border-2',
                 {'is-invalid': formik.touched.stock && formik.errors.stock},
@@ -955,7 +1273,9 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
                 }
               )}
               autoComplete='off'
-              disabled={formik.isSubmitting || isProductLoading}
+              disabled={formik.isSubmitting }
+              // defaultChecked={productForEdit !==undefined && productForEdit.stock !== 0?true: false }
+
             />
             {formik.touched.stock && formik.errors.stock && (
               <div className='fv-plugins-message-container'>
@@ -991,7 +1311,9 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
                 }
               )}
               autoComplete='off'
-              disabled={formik.isSubmitting || isProductLoading}
+              disabled={formik.isSubmitting }
+              // defaultValue={productForEdit !== undefined?productForEdit?.stock: '' }
+
             />
             {formik.touched.stock && formik.errors.stock && (
               <div className='fv-plugins-message-container'>
@@ -1026,7 +1348,9 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
               )}
               autoComplete='off'
               readOnly
-              disabled={formik.isSubmitting || isProductLoading}
+              disabled={formik.isSubmitting }
+              // defaultValue={productForEdit !== undefined?productForEdit.sold: initialProduct.sold }
+
             />
             {formik.touched.sold && formik.errors.sold && (
               <div className='fv-plugins-message-container'>
@@ -1070,9 +1394,11 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
                 }
               )}
               autoComplete='off'
-              disabled={formik.isSubmitting || isProductLoading}
+              disabled={formik.isSubmitting }
+              // defaultValue={productForEdit !== undefined?productForEdit.book: initialProduct.book }
+
             > 
-              <option selected value="regular">Regular</option>
+              <option defaultChecked value="regular">Regular</option>
             <option value="book">Book</option>
             <option value="onlyBook">Only Book</option>
             </select>
@@ -1117,6 +1443,8 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
                setEditExtra(updatedExtras) 
                // table.setEditingCell(row.id, 'branch', updatedBranches);
               }}
+              // defaultValue={productForEdit !== undefined?productForEdit?.extras?.map((option)=>({ value: option.extra._id, label: option.extra.name }) ): '' }
+
             />
             {/* end::Input */}
             {formik.touched.extras && formik.errors.extras && (
@@ -1153,6 +1481,8 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
                setEditType(updatedTypes) 
                // table.setEditingCell(row.id, 'branch', updatedBranches);
               }}
+              defaultValue={productForEdit !== undefined?productForEdit?.types?.map((option)=>({ value: option._id, label: option.name }) ): '' }
+
             />
             {/* end::Input */}
             {formik.touched.types && formik.errors.types && (
@@ -1185,7 +1515,9 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
               type='text'
               name='metaTags'
               autoComplete='off'
-              disabled={formik.isSubmitting || isProductLoading}
+              disabled={formik.isSubmitting }
+              // defaultValue={productForEdit !== undefined?productForEdit.metaTags:initialProduct.metTags}
+   
             />
             {/* end::Input */}
             {formik.touched.metaTags && formik.errors.metaTags && (
@@ -1202,40 +1534,87 @@ const ProductForm: FC<Props>= ({product, isProductLoading}) => {
             </div>
            {/* end:: Advanced group */}
 
+             {/* begin:: branches group */}
+             <div className={`collapse ${activeTab === 'branches' ? 'active show' : ''}`} id="branches">
+             
+                {/* begin:: Branch Input group */}
+                    <div className="shadow-sm rounded-end rounded p-6 mb-8">
+                    <div className='fv-row mb-7'>
+                        {/* begin::Label */}
+                        <label className=' fw-bolder fs-4   ms-3 mb-2'>Branches</label>
+                        {/* end::Label */}
+
+
+                        <BranchesForm setUpdatedBranches={setUpdatedBranches} branchees={updatedBranches == undefined ?(productForEdit !== undefined?productForEdit.branch:initialBranches):updatedBranches}/>
+                    </div>
+                    </div>
+                {/* end:: Branch Input group */}
+             </div>
+             {/* end:: branches group */}
+
+             {/* begin:: descTable group */}
+             <div className={`collapse ${activeTab === 'descTable' ? 'active show' : ''}`} id="descTable">
+             
+                {/* begin:: Branch Input group */}
+                    <div className="shadow-sm rounded-end rounded p-6 mb-8">
+                    <div className='fv-row mb-7'>
+                        {/* begin::Label */}
+                        <label className=' fw-bolder fs-4   ms-3 mb-2'>Description Table</label>
+                        {/* end::Label */}
+
+                                  {/* begin:: Name Input group */}
+          
+          <div className='fv-row mb-7'>
+            {/* begin::Label */}
+            <label className=' fw-semibold fs-7 ps-4 mb-2'>Description Table Name</label>
+            {/* end::Label */}
+
+            {/* begin::Input */}
+            <input
+              placeholder='Description Table Name'
+              // {...formik.getFieldProps('descTableName')}
+              type='text'
+              name='descTableName'
+              className={clsx(
+                'form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2',
+                {'is-invalid': formik.touched.descTableName && formik.errors.descTableName},
+                {
+                  'is-valid': formik.touched.descTableName && !formik.errors.descTableName,
+                }
+              )}
+              autoComplete='off'
+              disabled={formik.isSubmitting }
+              defaultValue={productForEdit !== undefined?productForEdit.descTableName: '' }
+
+            />
+            {formik.touched.descTableName && formik.errors.descTableName && (
+              <div className='fv-plugins-message-container'>
+                <div className='fv-help-block'>
+                  <span role='alert'>{formik.errors.descTableName}</span>
+                </div>
+              </div>
+            )}
+            {/* end::Input */}
+            {/* <div className="form-text px-4">A product name is required and recommended to be unique.</div> */}
+          </div>
+
+
+          <DescTableForm items={productForEdit !== undefined?productForEdit.descTable: []}  setItems={setItems}   />
+          {/* end:: Name Input group */}
+                        {/* <BranchesForm setUpdatedBranches={setUpdatedBranches} branchees={updatedBranches == undefined ?initialBranches:updatedBranches}/> */}
+                    </div>
+                    </div>
+                {/* end:: Branch Input group */}
+             </div>
+             {/* end:: descTable group */}
+
         {/* end::Scroll */}
         </div>
         </div>
-        {/* begin::Actions */}
-        <div className='text-center pt-15'>
-          <button
-            type='reset'
-            // onClick={}
-            className='btn btn-light me-3'
-            data-kt-users-modal-action='cancel'
-            disabled={formik.isSubmitting || isProductLoading}
-          >
-            Discard
-          </button>
-
-          <button
-            type='submit'
-            className='btn btn-primary'
-            data-kt-users-modal-action='submit'
-            disabled={isProductLoading || formik.isSubmitting || !formik.isValid || !formik.touched}
-          >
-            <span className='indicator-label'>Submit</span>
-            {(formik.isSubmitting || isProductLoading) && (
-              <span className='indicator-progress'>
-                Please wait...{' '}
-                <span className='spinner-border spinner-border-sm align-middle ms-2'></span>
-              </span>
-            )}
-          </button>
+  
         </div>
-        </div>
-        {/* end::Actions */}
       </form>
-      {(formik.isSubmitting || isProductLoading) && <UsersListLoading />}
+      {(formik.isSubmitting ) && <UsersListLoading />}
 
     
     </>

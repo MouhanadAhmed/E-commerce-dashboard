@@ -17,7 +17,7 @@ if (initialQueryRequest.state && typeof initialQueryRequest.state === 'object') 
   baseUrl=GET_TYPES_URL+'&'+queryString
 }
 const getTypes = (query?:string): Promise<TypesQueryResponse> => {
-  console.log(query);
+  // console.log(query);
   baseUrl=GET_TYPES_URL+'&'+query
   return axios
     .get(`${query != undefined?baseUrl:GET_TYPES_URL}`)
@@ -30,7 +30,7 @@ const getArchivedTypes = (query?:string): Promise<TypesQueryResponse> => {
   return axios
     .get(`${query != undefined?baseUrl:GET_ARCHIVED_TYPES_URL}`)
     .then(((response) => {
-      console.log("_requests => archived Types",response.data.data)
+      // console.log("_requests => archived Types",response.data.data)
       return response.data}));
 };
 

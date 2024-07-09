@@ -9,7 +9,7 @@ const CATEGORY_URL = `${API_URL}/category`;
 const GET_CATEGORIES_URL = `${API_URL}/category?deleted=false`;
 const GET_ARCHIVED_CATEGORIES_URL = `${API_URL}/category?deleted=true`;
 let baseUrl ="";
-console.log("initialQueryRequest.state",initialQueryRequest.state)
+// console.log("initialQueryRequest.state",initialQueryRequest.state)
 if (initialQueryRequest.state && typeof initialQueryRequest.state === 'object') {
   const queryString = Object.entries(initialQueryRequest.state)
   .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value as string)}`)
@@ -17,7 +17,7 @@ if (initialQueryRequest.state && typeof initialQueryRequest.state === 'object') 
   baseUrl=GET_CATEGORIES_URL+'&'+queryString
 }
 const getCategories = (query?:string): Promise<CategoriesQueryResponse> => {
-  console.log(query);
+  // console.log(query);
   baseUrl=GET_CATEGORIES_URL+'&'+query
   return axios
     .get(`${query != undefined?baseUrl:GET_CATEGORIES_URL}`)
@@ -31,7 +31,7 @@ const getArchivedCategories = (query?:string): Promise<CategoriesQueryResponse> 
   return axios
     .get(`${query != undefined?baseUrl:GET_ARCHIVED_CATEGORIES_URL}`)
     .then(((response) => {
-      console.log("_requests => categories",response.data.data)
+      // console.log("_requests => categories",response.data.data)
       return response.data}));
 };
 

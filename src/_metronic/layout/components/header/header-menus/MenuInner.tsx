@@ -26,7 +26,7 @@ export function MenuInner() {
       <MenuItem title='Extra' to='/apps/eCommerce/extras' />
       <MenuItem title='Branch' to='/apps/eCommerce/branches' />
       <MenuItem title='Product' to='/apps/eCommerce/products' />
-      <MenuItem title='ProductForm' to='/apps/eCommerce/productForm' />
+      <MenuItem title='ProductForm' to='/apps/eCommerce/productForm/new' />
 
       </MenuInnerWithSub>
       {/* <MenuInnerWithSub
