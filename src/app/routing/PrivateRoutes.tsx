@@ -7,15 +7,15 @@ import {MenuTestPage} from '../pages/MenuTestPage'
 import {getCSSVariableValue} from '../../_metronic/assets/ts/_utils'
 import {WithChildren} from '../../_metronic/helpers'
 import BuilderPageWrapper from '../pages/layout-builder/BuilderPageWrapper'
-import CategoriesPage from '../modules/apps/eCommerce/Catalog/Category/CategoriesPage'
-import SubCategoriesPage from '../modules/apps/eCommerce/Catalog/SubCategory/SubCategoriesPage'
-import TypesPage from '../modules/apps/eCommerce/Catalog/Type/Type'
-import ExtrasPage from '../modules/apps/eCommerce/Catalog/Extra/ExtrasPage'
-import ChildSubCategoriesPage from '../modules/apps/eCommerce/Catalog/ChildSubCategory/ChildSubCategoriesPage'
-import BranchesPage from '../modules/apps/eCommerce/Catalog/Branch/BranchesPage'
-import ProductsPage from '../modules/apps/eCommerce/Catalog/Product/ProductsPage'
-import ProductForm from '../modules/apps/eCommerce/Catalog/Product/products-list/AddProduct/ProductForm'
-import AddProductsPage from '../modules/apps/eCommerce/Catalog/Product/products-list/AddProduct/AddProductPage'
+// import CategoriesPage from '../modules/apps/eCommerce/Catalog/Category/CategoriesPage'
+// import SubCategoriesPage from '../modules/apps/eCommerce/Catalog/SubCategory/SubCategoriesPage'
+// import TypesPage from '../modules/apps/eCommerce/Catalog/Type/Type'
+// import ExtrasPage from '../modules/apps/eCommerce/Catalog/Extra/ExtrasPage'
+// import ChildSubCategoriesPage from '../modules/apps/eCommerce/Catalog/ChildSubCategory/ChildSubCategoriesPage'
+// import BranchesPage from '../modules/apps/eCommerce/Catalog/Branch/BranchesPage'
+// import ProductsPage from '../modules/apps/eCommerce/Catalog/Product/ProductsPage'
+// import ProductForm from '../modules/apps/eCommerce/Catalog/Product/products-list/AddProduct/ProductForm'
+// import AddProductsPage from '../modules/apps/eCommerce/Catalog/Product/products-list/AddProduct/AddProductPage'
 // import { Categories } from '../modules/apps/eCommerce/Catalog/Categories/category'
 
 
@@ -26,7 +26,18 @@ const PrivateRoutes = () => {
   const WidgetsPage = lazy(() => import('../modules/widgets/WidgetsPage'))
   const ChatPage = lazy(() => import('../modules/apps/chat/ChatPage'))
   const UsersPage = lazy(() => import('../modules/apps/user-management/UsersPage'))
-
+  const AddProductsPage = lazy(()=> import('../modules/apps/eCommerce/Catalog/Product/products-list/AddProduct/AddProductPage'))
+  const ProductForm = lazy(()=> import('../modules/apps/eCommerce/Catalog/Product/products-list/AddProduct/ProductForm'))
+  const ProductsPage = lazy(()=> import('../modules/apps/eCommerce/Catalog/Product/ProductsPage'))
+  const BranchesPage = lazy(()=> import('../modules/apps/eCommerce/Catalog/Branch/BranchesPage'))
+  const ChildSubCategoriesPage = lazy(()=> import('../modules/apps/eCommerce/Catalog/ChildSubCategory/ChildSubCategoriesPage'))
+  const ExtrasPage = lazy(()=> import('../modules/apps/eCommerce/Catalog/Extra/ExtrasPage'))
+  const TypesPage = lazy(()=> import('../modules/apps/eCommerce/Catalog/Type/Type'))
+  const SubCategoriesPage = lazy(()=> import('../modules/apps/eCommerce/Catalog/SubCategory/SubCategoriesPage'))
+  const CategoriesPage = lazy(()=> import('../modules/apps/eCommerce/Catalog/Category/CategoriesPage'))
+  
+  
+  
   return (
     <Routes>
       <Route element={<MasterLayout />}>
