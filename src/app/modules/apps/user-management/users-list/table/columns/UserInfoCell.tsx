@@ -13,19 +13,19 @@ const UserInfoCell: FC<Props> = ({user}) => (
     {/* begin:: Avatar */}
     <div className='symbol symbol-circle symbol-50px overflow-hidden me-3'>
       <a href='#'>
-        {user.avatar ? (
+        {user.profilePic ? (
           <div className='symbol-label'>
-            <img src={toAbsoluteUrl(`media/${user.avatar}`)} alt={user.name} className='w-100' />
+            <img src={toAbsoluteUrl(`media/${user.profilePic}`)} alt={user.name} className='w-100' />
           </div>
         ) : (
           <div
             className={clsx(
               'symbol-label fs-3',
-              `bg-light-${user.initials?.state}`,
-              `text-${user.initials?.state}`
+              `bg-light-100`,
+              `text-danger`
             )}
           >
-            {user.initials?.label}
+            {user?.name[0]?.toUpperCase()}
           </div>
         )}
       </a>

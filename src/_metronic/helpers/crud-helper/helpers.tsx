@@ -10,9 +10,9 @@ function isNotEmpty(obj: unknown) {
   return obj !== undefined && obj !== null && obj !== ''
 }
 
-// Example: page=1&items_per_page=10&sort=id&order=desc&search=a&filter_name=a&filter_online=false
+// Example: page=1&PageCount=10&sort=id&order=desc&keyword=a&filter_name=a&filter_online=false
 function stringifyRequestQuery(state: QueryState): string {
-  const pagination = qs.stringify(state, {filter: ['page', 'items_per_page'], skipNulls: true})
+  const pagination = qs.stringify(state, {filter: ['page', 'PageCount'], skipNulls: true})
   const sort = qs.stringify(state, {filter: ['sort', 'order'], skipNulls: true})
   const search = isNotEmpty(state.keyword)
     ? qs.stringify(state, {filter: ['keyword'], skipNulls: true})
@@ -30,7 +30,7 @@ function stringifyRequestQuery(state: QueryState): string {
   return [pagination, sort, search, filter]
     .filter((f) => f)
     .join('&')
-    .toLowerCase()
+    
 }
 
 function parseRequestQuery(query: string): QueryState {

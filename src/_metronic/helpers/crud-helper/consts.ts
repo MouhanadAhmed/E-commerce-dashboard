@@ -14,6 +14,10 @@ const QUERIES = {
   ARCHIVED_EXTRAS_LIST:'archived-extras-list',
   PRODUCTS_LIST:'products-list',
   ARCHIVED_PRODUCTS_LIST:'archived-products-list',
+  PERMISSIONS_LIST:'permissions-list',
+  ARCHIVED_PERMISSIONS_LIST:'archived-permissions-list',
+  ROLES_LIST:'roles-list',
+  ARCHIVED_ROLES_LIST:'archived-roles-list',
 }
 
 export {QUERIES}

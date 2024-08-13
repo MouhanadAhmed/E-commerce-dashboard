@@ -103,7 +103,12 @@ const updateSubCategoryOrderInCategory = (categoryId: string,productId: string,o
   .put(`${API_URL}/subCategory/category/${productId}`,{order:order,category:categoryId})
 }
 
+const duplicateProduct = (productId:string, number:number): Promise<[]> =>{
+  return axios 
+  .post(`${API_URL}/product/duplicate`,{id:productId,number:number})
+}
 export {
+  duplicateProduct,
   updateSubCategoryOrderInCategory,
   getAllSubCategoriesInCategory,
   updateProductOrderInCategory,

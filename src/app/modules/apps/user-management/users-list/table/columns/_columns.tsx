@@ -1,12 +1,13 @@
 import {Column} from 'react-table'
 import {UserInfoCell} from './UserInfoCell'
 import {UserLastLoginCell} from './UserLastLoginCell'
-import {UserTwoStepsCell} from './UserTwoStepsCell'
+import {UserPhoneCell, UserTwoStepsCell} from './UserPhoneCell'
 import {UserActionsCell} from './UserActionsCell'
 import {UserSelectionCell} from './UserSelectionCell'
 import {UserCustomHeader} from './UserCustomHeader'
 import {UserSelectionHeader} from './UserSelectionHeader'
 import {User} from '../../core/_models'
+import { UserCreatedAtCell } from './UserCreatedAtCell '
 
 const usersColumns: ReadonlyArray<Column<User>> = [
   {
@@ -27,21 +28,22 @@ const usersColumns: ReadonlyArray<Column<User>> = [
     Header: (props) => (
       <UserCustomHeader tableProps={props} title='Last login' className='min-w-125px' />
     ),
-    id: 'last_login',
-    Cell: ({...props}) => <UserLastLoginCell last_login={props.data[props.row.index].last_login} />,
+    id: 'lastLogin',
+    Cell: ({...props}) => <UserLastLoginCell lastLogin={props.data[props.row.index].lastLogin} />,
   },
   {
     Header: (props) => (
-      <UserCustomHeader tableProps={props} title='Two steps' className='min-w-125px' />
+      <UserCustomHeader tableProps={props} title='Phone' className='min-w-125px' />
     ),
-    id: 'two_steps',
-    Cell: ({...props}) => <UserTwoStepsCell two_steps={props.data[props.row.index].two_steps} />,
+    id: 'phone',
+    Cell: ({...props}) => <UserPhoneCell phone={props.data[props.row.index].phone} />,
   },
   {
     Header: (props) => (
       <UserCustomHeader tableProps={props} title='Joined day' className='min-w-125px' />
     ),
-    accessor: 'joined_day',
+    id: 'createdAt',
+    Cell: ({...props}) => <UserCreatedAtCell last_login={new Date(props.data[props.row.index].createdAt).toLocaleString('en-GB', {day:'numeric', month: 'long', year:'numeric'})} />,
   },
   {
     Header: (props) => (

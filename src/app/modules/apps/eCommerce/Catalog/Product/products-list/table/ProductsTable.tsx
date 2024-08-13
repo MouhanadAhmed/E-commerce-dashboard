@@ -1,5 +1,5 @@
 // export {CategoriesesTable}
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {useQueryResponseData,useQueryRefetch} from '../core/QueryResponseProvider'
 import { useQueryResponseData as branchesData } from '../../../Branch/branches-list/core/QueryResponseProvider';
 import { useQueryResponseData as categoriesData } from '../../../Category/categories-list/core/QueryResponseProvider';
@@ -20,8 +20,8 @@ import {
 } from 'material-react-table';
 // import { Divider } from '@mui/material';
 import Select from 'react-select'
-import { Box,  Button, IconButton, Tooltip } from '@mui/material';
-import { deleteProduct, deleteSelectedProducts, updateProduct, updateSelectedProducts } from '../core/_requests';
+import { Box,  Button, IconButton, Input, TextField, Tooltip } from '@mui/material';
+import { deleteProduct, deleteSelectedProducts, updateProduct, updateSelectedProducts,duplicateProduct } from '../core/_requests';
 import { useMutation,useQuery,useQueryClient } from 'react-query';
 import { QUERIES } from '../../../../../../../../_metronic/helpers';
 import EditIcon from '@mui/icons-material/Edit';
@@ -44,7 +44,7 @@ import { getArchivedTypes, getTypes } from '../../../Type/categories-list/core/_
 import { Link } from 'react-router-dom';
 
 const ProductsTable = () => {
-
+  const duplicateRef=useRef()
   const {selected, clearSelected, } = useListView()
   const queryClient = useQueryClient();
   const {setItemIdForUpdate} = useListView()
@@ -68,6 +68,7 @@ const ProductsTable = () => {
   const [showProductsModal, setShowProductsModal] = useState(false)
   const [showSubCategoriesModal, setShowSubCategoriesModal] = useState(false);
   const [CategoriesDelete,setCategoriesDelete] = useState();
+  const [productToDuplicate,setProductToDuplicate] = useState();
   const[branches,setBranches]=useState([...activeBranches,...archivedBranches]);
   const[categories,setCategories]=useState([...activeCategories,...archivedCategories]);
   const[subcategories,setSubCategories]=useState([...activeSubCategories,...archivedSubCategories]);
@@ -185,7 +186,7 @@ const ProductsTable = () => {
           const tempElement = document.createElement('div');
 tempElement.innerHTML = cell.getValue();
 const innerText = tempElement.textContent || tempElement.innerText;
-        console.log('doc',innerText.trim())
+        // console.log('doc',innerText.trim())
         return <span>{innerText.trim()}</span> 
         }
       },
@@ -389,7 +390,7 @@ const innerText = tempElement.textContent || tempElement.innerText;
             defV.push({value:subCategory?.subCategory?._id, label:subCategory?.subCategory?.name})
             
           })
-          console.log('edit',defV)
+          // console.log('edit',defV)
           
           return (
             // loading ? (
@@ -763,6 +764,17 @@ const innerText = tempElement.textContent || tempElement.innerText;
       setTrigger(true)
     },
   })
+  const duplicateItem = useMutation(() => duplicateProduct(productToDuplicate ,duplicateRef?.current?.value), {
+    // 💡 response of the mutation is passed to onSuccess
+    onSuccess: () => {
+      // ✅ update detail view directly
+      queryClient.invalidateQueries([`${QUERIES.PRODUCTS_LIST}`]);
+      queryClient.invalidateQueries([`${QUERIES.ARCHIVED_PRODUCTS_LIST}`]);
+      refetch();
+      setTrigger(true)
+      handleCloseSubCategoriesModal()
+    },
+  })
 
   const deleteSelectedItems = useMutation((ids:string[]) => deleteSelectedProducts(ids), {
     // 💡 response of the mutation is passed to onSuccess
@@ -1000,42 +1012,76 @@ const innerText = tempElement.textContent || tempElement.innerText;
              {/* <Typography color="success.main" component="span" variant="h4">
         Active List
       </Typography> */}
-        <Button
-          color="info"
+      <Tooltip title="Add product">
+        <button
+        type='button'
           onClick={openAddCategoryModal}
-          variant="contained"
+          className="rounded bg-primary rounded-circle p-0 border-0"
         >
-          Add Product
-        </Button>
-        <Button
+          {/* Add Product */}
+          <i className="fa-solid fa-plus text-white fa-2xl p-3"></i>
+        </button>
+      </Tooltip>
+      <Tooltip title="Toggle Available">
+        <button
+        type='button'
+        onClick={async() => {
+          table.getSelectedRowModel().rows.map(async(item) =>{ 
+            await updateCategoryAvailable.mutateAsync({id:item.original._id,update:{available:!item.original.available}})
+          })
+          table.toggleAllRowsSelected(false) ;
+        }}
+          className="rounded bg-warning rounded-circle p-0 border-0"
+        >
+          <i className="fa-solid fa-eye text-white fa-2xl p-3"></i>
+        </button>
+      </Tooltip>
+      <Tooltip title="Toggle Show Weight">
+        <button
+        type='button'
+        onClick={async() => {
+          table.getSelectedRowModel().rows.map(async(item) =>{ 
+            await updateCategoryAvailable.mutateAsync({id:item.original._id,update:{showWeight:!item.original.showWeight}})
+          })
+          table.toggleAllRowsSelected(false) ;
+        }}
+          className="rounded bg-info rounded-circle p-0 border-0"
+        >
+          <i className="fa-solid fa-weight-hanging text-white fa-2xl p-3"></i>
+        </button>
+      </Tooltip>
+      <Tooltip title="Delete Selected">
+        <button
+        type='button'
+        onClick={async() => {
+          let selcetedIDs =[];
+          table.getSelectedRowModel().rows.map((item) => selcetedIDs.push(item.original._id))
+           await deleteSelectedItems.mutateAsync(selcetedIDs);
+          table.toggleAllRowsSelected(false) ;
+        }}
+          className="rounded bg-danger rounded-circle p-0 border-0"
+        >
+          {/* Add Product */}
+          <i className="fa-solid fa-trash text-white fa-2xl p-3"></i>
+        </button>
+      </Tooltip>
+        {/* <Button
           color="warning"
-          // disabled={!table.getIsSomeRowsSelected()}
           onClick={async() => {
-            // let selcetedIDs =[];
             table.getSelectedRowModel().rows.map(async(item) =>{ 
               await updateCategoryAvailable.mutateAsync({id:item.original._id,update:{available:!item.original.available}})
-              // selcetedIDs.push(item.original._id)
             })
-            // console.log(selcetedIDs);
-            // console.log(table.getState().rowSelection);
-            // selected = selcetedIDs;
-            //  await updateSelectedItems.mutateAsync(selcetedIDs);
             table.toggleAllRowsSelected(false) ;
-
           }}
           variant="contained"
         >
           Toggle Available
-        </Button>
-        <Button
+        </Button> */}
+        {/* <Button
           color="error"
-          // disabled={!table.getIsSomeRowsSelected()}
           onClick={async() => {
             let selcetedIDs =[];
             table.getSelectedRowModel().rows.map((item) => selcetedIDs.push(item.original._id))
-            // console.log(selcetedIDs);
-            // console.log(table.getState().rowSelection);
-            // selected = selcetedIDs;
              await deleteSelectedItems.mutateAsync(selcetedIDs);
             table.toggleAllRowsSelected(false) ;
 
@@ -1044,7 +1090,7 @@ const innerText = tempElement.textContent || tempElement.innerText;
         >
           Delete Selected
           
-        </Button>
+        </Button> */}
       </Box>
       </>
     ),
@@ -1111,12 +1157,15 @@ const innerText = tempElement.textContent || tempElement.innerText;
           </IconButton>
         </Link>
         </Tooltip>
-        <Tooltip title="Arrange SubCategories">
-          <IconButton color="warning" 
+        <Tooltip title="Duplicate Product">
+          <IconButton color="info" 
           onClick={() =>{
-            setCategoriesDelete(row.original);
-            handleArrangeSubsClick();
+            // setProductToDuplicate(row.original._id);
+            // handleArrangeSubsClick();
             // table.toggleAllRowsSelected(false) 
+            console.log('row.original._id',row.original._id)
+              setProductToDuplicate(row.original._id);
+              handleArrangeSubsClick();
           }}
           >
             <i className="fa-solid fa-layer-group text-warning"></i>
@@ -1210,7 +1259,7 @@ const innerText = tempElement.textContent || tempElement.innerText;
         <div>
           subCategories : 
         {row.original.subCategory.map((subCategory,index) => <span key={index} className="badge badge-primary me-1">
-              {subCategory.subCategory.name}
+              {subCategory?.subCategory?.name}
             </span>)}
           </div>
         
@@ -1361,7 +1410,8 @@ const innerText = tempElement.textContent || tempElement.innerText;
           <Tooltip title="Arrange SubCategories">
             <IconButton color="warning" 
             onClick={() =>{
-              setCategoriesDelete(row.original);
+              console.log('row.original._id',row.original._id)
+              setProductToDuplicate(row.original._id);
               handleArrangeSubsClick();
               // table.toggleAllRowsSelected(false) 
             }}
@@ -1438,13 +1488,32 @@ const innerText = tempElement.textContent || tempElement.innerText;
         </Modal.Footer>
       </Modal>
       
-      {/* Arrange SubCategories Modal */}
+      {/* Arrange Duplicate Product Modal */}
     <Modal show={showSubCategoriesModal} onHide={handleCloseSubCategoriesModal}>
         <Modal.Header closeButton>
-          <Modal.Title>Arrange SubCategories Order in {CategoriesDelete?.name} Category</Modal.Title>
+          <Modal.Title>Duplicate  {productToDuplicate?.name} Product</Modal.Title>
         </Modal.Header>
         <Modal.Body>      
-          {/* <CategorySubsTable  id={CategoriesDelete?._id } /> */}
+        <Box mb={2} display="flex" justifyContent="center" alignItems="center">
+        <TextField
+          placeholder="Enter the number of copies"
+          type="number"
+          inputRef={duplicateRef}
+          variant="outlined"
+          className=" mx-2"
+        />
+        <button type='button' className='btn btn-primary ' 
+        onClick={async() =>{
+          // handleAddItems
+          await duplicateItem.mutateAsync()
+          // duplicateItem(duplicateRef?.current?.value)
+          console.log('duplicateRef',duplicateRef?.current?.value)
+          console.log('productToDuplicate',productToDuplicate)
+        }}
+        >
+          Add
+        </button>
+      </Box>
         </Modal.Body>
         <Modal.Footer>
         <Box sx={{ display: 'flex', gap: '1rem', p: '4px' }}>

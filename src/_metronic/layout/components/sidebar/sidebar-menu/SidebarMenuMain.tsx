@@ -134,6 +134,39 @@ const SidebarMenuMain = () => {
         {/* <SidebarMenuItem to='/apps/chat/group-chat' title='Group Chart' hasBullet={true} /> */}
         {/* <SidebarMenuItem to='/apps/chat/drawer-chat' title='Drawer Chart' hasBullet={true} /> */}
       </SidebarMenuItemWithSub>
+      <SidebarMenuItemWithSub
+        to='/apps/user-management/users'
+        title='User management'
+        fontIcon='bi-layers'
+        icon='abstract-28'
+        // hasBullet={true} 
+        
+      >
+        <SidebarMenuItemWithSub
+        to='/apps/user-management/users'
+        title='Users'
+        // fontIcon='bi-layers'
+        // icon='abstract-28'
+        hasBullet={true} 
+        
+      >
+
+        <SidebarMenuItem to='/apps/user-management/users' title='Users List' hasBullet={true} />
+      </SidebarMenuItemWithSub>
+        <SidebarMenuItemWithSub
+        to='/apps/user-management/roles'
+        title='Roles'
+        // fontIcon='bi-layers'
+        // icon='abstract-28'
+        hasBullet={true} 
+        
+      >
+
+        <SidebarMenuItem to='/apps/user-management/roles' title='Roles List' hasBullet={true} />
+      </SidebarMenuItemWithSub>
+      <SidebarMenuItem to='/apps/user-management/permissions' title='Permissions' hasBullet={true} />
+
+      </SidebarMenuItemWithSub>
       {/* <SidebarMenuItem
         to='/apps/user-management/users'
         icon='abstract-28'

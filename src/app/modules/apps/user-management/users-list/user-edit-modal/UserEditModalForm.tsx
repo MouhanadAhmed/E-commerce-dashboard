@@ -32,7 +32,7 @@ const UserEditModalForm: FC<Props> = ({user, isUserLoading}) => {
 
   const [userForEdit] = useState<User>({
     ...user,
-    avatar: user.avatar || initialUser.avatar,
+    profilePic: user.profilePic || initialUser.profilePic,
     role: user.role || initialUser.role,
     position: user.position || initialUser.position,
     name: user.name || initialUser.name,
@@ -47,7 +47,7 @@ const UserEditModalForm: FC<Props> = ({user, isUserLoading}) => {
   }
 
   const blankImg = toAbsoluteUrl('media/svg/avatars/blank.svg')
-  const userAvatarImg = toAbsoluteUrl(`media/${userForEdit.avatar}`)
+  const userAvatarImg = toAbsoluteUrl(`media/${userForEdit.profilePic}`)
 
   const formik = useFormik({
     initialValues: userForEdit,
@@ -86,7 +86,7 @@ const UserEditModalForm: FC<Props> = ({user, isUserLoading}) => {
           {/* begin::Input group */}
           <div className='fv-row mb-7'>
             {/* begin::Label */}
-            <label className='d-block fw-bold fs-6 mb-5'>Avatar</label>
+            <label className='d-block fw-bold fs-6 mb-5'>profilePic</label>
             {/* end::Label */}
 
             {/* begin::Image input */}
@@ -95,23 +95,23 @@ const UserEditModalForm: FC<Props> = ({user, isUserLoading}) => {
               data-kt-image-input='true'
               style={{backgroundImage: `url('${blankImg}')`}}
             >
-              {/* begin::Preview existing avatar */}
+              {/* begin::Preview existing profilePic */}
               <div
                 className='image-input-wrapper w-125px h-125px'
                 style={{backgroundImage: `url('${userAvatarImg}')`}}
               ></div>
-              {/* end::Preview existing avatar */}
+              {/* end::Preview existing profilePic */}
 
               {/* begin::Label */}
               {/* <label
               className='btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow'
               data-kt-image-input-action='change'
               data-bs-toggle='tooltip'
-              title='Change avatar'
+              title='Change profilePic'
             >
               <i className='bi bi-pencil-fill fs-7'></i>
 
-              <input type='file' name='avatar' accept='.png, .jpg, .jpeg' />
+              <input type='file' name='profilePic' accept='.png, .jpg, .jpeg' />
               <input type='hidden' name='avatar_remove' />
             </label> */}
               {/* end::Label */}
@@ -121,7 +121,7 @@ const UserEditModalForm: FC<Props> = ({user, isUserLoading}) => {
               className='btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow'
               data-kt-image-input-action='cancel'
               data-bs-toggle='tooltip'
-              title='Cancel avatar'
+              title='Cancel profilePic'
             >
               <i className='bi bi-x fs-2'></i>
             </span> */}
@@ -132,7 +132,7 @@ const UserEditModalForm: FC<Props> = ({user, isUserLoading}) => {
               className='btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow'
               data-kt-image-input-action='remove'
               data-bs-toggle='tooltip'
-              title='Remove avatar'
+              title='Remove profilePic'
             >
               <i className='bi bi-x fs-2'></i>
             </span> */}
@@ -149,7 +149,7 @@ const UserEditModalForm: FC<Props> = ({user, isUserLoading}) => {
           {/* begin::Input group */}
           <div className='fv-row mb-7'>
             {/* begin::Label */}
-            <label className='required fw-bold fs-6 mb-2'>Full Name</label>
+            <label htmlFor='name' className='required fw-bold fs-6 mb-2'>Full Name</label>
             {/* end::Label */}
 
             {/* begin::Input */}
@@ -182,7 +182,7 @@ const UserEditModalForm: FC<Props> = ({user, isUserLoading}) => {
           {/* begin::Input group */}
           <div className='fv-row mb-7'>
             {/* begin::Label */}
-            <label className='required fw-bold fs-6 mb-2'>Email</label>
+            <label htmlFor='email' className='required fw-bold fs-6 mb-2'>Email</label>
             {/* end::Label */}
 
             {/* begin::Input */}
@@ -213,7 +213,7 @@ const UserEditModalForm: FC<Props> = ({user, isUserLoading}) => {
           {/* begin::Input group */}
           <div className='mb-7'>
             {/* begin::Label */}
-            <label className='required fw-bold fs-6 mb-5'>Role</label>
+            <label htmlFor='role' className='required fw-bold fs-6 mb-5'>Role</label>
             {/* end::Label */}
             {/* begin::Roles */}
             {/* begin::Input row */}

@@ -41,7 +41,7 @@ const QueryResponseProvider: FC<WithChildren> = ({children}) => {
       if(archivedQuery.match(/search=([^&]*)/)){
         setArchivedQuery(archivedQuery.replace(/search=/, 'keyword='))
       }
-      console.log('archivedQuery', decodeURIComponent(archivedQuery))
+      // console.log('archivedQuery', decodeURIComponent(archivedQuery))
       setArchivedQuery(decodeURIComponent(updatedArchivedQuery))
     }
   }, [updatedArchivedQuery])
@@ -50,7 +50,7 @@ const QueryResponseProvider: FC<WithChildren> = ({children}) => {
     refetch: refetchCategories,
     data: responseCategories,
   } = useQuery(
-    `${QUERIES.CATEGORIES_LIST}-${query}`,
+    `${QUERIES.PRODUCTS_LIST}-${query}`,
     () => {
       return getProducts(query)
     },
@@ -62,7 +62,7 @@ const QueryResponseProvider: FC<WithChildren> = ({children}) => {
     refetch: refetchArchived,
     data: responseArchived,
   } = useQuery(
-    `${QUERIES.ARCHIVED_CATEGORIES_LIST}-${archivedQuery}`,
+    `${QUERIES.ARCHIVED_PRODUCTS_LIST}-${archivedQuery}`,
     () => getArchivedProducts(archivedQuery),
     { cacheTime: 0, keepPreviousData: true, refetchOnWindowFocus: false }
   )

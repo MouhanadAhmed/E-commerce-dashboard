@@ -10,23 +10,47 @@ export function MenuInner() {
       <MenuItem title={intl.formatMessage({id: 'MENU.DASHBOARD'})} to='/dashboard' />
       {/* <MenuItem title='Layout Builder' to='/builder' /> */}
       <MenuInnerWithSub
-        isMega={true}
-        title='Menu Management'
-        to='/mega-menu'
+        // isMega={true}
+        title='Menu'
+        to='/apps/eCommerce'
         menuPlacement='bottom-start'
         // menuTrigger='click'
-        hasArrow={true}
+        // hasArrow={true}
         // menuPlacement='right-start'
         menuTrigger={`{default:'click', lg: 'hover'}`}
       >
-      <MenuItem title='Category' to='/apps/eCommerce/categories' />
-      <MenuItem title='SubCategory' to='/apps/eCommerce/subCategories' />
-      <MenuItem title='ChildSubCategory' to='/apps/eCommerce/childSubCategories' />
+      <MenuInnerWithSub
+        // isMega={true}
+        title='Category Tree'
+        to='/apps/eCommerce'
+        // menuPlacement='bottom-start'
+        // menuTrigger='click'
+        // hasArrow={true}
+        menuPlacement='right-start'
+        menuTrigger={`{default:'click', lg: 'hover'}`}
+      >
+      <MenuItem title='Category List' to='/apps/eCommerce/categories'  hasBullet={true}/>
+      <MenuItem title='SubCategory List' to='/apps/eCommerce/subCategories'  hasBullet={true}/>
+      <MenuItem title='ChildSubCategory List' to='/apps/eCommerce/childSubCategories'  hasBullet={true}/>
+      </MenuInnerWithSub>
       <MenuItem title='Type' to='/apps/eCommerce/types' />
       <MenuItem title='Extra' to='/apps/eCommerce/extras' />
       <MenuItem title='Branch' to='/apps/eCommerce/branches' />
-      <MenuItem title='Product' to='/apps/eCommerce/products' />
-      <MenuItem title='ProductForm' to='/apps/eCommerce/productForm/new' />
+      <MenuInnerWithSub
+        // isMega={true}
+        title='Produts Tree'
+        to='/apps/eCommerce/products'
+        // menuPlacement='bottom-start'
+        // menuTrigger='click'
+        // hasArrow={true}
+        menuPlacement='right-start'
+        menuTrigger={`{default:'click', lg: 'hover'}`}
+      >
+
+
+      <MenuItem title='Products List' to='/apps/eCommerce/products'  hasBullet={true}/>
+      <MenuItem title='Product Form' to='/apps/eCommerce/productForm/new'  hasBullet={true}/>
+      </MenuInnerWithSub>
 
       </MenuInnerWithSub>
       {/* <MenuInnerWithSub
@@ -119,9 +143,9 @@ export function MenuInner() {
         </MenuInnerWithSub> */}
       {/* </MenuInnerWithSub> */}
 
-      {/* <MenuInnerWithSub title='Apps' to='/apps' menuPlacement='bottom-start' menuTrigger='click'> */}
+      <MenuInnerWithSub title='Apps' to='/apps' menuPlacement='bottom-start' menuTrigger={`{default:'click', lg: 'hover'}`}>
         {/* PAGES */}
-        {/* <MenuInnerWithSub
+         <MenuInnerWithSub
           title='Chat'
           to='/apps/chat'
           icon='message-text-2'
@@ -132,9 +156,9 @@ export function MenuInner() {
           <MenuItem to='/apps/chat/private-chat' title='Private Chat' hasBullet={true} />
           <MenuItem to='/apps/chat/group-chat' title='Group Chart' hasBullet={true} />
           <MenuItem to='/apps/chat/drawer-chat' title='Drawer Chart' hasBullet={true} />
-        </MenuInnerWithSub> */}
-        {/* <MenuItem icon='abstract-28' to='/apps/user-management/users' title='User management' /> */}
-      {/* </MenuInnerWithSub> */}
+        </MenuInnerWithSub> 
+        <MenuItem icon='abstract-28' to='/apps/user-management/users' title='User management' />
+      </MenuInnerWithSub>
 
       {/* <MenuInnerWithSub
         isMega={true}

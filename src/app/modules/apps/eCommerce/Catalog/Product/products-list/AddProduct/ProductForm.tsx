@@ -409,7 +409,7 @@ const ProductForm: FC<Props>= ({product}) => {
           ...(productForEdit && productForEdit.sold ? { sold: productForEdit.sold } : {}),
           ...(productForEdit && productForEdit.book ? { book: productForEdit.book } : {}),
           ...(productForEdit && productForEdit.extras ? { extras: productForEdit?.extras?.map((option)=>({ value: option.extra._id, label: option.extra.name }) ) } : []),
-          ...(productForEdit && productForEdit.types ? { types: productForEdit?.types?.map((option)=>({ value: option._id, label: option.name }) ) } : []),
+          ...(productForEdit && productForEdit.types ? { types: [...productForEdit?.types?.map((option)=>({ value: option._id, label: option.name }) )] } : []),
           ...(productForEdit && productForEdit.metaTags ? { metaTags: productForEdit.metaTags } : []),
           ...(productForEdit && productForEdit.descTableName ? { descTableName: productForEdit.descTableName } : {}),
           ...(productForEdit && productForEdit.available ? { available: productForEdit.available } : {}),
@@ -475,7 +475,6 @@ values.childSubCategory = values?.childSubCategory?.map((childSubCategory) => ({
         {/* begin::Scroll */}
         <div className                = "container p-8">
             <div className=" d-flex justify-content-between align-items-center">
-
         <h3 className                 = ' fw-bolder p-4'>Add Product</h3>
               {/* begin::Actions */}
               <div className='text-center '>
@@ -704,7 +703,7 @@ values.childSubCategory = values?.childSubCategory?.map((childSubCategory) => ({
             isMulti
             options={memoizedCategories}
               placeholder='Category'
-              {...formik.getFieldProps('category')}
+              // {...formik.getFieldProps('category')}
               className={clsx(
                 'form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2',
               )}
@@ -716,7 +715,7 @@ values.childSubCategory = values?.childSubCategory?.map((childSubCategory) => ({
                // table.setEditingCell(row.id, 'branch', updatedBranches);
               }}
               // defaultInputValue={productForEdit.category?productForEdit.category.map((option) => option.category.name):''}
-              // defaultValue={productForEdit !== undefined?productForEdit?.category?.map((option)=>({ value: option.category._id, label: option.category.name }) ): '' }
+              defaultValue={productForEdit !== undefined?productForEdit?.category?.map((option)=>({ value: option.category._id, label: option.category.name }) ): '' }
             />
             {/* end::Input */}
             {formik.touched.category && formik.errors.category && (
@@ -742,7 +741,7 @@ values.childSubCategory = values?.childSubCategory?.map((childSubCategory) => ({
             isMulti
             options={memoizedSubCategories}
               placeholder='SubCategory'
-              {...formik.getFieldProps('subCategory')}
+              // {...formik.getFieldProps('subCategory')}
               className={clsx(
                 'form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2',
               )}
@@ -753,7 +752,7 @@ values.childSubCategory = values?.childSubCategory?.map((childSubCategory) => ({
                setEditSubCategory(updatedSubCategories) 
                // table.setEditingCell(row.id, 'branch', updatedBranches);
               }}
-              // defaultValue={productForEdit !== undefined?productForEdit?.subCategory?.map((option)=>({ value: option.subCategory._id, label: option.subCategory.name }) ): '' }
+              defaultValue={productForEdit !== undefined?productForEdit?.subCategory?.map((option)=>({ value: option.subCategory._id, label: option.subCategory.name }) ): '' }
 
             />
             {/* end::Input */}
@@ -781,7 +780,7 @@ values.childSubCategory = values?.childSubCategory?.map((childSubCategory) => ({
             isMulti
             options={memoizedChildSubCategories}
               placeholder='ChildSubCategory'
-              {...formik.getFieldProps('childSubCategory')}
+              // {...formik.getFieldProps('childSubCategory')}
               className={clsx(
                 'form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2',
               )}
@@ -1432,7 +1431,7 @@ values.childSubCategory = values?.childSubCategory?.map((childSubCategory) => ({
             isMulti
             options={memoizedExtras}
               placeholder='Extras'
-              {...formik.getFieldProps('extras')}
+              // {...formik.getFieldProps('extras')}
               className={clsx(
                 'form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2',
               )}
@@ -1443,7 +1442,7 @@ values.childSubCategory = values?.childSubCategory?.map((childSubCategory) => ({
                setEditExtra(updatedExtras) 
                // table.setEditingCell(row.id, 'branch', updatedBranches);
               }}
-              // defaultValue={productForEdit !== undefined?productForEdit?.extras?.map((option)=>({ value: option.extra._id, label: option.extra.name }) ): '' }
+              defaultValue={productForEdit !== undefined?productForEdit?.extras?.map((option)=>({ value: option.extra._id, label: option.extra.name }) ): '' }
 
             />
             {/* end::Input */}
@@ -1470,7 +1469,7 @@ values.childSubCategory = values?.childSubCategory?.map((childSubCategory) => ({
             isMulti
             options={memoizedTypes}
               placeholder='Types'
-              {...formik.getFieldProps('types')}
+              // {...formik.getFieldProps('types')}
               className={clsx(
                 'form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2',
               )}

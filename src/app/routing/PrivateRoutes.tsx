@@ -16,6 +16,8 @@ import BuilderPageWrapper from '../pages/layout-builder/BuilderPageWrapper'
 import ProductsPage from '../modules/apps/eCommerce/Catalog/Product/ProductsPage'
 import ProductForm from '../modules/apps/eCommerce/Catalog/Product/products-list/AddProduct/ProductForm'
 import AddProductsPage from '../modules/apps/eCommerce/Catalog/Product/products-list/AddProduct/AddProductPage'
+import PermsPage from '../modules/apps/user-management/perms-list/PermsPage'
+import RolesPage from '../modules/apps/user-management/roles-list/RolesPage'
 // import { Categories } from '../modules/apps/eCommerce/Catalog/Categories/category'
 
 
@@ -94,6 +96,8 @@ const PrivateRoutes = () => {
           element={
             <SuspensedView>
               <UsersPage />
+              <PermsPage/>
+              <RolesPage/>
             </SuspensedView>
           }
         />
