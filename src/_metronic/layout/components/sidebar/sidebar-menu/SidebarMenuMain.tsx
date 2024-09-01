@@ -131,6 +131,15 @@ const SidebarMenuMain = () => {
         <SidebarMenuItem to='/apps/eCommerce/productForm/new' title='Add Product' hasBullet={true} />
       </SidebarMenuItemWithSub>
       </SidebarMenuItemWithSub>
+      <SidebarMenuItemWithSub 
+      to='/apps/eCommerce/orders'
+      title='Sales'
+      fontIcon='bi-currency-dollar'
+      icon='dollar'
+      // bi-currency-dollar
+      >
+
+      </SidebarMenuItemWithSub>
         {/* <SidebarMenuItem to='/apps/chat/group-chat' title='Group Chart' hasBullet={true} /> */}
         {/* <SidebarMenuItem to='/apps/chat/drawer-chat' title='Drawer Chart' hasBullet={true} /> */}
       </SidebarMenuItemWithSub>
