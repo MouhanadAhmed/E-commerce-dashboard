@@ -817,15 +817,19 @@ const ChildSubCategoriesTable = () => {
           </div>
         <div>
         Categories : 
-        {row.original.category.map((category,index) => <span key={index} className="badge badge-warning me-1">
-              {category.category.name!}
-            </span>)}
+        {row.original.category?.map((category, index) => (
+          <span key={index} className="badge badge-warning me-1">
+            {category?.category?.name ?? 'N/A'}
+          </span>
+        ))}
           </div>
         <div>
           subCategories : 
-        {row.original.subCategory.map((subCategory,index) => <span key={index} className="badge badge-primary me-1">
-              {subCategory.subCategory.name!}
-            </span>)}
+          {row.original.subCategory?.map((subCategory, index) => (
+            <span key={index} className="badge badge-primary me-1">
+              {subCategory?.subCategory?.name ?? 'N/A'}
+            </span>
+          ))}
           </div>
         
        
