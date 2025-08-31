@@ -28,7 +28,7 @@ import { Modal } from 'react-bootstrap'
 import {useListView} from '../core/ListViewProvider'
 // import { TablesWidget12 } from '../../../../../../../../_metronic/partials/widgets';
 import { getArchivedBranches,getBranches } from '../../../Branch/branches-list/core/_requests';
-import {  ChildSubCategoryProductsTable } from '../../products-list/ChildsubCategoryProductsTable';
+import {  ChildSubCategoryProductsTable } from '../../products-list/ChildSubCategoryProductsTable';
 // import { SubCategoryChildsTable } from '../../childSubCategories-list/subCategoryChildsTable';
 import { getArchivedCategories, getCategories } from '../../../Category/categories-list/core/_requests';
 import { getArchivedSubCategories, getSubCategories } from '../../../SubCategory/Subcategories-list/core/_requests';
