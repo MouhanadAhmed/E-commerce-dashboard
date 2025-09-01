@@ -14,7 +14,7 @@ const BranchEditModalFormWrapper = () => {
   } = useQuery(
     `${QUERIES.BRNACHES_LIST}-branch-${itemIdForUpdate}`,
     () => {
-      return getBranchById(itemIdForUpdate)
+      return getBranchById(itemIdForUpdate as string)
     },
     {
       cacheTime: 0,
@@ -27,7 +27,7 @@ const BranchEditModalFormWrapper = () => {
   )
 
   if (!itemIdForUpdate) {
-    return <BranchEditModalForm isBranchLoading={isLoading} branch={{ name:" "}} />
+    return <BranchEditModalForm isBranchLoading={isLoading} branch={{ name:""}} />
   }
 
   if (!isLoading && !error && branch) {

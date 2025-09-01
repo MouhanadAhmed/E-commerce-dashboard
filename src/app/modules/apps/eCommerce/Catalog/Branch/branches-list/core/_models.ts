@@ -6,9 +6,7 @@ export type Branch = {
   workingHours?: string,
   address?: string,
   imgCover?: string,
-        phone?: [
-          string
-        ],
+        phone?: string,
         gmap?: string,
         deleted?: boolean,
         _id?: string,
@@ -27,9 +25,7 @@ export const initialBranch: Branch =
       "slug": "طنطا-حسن-رضوان",
       "workingHours": "9am to 12am",
       "address": "شارع حسن رضوان",
-      "phone": [
-          "0403333333"
-      ],
+      "phone": "0403333333",
       "deleted": false,
       "_id": "665d6c0ed7d6707aecdc33b6",
       "createdAt": "2024-06-03T07:09:02.338Z",

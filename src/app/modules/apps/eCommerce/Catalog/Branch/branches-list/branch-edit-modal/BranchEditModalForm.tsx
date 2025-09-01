@@ -27,7 +27,7 @@ const editBranchSchema = Yup.object().shape({
     imgCover: Yup.string()
     .min(3, 'Minimum 3 symbols')
     .optional(),
-    phone: Yup.array().of(Yup.string())
+    phone: Yup.string()
     .min(1, 'Minimum 3 symbols')
     .optional(),
     gmap: Yup.string()
