@@ -396,9 +396,7 @@ const ActiveCategoriesTable = () => {
         onDragEnd: async() => {
           const { draggingRow, hoveredRow } = table.getState();
           await updateCategoryAvailable.mutateAsync({id:draggingRow?.original._id,update:{order:hoveredRow?.original.order}})
-  
-          console.log('draggingRow',draggingRow)
-          console.log('hoveredRow',hoveredRow)
+
           // if (hoveredTable === 'table-1') {
           //   console.log('getRowId',draggingRow?.original._id)
           //    await updateCategoryAvailable.mutateAsync({id:draggingRow?.original._id,update:{deleted:false}})
@@ -604,8 +602,8 @@ const ActiveCategoriesTable = () => {
           color="error"
           // disabled={!table.getIsSomeRowsSelected()}
           onClick={async() => {
-            let selcetedIDs =[];
-            table.getSelectedRowModel().rows.map((item) => selcetedIDs.push(item.original._id))
+            let selcetedIDs: string[] =[];
+            table.getSelectedRowModel().rows.map((item) => selcetedIDs.push(item.original._id!))
             // console.log(selcetedIDs);
             // console.log(table.getState().rowSelection);
             // selected = selcetedIDs;

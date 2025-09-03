@@ -67,6 +67,10 @@ const deleteCategory = (userId: ID): Promise<void> => {
   return axios.delete(`${CATEGORY_URL}/${userId}`).then(() => {});
 };
 
+const restoreCategory = (userId: ID): Promise<void> => {
+  return axios.put(`${CATEGORY_URL}/${userId}`, {deleted: false}).then(() => {});
+};
+
 const deleteSelectedCategories = (userIds: Array<ID>): Promise<void> => {
   const requests = userIds.map((id) => axios.delete(`${CATEGORY_URL}/${id}`));
   return axios.all(requests).then(() => {});
@@ -115,5 +119,6 @@ export {
   createCategory,
   updateCategory,
   updateCategoryOrder,
-  updateSelectedCategories
+  updateSelectedCategories,
+  restoreCategory
 };

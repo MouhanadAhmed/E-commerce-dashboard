@@ -2,59 +2,53 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   useMaterialReactTable,
   type MRT_ColumnDef,
-  type MRT_Row,
   MRT_TableContainer,
 } from 'material-react-table';
 import { Products } from '../categories-list/core/_models';
 import { getAllProductsInCategory, updateProductOrderInCategory } from '../categories-list/core/_requests';
 import { useMutation } from 'react-query';
 
-const CategoryProductsTable = (id:string) => {
-    const [data, setData] = useState([]);
-    const [triger,setTriger]= useState(false);
+const CategoryProductsTable = (id: string) => {
+  const [data, setData] = useState<Products[]>([]);
+  const [triger, setTriger] = useState(false);
+  
   const columns = useMemo<MRT_ColumnDef<Products>[]>(
-    //column definitions...
     () => [
       {
         accessorKey: 'name',
         header: 'Name',
       },
-    //   {
-    //     accessorKey: 'category.0.order',
-    //     header: 'Order',
-    //   },
-   
+      {
+        accessorKey: "category.0.order",
+        header: "Order",
+      }
     ],
     [],
-    //end
   );
 
-  const updateProductOrder = useMutation(({productId,order}) => updateProductOrderInCategory(id.id,productId,order), {
-    // 💡 response of the mutation is passed to onSuccess
-    onSuccess: () => {
-      // ✅ update detail view directly
-      // queryClient.invalidateQueries([`${QUERIES.CATEGORIES_LIST}`]);
-      // queryClient.invalidateQueries([`${QUERIES.ARCHIVED_CATEGORIES_LIST}`]);
-      // queryClient.refetchQueries([`${QUERIES.CATEGORIES_LIST}`])
-      // queryClient.refetchQueries([`${QUERIES.ARCHIVED_CATEGORIES_LIST}`])
-    //   refetch();
-      setTriger(true)
-
-    },
-  })
-
-  useEffect(()=>{
-    console.log('id',id.id)
-    const fetchProducts = async()=>{
-        await getAllProductsInCategory(id?.id)
-        .catch((err)=> console.log(err))
-        .then((res)=> setData(res?.products));
-        // console.log(response.products)
-        // setData(response.products);
+  // Move the mutation outside the useEffect dependencies
+  const updateProductOrderMutation = useMutation(
+    ({ productId, order }: { productId: string; order: number }) => 
+      updateProductOrderInCategory(id.id, productId, order), 
+    {
+      onSuccess: () => {
+        setTriger(prev => !prev); // Toggle to trigger refetch
+      },
     }
-    fetchProducts()
-  },[id?.id,triger,updateProductOrder])
+  );
 
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await getAllProductsInCategory(id?.id);
+        setData(response?.products || []);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    
+    fetchProducts();
+  }, [id.id, triger]); // Removed updateProductOrder from dependencies
 
   const table = useMaterialReactTable({
     autoResetPageIndex: false,
@@ -63,13 +57,15 @@ const CategoryProductsTable = (id:string) => {
     enableRowOrdering: true,
     enableSorting: false,
     muiRowDragHandleProps: ({ table }) => ({
-      onDragEnd: async() => {
+      onDragEnd: async () => {
         const { draggingRow, hoveredRow } = table.getState();
         if (hoveredRow && draggingRow) {
-            console.log('hoveredRow',hoveredRow.original?.category[0].order,'draggingRow',draggingRow.original._id)
-            await updateProductOrder.mutateAsync({productId:draggingRow.original._id,order:hoveredRow.original?.category[0].order})
+          console.log('hoveredRow', hoveredRow.original?.category[0].order, 'draggingRow', draggingRow.original._id);
+          await updateProductOrderMutation.mutateAsync({
+            productId: draggingRow.original._id, 
+            order: hoveredRow.original?.category[0].order
+          });
         }
-        // if(product && productOrder) {await updateProductOrder.mutateAsync();}
       },
     }),
   });
@@ -77,4 +73,4 @@ const CategoryProductsTable = (id:string) => {
   return <MRT_TableContainer table={table} />;
 };
 
-export  {CategoryProductsTable};
+export { CategoryProductsTable };

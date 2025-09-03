@@ -16,11 +16,12 @@ import {
 // import { Divider } from '@mui/material';
 import Select from 'react-select'
 import { Box, Typography, Button, IconButton, Tooltip } from '@mui/material';
-import { deleteCategory, deleteSelectedCategories, getAllProductsInCategory, updateCategory, updateSelectedCategories } from '../core/_requests';
+import { deleteCategory, deleteSelectedCategories, updateCategory, restoreCategory } from '../core/_requests';
 import { useMutation,useQuery,useQueryClient } from 'react-query';
 import { QUERIES } from '../../../../../../../../_metronic/helpers';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import * as Yup from 'yup'
 import { Modal } from 'react-bootstrap'
 import {useListView} from '../core/ListViewProvider'
@@ -47,6 +48,7 @@ const CategoriesTable = () => {
   const [draggingRow, setDraggingRow] = useState<MRT_Row<Categories> | null>(null);
   const [hoveredTable, setHoveredTable] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false)
+  const [modalType, setModalType] = useState('delete')
   const [showProductsModal, setShowProductsModal] = useState(false)
   const [showSubCategoriesModal, setShowSubCategoriesModal] = useState(false);
   const [CategoriesDelete,setCategoriesDelete] = useState();
@@ -239,11 +241,17 @@ const CategoriesTable = () => {
     setShowSubCategoriesModal(false)
   }
   //DELETE action
-  const handleDeleteClick = () => {
+  const handleDeleteClick = (type: string) => {
+    setModalType(type)
     setShowModal(true)
   }
   const handleConfirmDelete = async () => {
     await deleteItem.mutateAsync()
+    setShowModal(false)
+  }
+
+  const handleConfirmRestore = async () => {
+    await restoreItem.mutateAsync()
     setShowModal(false)
   }
   const openAddCategoryModal = () => {
@@ -253,6 +261,18 @@ const CategoriesTable = () => {
     setShowModal(false)
   }
   const deleteItem = useMutation(() => deleteCategory(CategoriesDelete as string), {
+    // 💡 response of the mutation is passed to onSuccess
+    onSuccess: () => {
+      // ✅ update detail view directly
+      queryClient.invalidateQueries([`${QUERIES.CATEGORIES_LIST}`]);
+      queryClient.invalidateQueries([`${QUERIES.ARCHIVED_CATEGORIES_LIST}`]);
+      queryClient.refetchQueries([`${QUERIES.CATEGORIES_LIST}`])
+      queryClient.refetchQueries([`${QUERIES.ARCHIVED_CATEGORIES_LIST}`])
+      setTrigger(true)
+    },
+  })
+
+  const restoreItem = useMutation(() => restoreCategory(CategoriesDelete as string), {
     // 💡 response of the mutation is passed to onSuccess
     onSuccess: () => {
       // ✅ update detail view directly
@@ -544,7 +564,7 @@ const CategoriesTable = () => {
           <IconButton color="error" 
           onClick={() =>{
             setCategoriesDelete(row.original._id);
-            handleDeleteClick(); 
+            handleDeleteClick("delete"); 
             // table.toggleAllRowsSelected(false) 
           }}
           >
@@ -762,15 +782,15 @@ const CategoriesTable = () => {
               <EditIcon />
             </IconButton>
           </Tooltip>
-          <Tooltip title="Delete">
+          <Tooltip title="Restore">
             <IconButton color="error" 
             onClick={() =>{
               setCategoriesDelete(row.original._id);
-              handleDeleteClick(); 
+              handleDeleteClick('restore'); 
               // table.toggleAllRowsSelected(false) 
             }}
             >
-              <DeleteIcon />
+              <RestoreFromTrashIcon />
             </IconButton>
           </Tooltip>
           <Tooltip title="Arrange products">
@@ -829,22 +849,32 @@ const CategoriesTable = () => {
     </Box>
       {/* Delete Modal */}
     <Modal show={showModal} onHide={handleClose}>
-        <Modal.Header closeButton>
-          <Modal.Title>Confirm Deletion</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>Are you sure you want to delete this item?</Modal.Body>
-        <Modal.Footer>
+      <Modal.Header closeButton>
+        <Modal.Title>
+          {modalType === 'delete' ? 'Confirm Deletion' : 'Confirm Restoration'}
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        {modalType === 'delete' 
+          ? 'Are you sure you want to delete this item?' 
+          : 'Are you sure you want to restore this item?'}
+      </Modal.Body>
+      <Modal.Footer>
         <Box sx={{ display: 'flex', gap: '1rem', p: '4px' }}>
-
           <Button color='info' variant="contained" onClick={handleClose}>
             Cancel
           </Button>
-          <Button color='error' variant="contained" onClick={handleConfirmDelete}>
-            Delete
+          <Button 
+            color={modalType === 'delete' ? 'error' : 'success'} 
+            variant="contained" 
+            onClick={modalType === 'delete' ? handleConfirmDelete : handleConfirmRestore}
+            startIcon={modalType === 'delete' ? <DeleteIcon /> : <RestoreFromTrashIcon />}
+          >
+            {modalType === 'delete' ? 'Delete' : 'Restore'}
           </Button>
         </Box>
-        </Modal.Footer>
-      </Modal>
+      </Modal.Footer>
+    </Modal>
 
       {/* Arrange Products Modal */}
     <Modal show={showProductsModal} onHide={handleCloseProductsModal}>
