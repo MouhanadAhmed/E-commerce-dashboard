@@ -204,7 +204,6 @@ const category = Yup.object().shape({
 
 const ProductForm: FC<Props>= ({product}) => {
     const{id}= useParams();
-    console.log('id',id)
     const descTableRef=useRef();
     const [content, setContent] = useState('');
   const quillRef = useRef(null);
@@ -449,11 +448,10 @@ const ProductForm: FC<Props>= ({product}) => {
 values.subCategory = values?.subCategory?.map((subCategory) => ({ subCategory: subCategory.value }));
 values.childSubCategory = values?.childSubCategory?.map((childSubCategory) => ({ childSubCategory: childSubCategory.value }));
 
-            console.log('values',values)
             if (isNotEmpty(values._id)) {
               await updateProduct(values?._id,values)
             } else {
-              // await createProduct(values)
+              await createProduct(values)
             }
           } catch (ex) {
             console.error(ex)
