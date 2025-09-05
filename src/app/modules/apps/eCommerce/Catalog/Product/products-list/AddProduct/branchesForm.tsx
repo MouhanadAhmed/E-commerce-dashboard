@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import {
     MaterialReactTable,
     type MRT_ColumnDef,
@@ -21,30 +21,36 @@ type Branch = {
     name?: string,
 }
 
-export default function BranchesForm({ branchees ,setUpdatedBranches }: { branchees: Branch[] ,setUpdatedBranches:any }) {
-    // let initialBranches = [
-    //     { branch: '6559c4abd057da4061a73efa' },
-    //     { branch: '6559c51ad057da4061a73efc' },
-    //     { branch: '665ece003817f2af2ecc2dc5' },
-    // ];
-    // console.log('branchees',branchees)
+export default function BranchesForm({ branchees ,setUpdatedBranches, formik }: { branchees: Branch[] ,setUpdatedBranches:any, formik: any }) {
 
     const [newBranches, setNewBranches] = useState<Branch[]>(branchees);
-    const [updated, setUpdated] = useState<boolean>(false);
-
+    const previousPriceRef = useRef(formik.values.price);
+    // console.log('newBranches',newBranches)
     useEffect(() => {
         setNewBranches(branchees);
-        // console.log('useEffect',newBranches)
     }, [branchees,newBranches]);
 
+
+useEffect(() => {
+  // Only update if price actually changed and we have branches
+  if (formik.values.price !== previousPriceRef.current && newBranches.length > 0) {
+    const updatedBranches = newBranches.map(branch => ({
+      ...branch,
+      price: formik.values.price?.toString() || ''
+    }));
+    
+    setNewBranches(updatedBranches);
+    setUpdatedBranches(updatedBranches);
+    
+    // Update the ref with the new price
+    previousPriceRef.current = formik.values.price;
+  }
+}, [formik.values.price, newBranches, setUpdatedBranches]);
     function updateOrPush(array: Branch[], newObject: Branch) {
-        // console.log('newObject',newObject)
-        // console.log('newBranches',newBranches)
         const updatedArray = array.map(item => item.branch === newObject.branch ? newObject : item);
         const isExisting = array.findIndex(item => item.branch === newObject.branch);
         if (!isExisting) {
-            // console.log('new')
-            // updatedArray.push(newObject);
+
         }else {
 
             const index =  array.findIndex(item => item.branch === newObject.branch);
@@ -53,17 +59,6 @@ export default function BranchesForm({ branchees ,setUpdatedBranches }: { branch
 
         setNewBranches(updatedArray);
         setUpdatedBranches(updatedArray)
-        // setUpdated(true)
-        // // let updatedArray = [];
-        // // updatedArray.push(newObject);
-        // initialBranches[index]=newObject;
-        // initialBranches.splice(index, 1,newObject);
-        
-        // updatedArray[index]=newObject;
-        // console.log('newBranches in',newBranches)
-        // console.log('updatedArray in',updatedArray)
-
-        // setNewBranches(...updatedArray);
     }
 
     const columns = useMemo<MRT_ColumnDef<Branch>[]>(
@@ -101,12 +96,21 @@ export default function BranchesForm({ branchees ,setUpdatedBranches }: { branch
                 muiTableHeadCellProps: {
                     align: 'left',
                 },
-                Cell: ({ cell }) => (
+                Cell: ({ cell, row }) => (
                     <div className="form-check form-switch form-check-custom form-check-solid">
                         <input
                             className="form-check-input cursor-pointer"
                             type="checkbox"
-                            defaultChecked={cell.getValue<boolean>()}
+                            checked={cell.getValue<boolean>()}
+                            onChange={(e) => {
+                                const updatedBranches = newBranches.map(branch => 
+                                    branch.branch === row.original.branch 
+                                        ? { ...branch, available: e.target.checked }
+                                        : branch
+                                );
+                                setNewBranches(updatedBranches);
+                                setUpdatedBranches(updatedBranches);
+                            }}
                             id={cell.row.original._id}
                         />
                     </div>
@@ -149,9 +153,6 @@ export default function BranchesForm({ branchees ,setUpdatedBranches }: { branch
     }) => {
         values.branch = row.original.branch;
         updateOrPush(newBranches, values);
-        // console.log('newBranches',newBranches)
-        // console.log('newBranches out',newBranches)
-
         table.setEditingRow(null);
     };
 

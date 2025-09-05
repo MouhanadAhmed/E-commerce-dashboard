@@ -2,7 +2,6 @@ import axios, { AxiosResponse } from "axios";
 import { ID, Response, initialQueryRequest,  } from "../../../../../../../../_metronic/helpers";
 import { ProductsQueryResponse, Product } from "./_models";
 
-
 // const {state} = useQueryRequest()
 const API_URL = import.meta.env.VITE_APP_THEME_API_URL;
 const PRODUCT_URL = `${API_URL}/product`;

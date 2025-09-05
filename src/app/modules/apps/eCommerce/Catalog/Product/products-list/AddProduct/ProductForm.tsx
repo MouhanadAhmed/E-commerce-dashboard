@@ -3,12 +3,10 @@ import {FC, useEffect, useMemo, useRef, useState} from 'react';
 import * as Yup from 'yup'
 import {useFormik} from 'formik'
 import clsx from 'clsx'
-import {useListView} from '../core/ListViewProvider'
 import {UsersListLoading} from '../components/loading/UsersListLoading'
-import {useQueryResponse} from '../core/QueryResponseProvider'
 import { Product,initialProduct  } from '../core/_models'
 import { createProduct, getProductById, updateProduct } from '../core/_requests'
-import { isNotEmpty, toAbsoluteUrl } from '../../../../../../../../_metronic/helpers'
+import { isNotEmpty } from '../../../../../../../../_metronic/helpers'
 import { useQueryResponseData as branchesData } from '../../../Branch/branches-list/core/QueryResponseProvider';
 import { useQueryResponseData as categoriesData } from '../../../Category/categories-list/core/QueryResponseProvider';
 import { useQueryResponseData as subcategoriesData } from '../../../SubCategory/Subcategories-list/core/QueryResponseProvider';
@@ -24,84 +22,15 @@ import { getArchivedTypes, getTypes } from '../../../Type/categories-list/core/_
 import Select from 'react-select'
 import BranchesForm from './branchesForm';
 import DescTableForm from './DescTableForm'
-import ReactQuill, { Quill } from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { useParams } from 'react-router-dom';
+import { uploadToCloudinary } from '../../../../../../../../_metronic/helpers/cloudinaryUpload';
+import Swal from 'sweetalert2';
+
 type Props = {
     // isProductLoading: boolean
     product?: Product
   }
-
-  const CustomToolbar = () => (
-    <div id="toolbar">
-      <select className="ql-header" defaultValue="" onChange={e => e.persist()}>
-        <option value="1"></option>
-        <option value="2"></option>
-        <option value="3"></option>
-        <option value="4"></option>
-        <option value="5"></option>
-        <option value="6"></option>
-        <option value=""></option>
-      </select>
-      <select className="ql-font" defaultValue="" onChange={e => e.persist()}>
-        <option value="serif"></option>
-        <option value="monospace"></option>
-        <option value=""></option>
-      </select>
-      <select className="ql-list" defaultValue="" onChange={e => e.persist()}>
-        <option value="ordered"></option>
-        <option value="bullet"></option>
-      </select>
-      <button className="ql-bold"></button>
-      <button className="ql-italic"></button>
-      <button className="ql-underline"></button>
-      <select className="ql-color">
-        <option value="#e60000" selected></option>
-        <option value="#000000"></option>
-        <option value="#e60000"></option>
-        <option value="#ff9900"></option>
-        <option value="#ffff00"></option>
-        <option value="#008a00"></option>
-        <option value="#0066cc"></option>
-        <option value="#9933ff"></option>
-        <option value="#ffffff"></option>
-      </select>
-      <select className="ql-background" onChange={e => e.persist()}>
-        <option value="#000000"></option>
-        <option value="#e60000"></option>
-        <option value="#ff9900"></option>
-        <option value="#ffff00"></option>
-        <option value="#008a00"></option>
-        <option value="#0066cc"></option>
-        <option value="#9933ff"></option>
-        <option value="#ffffff"></option>
-      </select>
-      <button className="ql-link"></button>
-      <button className="ql-image"></button>
-      <button className="ql-clean"></button>
-    </div>
-  );
-
-  const customColors = [
-    '#e60000', '#000000', '#ff9900', '#ffff00', '#008a00',
-    '#0066cc', '#9933ff', '#ffffff', '#facccc', '#ffebcc',
-    '#ffffcc', '#cce8cc', '#cce0f5', '#ebd6ff', '#bbbbbb',
-    '#f06666', '#ffc266', '#ffff66', '#66b966', '#66a3e0',
-    '#c285ff', '#888888', '#a10000', '#b26b00', '#b2b200',
-    '#006100', '#0047b2', '#6b24b2', '#444444', '#5c0000',
-    '#663d00', '#666600', '#003700', '#002966', '#3d1466'
-  ];
-  const modules = {
-    toolbar: [
-      [{ 'header': [1, 2, 3, 4, 5, 6, false] }], // Add all header options
-    //   [{ 'font': [] }],
-      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-      ['bold', 'italic', 'underline'],
-      [{ 'color': customColors }, { 'background': [] }],
-      ['link', 'image'],
-      ['clean']
-    ],
-  };
   
 // Define the nested schemas first
 const category = Yup.object().shape({
@@ -129,19 +58,6 @@ const category = Yup.object().shape({
     order: Yup.number().min(1).optional(),
     sold: Yup.number().min(1).optional(),
   });
-
-   type Branch = {
-    branch:string,
-    price?:string,
-    available?: boolean,
-    stock?: string,
-    priceAfterDiscount?: string,
-    priceAfterExpiresAt?: string,
-    order?: string,
-    sold?: string,
-    _id:string,
-    name?:string
-  }
 
   
   const extras = Yup.object().shape({
@@ -175,7 +91,7 @@ const category = Yup.object().shape({
     subCategory: Yup.array().of(subCategory).transform((value, originalValue) => (Array.isArray(originalValue) ? originalValue : [originalValue])).optional(),
     childSubCategory: Yup.array().of(childSubCategory).transform((value, originalValue) => (Array.isArray(originalValue) ? originalValue : [originalValue])).optional(),
     types: Yup.array().of(types).transform((value, originalValue) => (Array.isArray(originalValue) ? originalValue : [originalValue])).optional(),
-    stock: Yup.string().optional(),
+    // stock: Yup.string().optional(),
     available: Yup.boolean().optional(),
     price: Yup.number().min(0).optional(),
     branch: Yup.array().of(branch).transform((value, originalValue) => (Array.isArray(originalValue) ? originalValue : [originalValue])).optional(),
@@ -204,70 +120,30 @@ const category = Yup.object().shape({
 
 const ProductForm: FC<Props>= ({product}) => {
     const{id}= useParams();
-    const descTableRef=useRef();
-    const [content, setContent] = useState('');
-  const quillRef = useRef(null);
     const {active : activeBranches,archived : archivedBranches} = branchesData();
     const {active : activeCategories,archived : archivedCategories} = categoriesData();
     const {active : activeSubCategories,archived : archivedSubCategories} = subcategoriesData();
     const {active : activeChildSubCategories,archived : archivedChildSubCategories} = childSubCategoryData();
     const {active : activeExtras,archived : archivedExtras} = extrasData();
     const {active : activeTypes,archived : archivedTypes} = typesData();
-
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [branches,setBranches]=useState([...activeBranches,...archivedBranches]);
     const [categories,setCategories]=useState([...activeCategories,...archivedCategories]);
     const [subcategories,setSubCategories]=useState([...activeSubCategories,...archivedSubCategories]);
     const [childSubCategories,setChildSubCategories]=useState([...activeChildSubCategories,...archivedChildSubCategories]);
     const [extras,setExtras]=useState([...activeExtras,...archivedExtras]);
     const [types,setTypes]=useState([...activeTypes,...archivedTypes]);
-    const [loading, setLoading] = useState(true);
-    const [editBranch, setEditBranch]=useState();
-    const [editCategory, setEditCategory]=useState();
-    const [editSubCategory, setEditSubCategory]=useState();
-    const [editChildSubCategory, setEditChildSubCategory]=useState();
-    const [editExtra, setEditExtra]=useState();
-    const [editType, setEditType]=useState();
-    const [book, setBook]=useState();
-    const [bookAt, setBookAt]=useState();
+
     const [updatedBranches, setUpdatedBranches]=useState();
     // const [numberOfItems,setNumberOfItmes] =useState(0);
     const [activeTab, setActiveTab] = useState('general');
     const [items, setItems] = useState([]);
     
-    const [productForEdit,setProductForEdit] = useState()
-
-    const handleChange = (value) => {
-        setContent(value);
-      };
-    // useEffect(() => {
-    //     // Update the items array whenever numberOfItems changes
-    //     setItems(Array.from({ length: numberOfItems }, (_, index) => ({
-    //       name: '',
-    //       value: '',
-    //       order: ''
-    //     })));
-    //   }, [numberOfItems]);
-    // const handleInputChange = (index, field, value) => {
-    //     const newItems = items.map((item, i) => 
-    //       i === index ? { ...item, [field]: value } : item
-    //     );
-    //     setItems(newItems);
-    //   };
-    
-    //   const handleDelete = (index) => {
-    //     const newItems = items.filter((_, i) => i !== index);
-    //     setItems(newItems);
-    //   };
-    
-    //   const handleSubmit = () => {
-    //     console.log(items);
-    //     // Do something with the items array
-    //   };
-
-    // useEffect(() => {
-    //     // setNewBranches(initialBranches);
-    //     // console.log('useEffect product',updatedBranches)
-    // }, [setUpdatedBranches,updatedBranches]);
+    const [productForEdit,setProductForEdit] = useState<Product>()
+    const [previewUrl, setPreviewUrl] = useState<string>('');
 
       const handleTabClick = (tab:string) => {
         setActiveTab(tab);
@@ -279,11 +155,10 @@ const ProductForm: FC<Props>= ({product}) => {
             try {
                 console.log("id",id)
                 const data = await getProductById(id);
-                console.log('data',data)
                 setProductForEdit(data);
+                data.imgCover && data.imgCover[0] && setPreviewUrl(data?.imgCover[0].url)
                 formik.setValues(data)
-                // formik.setInitialValue(data)
-                console.log(formik.initialValues)
+                // console.log(formik.initialValues)
             } catch (error) {
                 console.error('Error fetching product', error);
             }
@@ -396,7 +271,8 @@ const ProductForm: FC<Props>= ({product}) => {
           ...(productForEdit && productForEdit._id ? { _id: productForEdit._id } : {}),
           ...(productForEdit && productForEdit.slug ? { slug: productForEdit.slug } : {}),
           ...(productForEdit && productForEdit.description ? { description: productForEdit.description } : {}),
-          ...(productForEdit && productForEdit.shortDesc ? { shortDesc: productForEdit.shortDesc } : {}),
+          ...(productForEdit && productForEdit.description ? { description: productForEdit.description } : {}),
+          ...(productForEdit?.imgCover?.[0]?.url ? { imgCover: productForEdit.imgCover[0].url } : {}),
           ...(productForEdit && productForEdit.metaTags ? { metaTags: productForEdit.metaTags } : {}),
           ...(productForEdit && productForEdit.price ? { price: productForEdit.price } : {}),
           ...(productForEdit && productForEdit.showWeight ? { showWeight: productForEdit.showWeight } : {}),
@@ -420,53 +296,125 @@ const ProductForm: FC<Props>= ({product}) => {
         },
         validationSchema: editProductSchema,
         onSubmit: async (values, {setSubmitting}) => {
-          console.log('values',values)
+          // console.log('values',values)
             // e.stopPropagation();
             // e.preventDefault();
+          setIsUploading(true);
           setSubmitting(true)
+          setError(null);
           try {
             if(updatedBranches !== undefined) {
-                const newArray = updatedBranches.map(obj => {
-                    const newObj = { ...obj };
-                    keysToRemove.forEach(key => delete newObj[key]);
-                    return newObj;
-                  });
-                values.branch =newArray
-            }else {
-                const newArray = initialBranches.map(obj => {
-                    const newObj = { ...obj };
-                    keysToRemove.forEach(key => delete newObj[key]);
-                    return newObj;
-                  });
-                values.branch =newArray;
+              const newArray = updatedBranches
+                .filter(obj => obj.available !== false) // Filter out unavailable branches
+                .map(obj => {
+                  const newObj = { ...obj };
+                  keysToRemove.forEach(key => delete newObj[key]);
+                  return newObj;
+                });
+                console.log(updatedBranches.filter(obj => obj.available !== false))
+                console.log(updatedBranches)
+                values.branch = newArray;
+              } else {
+                const newArray = initialBranches
+                .filter(obj => obj.available !== false) // Filter out unavailable branches
+                .map(obj => {
+                  const newObj = { ...obj };
+                  keysToRemove.forEach(key => delete newObj[key]);
+                  return newObj;
+                });
+                console.log(initialBranches.filter(obj => obj.available !== false))
+              values.branch = newArray;
             }
-            values.description=content;
+            if (imageFile) {
+              values.imgCover = {url:await uploadToCloudinary(imageFile)}
+            }
             items.length != 0 ? values.descTable=items:"";
             values.types=values?.types?.map((type)=>type.value);
             values.extras=values?.extras?.map((extra)=>({extra:extra.value}));
             values.category = values?.category?.map((item) => ({ category: item.value }));
-values.subCategory = values?.subCategory?.map((subCategory) => ({ subCategory: subCategory.value }));
-values.childSubCategory = values?.childSubCategory?.map((childSubCategory) => ({ childSubCategory: childSubCategory.value }));
+            values.subCategory = values?.subCategory?.map((subCategory) => ({ subCategory: subCategory.value }));
+            values.childSubCategory = values?.childSubCategory?.map((childSubCategory) => ({ childSubCategory: childSubCategory.value }));
 
-            if (isNotEmpty(values._id)) {
-              await updateProduct(values?._id,values)
+        if (isNotEmpty(values._id)) {
+              await updateProduct(values?._id, values);
+              // Show success alert for update
+              Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'Product updated successfully',
+                timer: 2000,
+                showConfirmButton: false
+              });
             } else {
-              await createProduct(values)
+              await createProduct(values);
+              // Show success alert for creation
+              Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'Product created successfully',
+                timer: 2000,
+                showConfirmButton: false
+              });
             }
           } catch (ex) {
-            console.error(ex)
+            console.error(ex);
+            // Show error alert
+            Swal.fire({
+              icon: 'error',
+              title: 'Error!',
+              text: ex.response.data.error,
+              timer: 3000,
+              showConfirmButton: false
+            });
           } finally {
-            // setSubmitting(true)
-            // cancel(true)
+            setSubmitting(false);
+            setIsUploading(false);
           }
         },
       })
+
+      const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.match('image/jpeg|image/png|image/jpg')) {
+      setError('Please select a valid image file (PNG, JPG, JPEG)');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('File size must be less than 5MB');
+      return;
+    }
+
+    setImageFile(file);
+    setError(null);
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = () => {
+      setPreviewUrl(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setPreviewUrl('');
+    formik.setFieldValue('imgCover', '');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
       if(id !== 'new' && productForEdit == undefined){
 
         return <div>Loading...</div>;
         
       }
+
   return (
     <>
           <form id='kt_modal_add_product_form' className='form ' onSubmit={ formik.handleSubmit} noValidate>
@@ -490,9 +438,6 @@ values.childSubCategory = values?.childSubCategory?.map((childSubCategory) => ({
             type='submit'
             className='btn btn-primary'
             data-kt-users-modal-action='submit'
-            disabled={
-              // formik.isSubmitting ||
-                !formik.isValid || !formik.touched}
           >
             <span className='indicator-label'>Submit</span>
             {(formik.isSubmitting ) && (
@@ -510,66 +455,68 @@ values.childSubCategory = values?.childSubCategory?.map((childSubCategory) => ({
           <div className="col-md-3">
 
           {/* begin:: Thumbnail Input group */}
-          <div className='fv-row mb-7 border  rounded-start  shadow-sm border-2 p-8'>
-            {/* begin::Label */}
-            <label className='d-block fw-bold fs-6 ms-2 mb-5'>Thumbnail</label>
-            {/* end::Label */}
+      <div className='fv-row mb-7 border rounded-start shadow-sm border-2 p-8'>
+        <label className='d-block fw-bold fs-6 ms-2 mb-5'>Thumbnail</label>
 
-            {/* begin::Image input */}
-            <div
-              className='image-input image-input-outline  '
-              data-kt-image-input='true'
-              style={{backgroundImage: `url('${blankImage}')`}}
-            >
-              {/* begin::Preview existing imgCover */}
-              <div
-                className='image-input-wrapper  ms-2 '
-                style={{backgroundImage: `url('${blankImage}')`}}
-              ></div>
-              {/* end::Preview existing imgCover */}
+        <div
+          className='image-input image-input-outline'
+          data-kt-image-input='true'
+          style={{ backgroundImage: `url('${blankImage}')` }}
+        >
+          <div
+            className='image-input-wrapper ms-2'
+            style={{ 
+              backgroundImage: `url('${previewUrl || productForEdit?.imgCover || blankImage}')` 
+            }}
+          ></div>
 
-              {/* begin::Label */}
-              <label
-              className='btn btn-icon btn-circle btn-active-color-primary w-25 h-25 bg-body shadow'
-              data-kt-image-input-action='change'
-              data-bs-toggle='tooltip'
-              title='Change imgCover'
-            >
-              <i className='bi bi-pencil-fill fs-7'></i>
+          <label
+            className='btn btn-icon btn-circle btn-active-color-primary w-25 h-25 bg-body shadow'
+            data-kt-image-input-action='change'
+            data-bs-toggle='tooltip'
+            title='Change imgCover'
+          >
+            <i className='bi bi-pencil-fill fs-7'></i>
+            <input 
+              type='file' 
+              name='imgCover' 
+              accept='.png, .jpg, .jpeg' 
+              onChange={handleImageChange}
+              ref={fileInputRef}
+            />
+            <input type='hidden' name='avatar_remove' />
+          </label>
 
-              <input type='file' name='imgCover' accept='.png, .jpg, .jpeg' />
-              <input type='hidden' name='avatar_remove' />
-            </label>
-              {/* end::Label */}
+          <span
+            className='btn btn-icon btn-circle btn-active-color-primary w-25 h-25 bg-body shadow'
+            data-kt-image-input-action='cancel'
+            data-bs-toggle='tooltip'
+            title='Cancel imgCover'
+            onClick={() => {
+              setImageFile(null);
+              setPreviewUrl(productForEdit?.imgCover || '');
+              if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+              }
+            }}
+          >
+            <i className='bi bi-x fs-2'></i>
+          </span>
 
-              {/* begin::Cancel */}
-              <span
-              className='btn btn-icon btn-circle btn-active-color-primary w-25 h-25 bg-body shadow'
-              data-kt-image-input-action='cancel'
-              data-bs-toggle='tooltip'
-              title='Cancel imgCover'
-            >
-              <i className='bi bi-x fs-2'></i>
-            </span>
-              {/* end::Cancel */}
+          <span
+            className='btn btn-icon btn-circle btn-active-color-primary w-25 h-25 bg-body shadow'
+            data-kt-image-input-action='remove'
+            data-bs-toggle='tooltip'
+            title='Remove imgCover'
+            onClick={handleRemoveImage}
+          >
+            <i className='bi bi-x fs-2'></i>
+          </span>
+        </div>
 
-              {/* begin::Remove */}
-              <span
-              className='btn btn-icon btn-circle btn-active-color-primary w-25 h-25 bg-body shadow'
-              data-kt-image-input-action='remove'
-              data-bs-toggle='tooltip'
-              title='Remove imgCover'
-            >
-              <i className='bi bi-x fs-2'></i>
-            </span>
-              {/* end::Remove */}
-            </div>
-            {/* end::Image input */}
+        <div className='form-text'>Allowed file types: png, jpg, jpeg.</div>
+      </div>
 
-            {/* begin::Hint */}
-            <div className='form-text'>Allowed file types: png, jpg, jpeg.</div>
-            {/* end::Hint */}
-          </div>
           {/* end:: Thumbnail Input group */}
 
         {/* end:: order group */}
@@ -599,10 +546,6 @@ values.childSubCategory = values?.childSubCategory?.map((childSubCategory) => ({
               autoComplete='off'
               type="checkbox"
               defaultChecked={productForEdit?.available}
-              // defaultChecked={productForEdit !== undefined?productForEdit.available:false}
-            //   disabled={formik.isSubmitting || isProductLoading}
-                // {/* <option value="true">Yes</option>
-                // <option value="false">No</option> */}
             />
             {/* end::Input */}
             {formik.touched.available && formik.errors.available && (
@@ -690,32 +633,36 @@ values.childSubCategory = values?.childSubCategory?.map((childSubCategory) => ({
         {/* begin:: Category Input group */}
         <div className="shadow-sm rounded-end rounded p-6 mb-8">
           <div className='fv-row mb-7'>
-            {/* begin::Label */}
-            <label className=' fw-bolder fs-4   ms-3 mb-2'>Category</label>
-            {/* end::Label */}
-
-            {/* begin::Input */}
+            <label className='fw-bolder fs-4 ms-3 mb-2'>Category</label>
+            
             <Select
-            // className='react-select-styled'
-            // classNamePrefix='react-select'
-            isMulti
-            options={memoizedCategories}
+              isMulti
+              options={memoizedCategories}
               placeholder='Category'
-              // {...formik.getFieldProps('category')}
               className={clsx(
                 'form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2',
+                {'is-invalid': formik.touched.category && formik.errors.category},
+                {'is-valid': formik.touched.category && !formik.errors.category},
               )}
               name='category'
+              value={formik.values.category} // Connect to Formik value
               onChange={(selected) => {
-                const updatedCategories = selected ? selected.map((option) => option.value  ) : [];
-              //  console.log('updatedBranches',updatedBranches)
-               setEditCategory(updatedCategories) 
-               // table.setEditingCell(row.id, 'branch', updatedBranches);
+                // Update Formik state directly
+                formik.setFieldValue(
+                  'category', 
+                  selected ? selected : []
+                );
               }}
-              // defaultInputValue={productForEdit.category?productForEdit.category.map((option) => option.category.name):''}
-              defaultValue={productForEdit !== undefined?productForEdit?.category?.map((option)=>({ value: option.category._id, label: option.category.name }) ): '' }
+              onBlur={formik.handleBlur} // Handle blur for validation
+              defaultValue={productForEdit !== undefined ? 
+                productForEdit?.category?.map((option) => ({ 
+                  value: option.category._id, 
+                  label: option.category.name 
+                })) : 
+                []
+              }
             />
-            {/* end::Input */}
+            
             {formik.touched.category && formik.errors.category && (
               <div className='fv-plugins-message-container'>
                 <span role='alert'>{formik.errors.category}</span>
@@ -745,10 +692,11 @@ values.childSubCategory = values?.childSubCategory?.map((childSubCategory) => ({
               )}
               name='subCategory'
               onChange={(selected) => {
-                const updatedSubCategories = selected ? selected.map((option) => option.value  ) : [];
-              //  console.log('updatedBranches',updatedBranches)
-               setEditSubCategory(updatedSubCategories) 
-               // table.setEditingCell(row.id, 'branch', updatedBranches);
+                // Update Formik state directly
+                formik.setFieldValue(
+                  'subCategory', 
+                  selected ? selected : []
+                );
               }}
               defaultValue={productForEdit !== undefined?productForEdit?.subCategory?.map((option)=>({ value: option.subCategory._id, label: option.subCategory.name }) ): '' }
 
@@ -784,10 +732,11 @@ values.childSubCategory = values?.childSubCategory?.map((childSubCategory) => ({
               )}
               name='childSubCategory'
               onChange={(selected) => {
-                const updatedChildSubCategories = selected ? selected.map((option) => option.value  ) : [];
-              //  console.log('updatedBranches',updatedBranches)
-               setEditChildSubCategory(updatedChildSubCategories) 
-               // table.setEditingCell(row.id, 'branch', updatedBranches);
+                // Update Formik state directly
+                formik.setFieldValue(
+                  'childSubCategory', 
+                  selected ? selected : []
+                );
               }}
               defaultValue={productForEdit !== undefined?productForEdit?.childSubCategory?.map((option)=>({ value: option.childSubCategory._id, label: option.childSubCategory.name }) ): '' }
 
@@ -915,43 +864,31 @@ values.childSubCategory = values?.childSubCategory?.map((childSubCategory) => ({
             {/* end::Label */}
 
             {/* begin::Input */}
-            {/* <textarea 
-            // id="summernote" 
-            // name="editordata"
-              placeholder='description'
+            <input
+              placeholder='Description'
               {...formik.getFieldProps('description')}
+              type='text'
+              name='description'
               className={clsx(
-                'form-control form-control-solid mb-3 mb-lg-0 ms-2  border border-2',
+                'form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2',
                 {'is-invalid': formik.touched.description && formik.errors.description},
                 {
                   'is-valid': formik.touched.description && !formik.errors.description,
                 }
               )}
-            //   type='text'
-              name='description'
               autoComplete='off'
               disabled={formik.isSubmitting }
-            /> */}
-            
+            // defaultValue={productForEdit !== undefined?productForEdit.shortDesc: initialProduct.shortDesc }
+
+            />
             {/* end::Input */}
+            <div className="form-text px-4">Set a description to the product for better visibility.</div>
+
             {formik.touched.description && formik.errors.description && (
               <div className='fv-plugins-message-container'>
                 <span role='alert'>{formik.errors.description}</span>
               </div>
             )}
-            <ReactQuill theme="snow" 
-            modules={modules} 
-            // value={content} 
-            // defaultValue={productForEdit !== undefined?productForEdit.description: initialProduct.description }
-
-            placeholder='description'
-            name='description'
-            {...formik.getFieldProps('description')}
-            // onChange={setValue} 
-            onChange={handleChange} 
-            />
-            <div className="form-text px-4">Set a description to the product for better visibility.</div>
-
             
           </div>
           {/* end:: Description Input group */}
@@ -1070,11 +1007,6 @@ values.childSubCategory = values?.childSubCategory?.map((childSubCategory) => ({
               autoComplete='off'
               type="checkbox"
               defaultChecked={productForEdit?.showWeight}
-            //   disabled={formik.isSubmitting || isProductLoading}
-                // {/* <option value="true">Yes</option>
-                // <option value="false">No</option> */}
-                // defaultChecked={productForEdit !== undefined?productForEdit.showWeight: initialProduct.showWeight }
-            
             />
             {/* end::Input */}
             {formik.touched.showWeight && formik.errors.showWeight && (
@@ -1258,70 +1190,59 @@ values.childSubCategory = values?.childSubCategory?.map((childSubCategory) => ({
             {/* begin::Input */}
             <input
               placeholder='Stock'
-              {...formik.getFieldProps('stock')}
-              type='checkbox'
-              name='stock'
-              // defaultChecked
-              className={clsx(
-                'form-check-input mb-3 ms-2 mb-lg-0 border border-2',
-                {'is-invalid': formik.touched.stock && formik.errors.stock},
-                {
-                  'is-valid': formik.touched.stock && !formik.errors.stock,
+              checked={formik.values.stock === '0'}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  formik.setFieldValue('stock', '0');
+                } else {
+                  formik.setFieldValue('stock', '');
                 }
+              }}
+              type='checkbox'
+              name='outOfStock'
+              className={clsx(
+                'form-check-input mb-3 ms-2 mb-lg-0 border border-2'
               )}
               autoComplete='off'
-              disabled={formik.isSubmitting }
-              // defaultChecked={productForEdit !==undefined && productForEdit.stock !== 0?true: false }
-
+              disabled={formik.isSubmitting}
             />
-            {formik.touched.stock && formik.errors.stock && (
-              <div className='fv-plugins-message-container'>
-                <div className='fv-help-block'>
-                  <span role='alert'>{formik.errors.stock}</span>
-                </div>
-              </div>
-            )}
-            <label className=' fw-semibold fs-7 ps-4 mb-2'>In-Stock</label>
-
             {/* end::Input */}
-            {/* <div className="form-text px-4">A product name is required and recommended to be unique.</div> */}
           </div>
           {/* end:: stock switch group */}
 
-            {/* begin:: stock Input group */}
+          {/* begin:: stock Input group - Only show if not out of stock */}
+          {formik.values.stock !== '0' && (
             <div className='fv-row mb-7'>
-            {/* begin::Label */}
-            <label className=' fw-semibold fs-7 ps-4 mb-2'>Stock</label>
-            {/* end::Label */}
+              {/* begin::Label */}
+              <label className=' fw-semibold fs-7 ps-4 mb-2'>Stock</label>
+              {/* end::Label */}
 
-            {/* begin::Input */}
-            <input
-              placeholder='Stock'
-              {...formik.getFieldProps('stock')}
-              type='text'
-              name='stock'
-              className={clsx(
-                'form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2',
-                {'is-invalid': formik.touched.stock && formik.errors.stock},
-                {
-                  'is-valid': formik.touched.stock && !formik.errors.stock,
-                }
-              )}
-              autoComplete='off'
-              disabled={formik.isSubmitting }
-              // defaultValue={productForEdit !== undefined?productForEdit?.stock: '' }
-
-            />
-            {formik.touched.stock && formik.errors.stock && (
-              <div className='fv-plugins-message-container'>
-                <div className='fv-help-block'>
-                  <span role='alert'>{formik.errors.stock}</span>
+              {/* begin::Input */}
+              <input
+                placeholder='Stock'
+                {...formik.getFieldProps('stock')}
+                type='text'
+                name='stock'
+                className={clsx(
+                  'form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2',
+                  {'is-invalid': formik.touched.stock && formik.errors.stock},
+                  {
+                    'is-valid': formik.touched.stock && !formik.errors.stock,
+                  }
+                )}
+                autoComplete='off'
+                disabled={formik.isSubmitting}
+              />
+              {formik.touched.stock && formik.errors.stock && (
+                <div className='fv-plugins-message-container'>
+                  <div className='fv-help-block'>
+                    <span role='alert'>{formik.errors.stock}</span>
+                  </div>
                 </div>
-              </div>
-            )}
-            {/* end::Input */}
-            {/* <div className="form-text px-4">A product name is required and recommended to be unique.</div> */}
-          </div>
+              )}
+              {/* end::Input */}
+            </div>
+          )}
           {/* end:: stock Input group */}
 
             {/* begin:: sold Input group */}
@@ -1435,10 +1356,11 @@ values.childSubCategory = values?.childSubCategory?.map((childSubCategory) => ({
               )}
               name='extras'
               onChange={(selected) => {
-                const updatedExtras = selected ? selected.map((option) => option.value  ) : [];
-              //  console.log('updatedBranches',updatedBranches)
-               setEditExtra(updatedExtras) 
-               // table.setEditingCell(row.id, 'branch', updatedBranches);
+                // Update Formik state directly
+                formik.setFieldValue(
+                  'extras', 
+                  selected ? selected : []
+                );
               }}
               defaultValue={productForEdit !== undefined?productForEdit?.extras?.map((option)=>({ value: option.extra._id, label: option.extra.name }) ): '' }
 
@@ -1473,10 +1395,11 @@ values.childSubCategory = values?.childSubCategory?.map((childSubCategory) => ({
               )}
               name='types'
               onChange={(selected) => {
-                const updatedTypes = selected ? selected.map((option) => option.value  ) : [];
-              //  console.log('updatedBranches',updatedBranches)
-               setEditType(updatedTypes) 
-               // table.setEditingCell(row.id, 'branch', updatedBranches);
+                // Update Formik state directly
+                formik.setFieldValue(
+                  'types', 
+                  selected ? selected : []
+                );
               }}
               defaultValue={productForEdit !== undefined?productForEdit?.types?.map((option)=>({ value: option._id, label: option.name }) ): '' }
 
@@ -1542,7 +1465,7 @@ values.childSubCategory = values?.childSubCategory?.map((childSubCategory) => ({
                         {/* end::Label */}
 
 
-                        <BranchesForm setUpdatedBranches={setUpdatedBranches} branchees={updatedBranches == undefined ?(productForEdit !== undefined?productForEdit.branch:initialBranches):updatedBranches}/>
+                        <BranchesForm setUpdatedBranches={setUpdatedBranches} formik={formik} branchees={updatedBranches == undefined ?(productForEdit !== undefined?productForEdit.branch:initialBranches):updatedBranches}/>
                     </div>
                     </div>
                 {/* end:: Branch Input group */}
