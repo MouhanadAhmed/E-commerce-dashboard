@@ -25,62 +25,60 @@ export default function BranchesForm({ branchees ,setUpdatedBranches, formik }: 
 
     const [newBranches, setNewBranches] = useState<Branch[]>(branchees);
     const previousPriceRef = useRef(formik.values.price);
-    // console.log('newBranches',newBranches)
+
+    // Only update when branchees changes
     useEffect(() => {
         setNewBranches(branchees);
-    }, [branchees,newBranches]);
+    }, [branchees]); // Removed newBranches dependency
 
+    // Price update effect - use functional update to avoid stale state
+    useEffect(() => {
+        if (formik.values.price !== previousPriceRef.current && newBranches.length > 0) {
+            setNewBranches(prevBranches => {
+                const updatedBranches = prevBranches.map(branch => ({
+                    ...branch,
+                    price: formik.values.price?.toString() || ''
+                }));
+                
+                setUpdatedBranches(updatedBranches);
+                previousPriceRef.current = formik.values.price;
+                return updatedBranches;
+            });
+        }
+    }, [formik.values.price, setUpdatedBranches]); // Removed newBranches dependency
 
-useEffect(() => {
-  // Only update if price actually changed and we have branches
-  if (formik.values.price !== previousPriceRef.current && newBranches.length > 0) {
-    const updatedBranches = newBranches.map(branch => ({
-      ...branch,
-      price: formik.values.price?.toString() || ''
-    }));
-    
-    setNewBranches(updatedBranches);
-    setUpdatedBranches(updatedBranches);
-    
-    // Update the ref with the new price
-    previousPriceRef.current = formik.values.price;
-  }
-}, [formik.values.price, newBranches, setUpdatedBranches]);
     function updateOrPush(array: Branch[], newObject: Branch) {
-        const updatedArray = array.map(item => item.branch === newObject.branch ? newObject : item);
-        const isExisting = array.findIndex(item => item.branch === newObject.branch);
-        if (!isExisting) {
-
-        }else {
-
-            const index =  array.findIndex(item => item.branch === newObject.branch);
-            newBranches.splice(index,1,newObject)
+        const index = array.findIndex(item => item.branch === newObject.branch);
+        let updatedArray;
+        
+        if (index !== -1) {
+            // Update existing item
+            updatedArray = [...array];
+            updatedArray[index] = newObject;
+        } else {
+            // Add new item
+            updatedArray = [...array, newObject];
         }
 
         setNewBranches(updatedArray);
-        setUpdatedBranches(updatedArray)
+        setUpdatedBranches(updatedArray);
     }
 
     const columns = useMemo<MRT_ColumnDef<Branch>[]>(
         () => [
             {
-                // accessorKey: 'branch',
-                accessorFn: (row) => row.branch._id !=undefined?row.branch._id:row.branch,
+                accessorFn: (row) => row.branch._id != undefined ? row.branch._id : row.branch,
                 header: 'id',
                 enableEditing: false,
-                
             },
             {
-                // accessorKey: 'name',
-                accessorFn: (row) => row.name !=undefined?row.name:row.branch.name,
-
+                accessorFn: (row) => row.name != undefined ? row.name : row.branch.name,
                 header: 'Name',
                 enableEditing: false,
                 size: 80,
             },
             {
                 accessorKey: 'price',
-                
                 header: 'Price',
                 muiEditTextFieldProps: {
                     required: false,
@@ -103,13 +101,15 @@ useEffect(() => {
                             type="checkbox"
                             checked={cell.getValue<boolean>()}
                             onChange={(e) => {
-                                const updatedBranches = newBranches.map(branch => 
-                                    branch.branch === row.original.branch 
-                                        ? { ...branch, available: e.target.checked }
-                                        : branch
-                                );
-                                setNewBranches(updatedBranches);
-                                setUpdatedBranches(updatedBranches);
+                                setNewBranches(prevBranches => {
+                                    const updatedBranches = prevBranches.map(branch => 
+                                        branch.branch === row.original.branch 
+                                            ? { ...branch, available: e.target.checked }
+                                            : branch
+                                    );
+                                    setUpdatedBranches(updatedBranches);
+                                    return updatedBranches;
+                                });
                             }}
                             id={cell.row.original._id}
                         />
@@ -158,7 +158,7 @@ useEffect(() => {
 
     const table = useMaterialReactTable({
         columns,
-        data:newBranches,
+        data: newBranches,
         createDisplayMode: 'row',
         editDisplayMode: 'row',
         enableEditing: true,
