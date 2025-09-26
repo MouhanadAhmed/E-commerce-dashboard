@@ -6,6 +6,7 @@ import clsx from 'clsx'
 import {UsersListLoading} from '../components/loading/UsersListLoading'
 import { Product,initialProduct  } from '../core/_models'
 import { createProduct, getProductById, updateProduct } from '../core/_requests'
+import ReactQuill, { Quill } from 'react-quill';
 import { isNotEmpty } from '../../../../../../../../_metronic/helpers'
 import { useQueryResponseData as branchesData } from '../../../Branch/branches-list/core/QueryResponseProvider';
 import { useQueryResponseData as categoriesData } from '../../../Category/categories-list/core/QueryResponseProvider';
@@ -32,6 +33,77 @@ type Props = {
     product?: Product
   }
   
+
+   const CustomToolbar = () => (
+    <div id="toolbar">
+      <select className="ql-header" defaultValue="" onChange={e => e.persist()}>
+        <option value="1"></option>
+        <option value="2"></option>
+        <option value="3"></option>
+        <option value="4"></option>
+        <option value="5"></option>
+        <option value="6"></option>
+        <option value=""></option>
+      </select>
+      <select className="ql-font" defaultValue="" onChange={e => e.persist()}>
+        <option value="serif"></option>
+        <option value="monospace"></option>
+        <option value=""></option>
+      </select>
+      <select className="ql-list" defaultValue="" onChange={e => e.persist()}>
+        <option value="ordered"></option>
+        <option value="bullet"></option>
+      </select>
+      <button className="ql-bold"></button>
+      <button className="ql-italic"></button>
+      <button className="ql-underline"></button>
+      <select className="ql-color">
+        <option value="#e60000" selected></option>
+        <option value="#000000"></option>
+        <option value="#e60000"></option>
+        <option value="#ff9900"></option>
+        <option value="#ffff00"></option>
+        <option value="#008a00"></option>
+        <option value="#0066cc"></option>
+        <option value="#9933ff"></option>
+        <option value="#ffffff"></option>
+      </select>
+      <select className="ql-background" onChange={e => e.persist()}>
+        <option value="#000000"></option>
+        <option value="#e60000"></option>
+        <option value="#ff9900"></option>
+        <option value="#ffff00"></option>
+        <option value="#008a00"></option>
+        <option value="#0066cc"></option>
+        <option value="#9933ff"></option>
+        <option value="#ffffff"></option>
+      </select>
+      <button className="ql-link"></button>
+      <button className="ql-image"></button>
+      <button className="ql-clean"></button>
+    </div>
+  );
+
+  const customColors = [
+    '#e60000', '#000000', '#ff9900', '#ffff00', '#008a00',
+    '#0066cc', '#9933ff', '#ffffff', '#facccc', '#ffebcc',
+    '#ffffcc', '#cce8cc', '#cce0f5', '#ebd6ff', '#bbbbbb',
+    '#f06666', '#ffc266', '#ffff66', '#66b966', '#66a3e0',
+    '#c285ff', '#888888', '#a10000', '#b26b00', '#b2b200',
+    '#006100', '#0047b2', '#6b24b2', '#444444', '#5c0000',
+    '#663d00', '#666600', '#003700', '#002966', '#3d1466'
+  ];
+  const modules = {
+    toolbar: [
+      [{ 'header': [1, 2, 3, 4, 5, 6, false] }], // Add all header options
+    //   [{ 'font': [] }],
+      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+      ['bold', 'italic', 'underline'],
+      [{ 'color': customColors }, { 'background': [] }],
+      ['link', 'image'],
+      ['clean']
+    ],
+  };
 // Define the nested schemas first
 const category = Yup.object().shape({
     category: Yup.string().matches(/^[0-9a-fA-F]{24}$/, 'Must be a valid hex string of length 24').optional(),
@@ -113,6 +185,7 @@ const category = Yup.object().shape({
     order: Yup.number().min(0).optional(),
     quantity: Yup.number().min(0).optional(),
     _id:Yup.string().optional(),
+    images: Yup.array().of(Yup.string()).max(10).optional()
     // ratingAverage: Yup.number().min(1).optional(),
     // ratingCount: Yup.number().min(0).optional(),
   });
@@ -120,6 +193,9 @@ const category = Yup.object().shape({
 
 const ProductForm: FC<Props>= ({product}) => {
     const{id}= useParams();
+    const descTableRef=useRef();
+    const [content, setContent] = useState('');
+    const quillRef = useRef(null);
     const {active : activeBranches,archived : archivedBranches} = branchesData();
     const {active : activeCategories,archived : archivedCategories} = categoriesData();
     const {active : activeSubCategories,archived : archivedSubCategories} = subcategoriesData();
@@ -136,6 +212,10 @@ const ProductForm: FC<Props>= ({product}) => {
     const [childSubCategories,setChildSubCategories]=useState([...activeChildSubCategories,...archivedChildSubCategories]);
     const [extras,setExtras]=useState([...activeExtras,...archivedExtras]);
     const [types,setTypes]=useState([...activeTypes,...archivedTypes]);
+    const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
+    const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
+    const [existingGalleryUrls, setExistingGalleryUrls] = useState<string[]>([]);
+    const galleryInputRef = useRef<HTMLInputElement>(null);
 
     const [updatedBranches, setUpdatedBranches]=useState();
     // const [numberOfItems,setNumberOfItmes] =useState(0);
@@ -263,6 +343,43 @@ const ProductForm: FC<Props>= ({product}) => {
       initialProduct.branch=initialBranches
 
       const keysToRemove = ["key", "name", "_id"];
+
+      const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        
+        // Validate total images won't exceed 10
+        if (galleryFiles.length + files.length > 10) {
+          setError('Maximum 10 images allowed in gallery');
+          return;
+        }
+        
+        // Validate each file
+        const validFiles = files.filter(file => {
+          if (!file.type.match('image/jpeg|image/png|image/jpg')) {
+            return false;
+          }
+          if (file.size > 5 * 1024 * 1024) {
+            return false;
+          }
+          return true;
+        });
+        
+        setGalleryFiles(prev => [...prev, ...validFiles]);
+        
+        // Create previews
+        validFiles.forEach(file => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            setGalleryPreviews(prev => [...prev, reader.result as string]);
+          };
+          reader.readAsDataURL(file);
+        });
+      };
+
+      const handleRemoveGalleryImage = (index: number) => {
+        setGalleryFiles(prev => prev.filter((_, i) => i !== index));
+        setGalleryPreviews(prev => prev.filter((_, i) => i !== index));
+      };
     //   setProductForEdit()
     // const [updatedBranchees,setUpdatedBranchees] = useState(...initialBranches)
     const formik = useFormik({
@@ -327,6 +444,15 @@ const ProductForm: FC<Props>= ({product}) => {
             }
             if (imageFile) {
               values.imgCover = {url:await uploadToCloudinary(imageFile)}
+            }
+            // Upload gallery images
+            if (galleryFiles.length > 0) {
+              const galleryUrls = await Promise.all(
+                galleryFiles.map(file => uploadToCloudinary(file))
+              );
+              values.images = [...existingGalleryUrls, ...galleryUrls];
+            } else if (existingGalleryUrls.length > 0) {
+              values.images = existingGalleryUrls;
             }
             items.length != 0 ? values.descTable=items:"";
             values.types=values?.types?.map((type)=>type.value);
@@ -791,6 +917,15 @@ const ProductForm: FC<Props>= ({product}) => {
         </li>
         <li className="nav-item" role="presentation">
           <button
+            type="button"
+            className={`nav-link ${activeTab === 'media' ? 'active' : ''}`}
+            onClick={() => handleTabClick('media')}
+          >
+            Media
+          </button>
+        </li>
+        <li className="nav-item" role="presentation">
+          <button
           type="button"
             className={`nav-link ${activeTab === 'branches' ? 'active' : ''}`}
             onClick={() => handleTabClick('branches')}
@@ -857,39 +992,40 @@ const ProductForm: FC<Props>= ({product}) => {
           </div>
           {/* end:: Name Input group */}
 
-            {/* begin:: Description Input group */}
-            <div className='fv-row mb-7'>
+          {/* begin:: Description Input group */}
+          <div className='fv-row mb-7'>
             {/* begin::Label */}
-            <label className=' fw-semibold fs-6 mb-2 ms-4'>Description</label>
+            <label className='fw-semibold fs-6 mb-2 ms-4'>Description</label>
             {/* end::Label */}
 
-            {/* begin::Input */}
-            <input
+            {/* begin::ReactQuill with Formik */}
+            <ReactQuill 
+              theme="snow" 
+              modules={modules}
               placeholder='Description'
-              {...formik.getFieldProps('description')}
-              type='text'
-              name='description'
+              value={formik.values.description || ''}
+              onChange={(value) => {
+                formik.setFieldValue('description', value);
+                formik.setFieldTouched('description', true, false);
+              }}
+              onBlur={() => formik.setFieldTouched('description', true, true)}
               className={clsx(
-                'form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2',
-                {'is-invalid': formik.touched.description && formik.errors.description},
+                'mb-3 ms-2 mb-lg-0 border border-2 rounded',
                 {
-                  'is-valid': formik.touched.description && !formik.errors.description,
+                  'border-danger': formik.touched.description && formik.errors.description,
+                  'border-success': formik.touched.description && !formik.errors.description,
                 }
               )}
-              autoComplete='off'
-              disabled={formik.isSubmitting }
-            // defaultValue={productForEdit !== undefined?productForEdit.shortDesc: initialProduct.shortDesc }
-
             />
-            {/* end::Input */}
+            {/* end::ReactQuill */}
+
             <div className="form-text px-4">Set a description to the product for better visibility.</div>
 
             {formik.touched.description && formik.errors.description && (
               <div className='fv-plugins-message-container'>
-                <span role='alert'>{formik.errors.description}</span>
+                <span role='alert' className='text-danger'>{formik.errors.description}</span>
               </div>
             )}
-            
           </div>
           {/* end:: Description Input group */}
 
@@ -1453,6 +1589,77 @@ const ProductForm: FC<Props>= ({product}) => {
 
             </div>
            {/* end:: Advanced group */}
+           
+          {/* begin:: Media group */}
+          <div className={`collapse ${activeTab === 'media' ? 'active show' : ''}`} id="media">
+            <div className="shadow-sm rounded-end rounded p-6 mb-8">
+              <h3 className='fw-bold p-4 mb-4'>Media Gallery</h3>
+              
+              {/* Gallery upload section */}
+              <div className='fv-row mb-7'>
+                <label className='fw-semibold fs-6 mb-3'>Product Gallery Images (Max 10)</label>
+                
+                {/* Current images display */}
+                <div className='d-flex flex-wrap gap-3 mb-4 p-3 bg-light rounded'>
+                  {galleryPreviews.map((preview, index) => (
+                    <div key={index} className='position-relative'>
+                      <img 
+                        src={preview} 
+                        alt={`Gallery ${index + 1}`} 
+                        className='rounded shadow-sm' 
+                        style={{width: '100px', height: '100px', objectFit: 'cover'}} 
+                      />
+                      <button 
+                        type='button'
+                        className='btn btn-sm btn-danger position-absolute top-0 end-0 rounded-circle'
+                        style={{width: '24px', height: '24px', padding: 0}}
+                        onClick={() => handleRemoveGalleryImage(index)}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                  
+                  {galleryPreviews.length === 0 && (
+                    <div className='text-muted text-center w-100'>
+                      No gallery images added yet
+                    </div>
+                  )}
+                </div>
+
+                {/* Upload controls */}
+                <div className='d-flex gap-3 align-items-center'>
+                  <button
+                    type='button'
+                    className='btn btn-light-primary'
+                    onClick={() => galleryInputRef.current?.click()}
+                    disabled={galleryFiles.length >= 10}
+                  >
+                    <i className='bi bi-cloud-upload me-2'></i>
+                    Add Gallery Images
+                  </button>
+                  
+                  <span className='text-muted small'>
+                    {galleryFiles.length} / 10 images selected
+                  </span>
+                </div>
+                
+                <input 
+                  type='file' 
+                  ref={galleryInputRef}
+                  multiple
+                  accept='.png, .jpg, .jpeg'
+                  onChange={handleGalleryChange}
+                  style={{display: 'none'}}
+                />
+                
+                <div className='form-text mt-2'>
+                  Upload additional product images. Supported formats: PNG, JPG, JPEG. Max file size: 5MB per image.
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* end:: Media group */}
 
              {/* begin:: branches group */}
              <div className={`collapse ${activeTab === 'branches' ? 'active show' : ''}`} id="branches">

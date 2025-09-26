@@ -361,7 +361,7 @@ const innerText = tempElement.textContent || tempElement.innerText;
           return (
             <>
               {categoriess?.map(category => <span className="badge badge-warning me-1">
-              {category.category.name}
+              {category.category?.name}
             </span>)}
             </>
             // <span className="badge badge-secondary">
