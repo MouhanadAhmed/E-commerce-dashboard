@@ -100,7 +100,13 @@ type childSubCategory =
   }
 
 
-export type ProductsQueryResponse = Response<Array<Product>>
+export type ProductsQueryResponse = {
+  data: Product[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
 
 export const initialProduct: Product =  
 {

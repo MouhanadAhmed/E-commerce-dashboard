@@ -1589,7 +1589,7 @@ const ProductForm: FC<Props>= ({product}) => {
 
             </div>
            {/* end:: Advanced group */}
-           
+            
           {/* begin:: Media group */}
           <div className={`collapse ${activeTab === 'media' ? 'active show' : ''}`} id="media">
             <div className="shadow-sm rounded-end rounded p-6 mb-8">

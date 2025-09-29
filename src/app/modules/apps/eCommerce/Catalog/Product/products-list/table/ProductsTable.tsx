@@ -42,12 +42,14 @@ import { getArchivedChildSubCategories, getChildSubCategories } from '../../../C
 import { getArchivedExtras, getExtras } from '../../../Extra/categories-list/core/_requests';
 import { getArchivedTypes, getTypes } from '../../../Type/categories-list/core/_requests';
 import { Link } from 'react-router-dom';
+import { useQueryRequest } from '../core/QueryRequestProvider';
 
 const ProductsTable = () => {
   const duplicateRef=useRef()
   const {selected, clearSelected, } = useListView()
   const queryClient = useQueryClient();
   const {setItemIdForUpdate} = useListView()
+  const { state, updateState } = useQueryRequest();
   const [validationErrors, setValidationErrors] = useState<Record<string, string | undefined>>({});
   const {active,archived} = useQueryResponseData()
   const {active : activeBranches,archived : archivedBranches} = branchesData();
@@ -60,8 +62,8 @@ const ProductsTable = () => {
   const refetch = useQueryRefetch();
   const [trigger, setTrigger] = useState(false);
   // const isLoading = useQueryResponseLoading()
-  const [activeProducts, setActiveProducts] = useState<Product[]>(active);
-  const [archivedProducts, setArchivedProducts] = useState<Product[]>(() => archived);
+  const [activeProducts, setActiveProducts] = useState<Product[]>(active.data || []);
+  const [archivedProducts, setArchivedProducts] = useState<Product[]>(() => archived.data || []);
   const [draggingRow, setDraggingRow] = useState<MRT_Row<Product> | null>(null);
   const [hoveredTable, setHoveredTable] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false)
@@ -83,9 +85,39 @@ const ProductsTable = () => {
   const [editExtra, setEditExtra]=useState();
   const [editType, setEditType]=useState();
   const [book, setBook]=useState();
-  let enableQuery = CategoriesDelete?._id !== undefined? true:false
-// setBranches([...activeBranches,...archivedBranches]);
-// console.log('branches',branches)
+  // Separate pagination state for each table
+  const [activePagination, setActivePagination] = useState({
+    page: 1,
+    pageSize: 10
+  });
+  
+  const [archivedPagination, setArchivedPagination] = useState({
+    page: 1, 
+    pageSize: 10
+  });
+
+  const handleActivePaginationChange = (newPagination: any) => {
+    setActivePagination({
+      page: newPagination.pageIndex + 1,
+      pageSize: newPagination.pageSize
+    });
+    updateState({
+      activePage: newPagination.pageIndex + 1,
+      activePageSize: newPagination.pageSize
+    });
+  };
+
+  const handleArchivedPaginationChange = (newPagination: any) => {
+    setArchivedPagination({
+      page: newPagination.pageIndex + 1,
+      pageSize: newPagination.pageSize
+    });
+    updateState({
+      archivedPage: newPagination.pageIndex + 1,
+      archivedPageSize: newPagination.pageSize
+    });
+  };
+
   // Fetch branches data
   useEffect(() => {
     const fetchBranches = async () => {
@@ -184,8 +216,8 @@ const ProductsTable = () => {
         size: 100, 
         Cell: ({cell}) => {
           const tempElement = document.createElement('div');
-tempElement.innerHTML = cell.getValue();
-const innerText = tempElement.textContent || tempElement.innerText;
+          tempElement.innerHTML = cell.getValue();
+          const innerText = tempElement.textContent || tempElement.innerText;
         // console.log('doc',innerText.trim())
         return <span>{innerText.trim()}</span> 
         }
@@ -807,6 +839,7 @@ const innerText = tempElement.textContent || tempElement.innerText;
   //     },
   //   }
   // )
+  // console.log(active)
   const updateCategoryAvailable = useMutation(({id,update}) => updateProduct(id,update), {
     // 💡 response of the mutation is passed to onSuccess
     onSuccess: () => {
@@ -836,13 +869,12 @@ const innerText = tempElement.textContent || tempElement.innerText;
     // state: { draggingRow },
   };
   useEffect(()=>{
-      // console.log("Categoriese",active)
-      setActiveProducts(active);
-      setArchivedProducts(archived);
-      // console.log('brnaches',activeBranches)
-      setBranches([...activeBranches,...archivedBranches])
-  },[active,archived, trigger,activeBranches,archivedBranches])
-  // useEffect(() => {
+    // Access the data property from the response objects
+    setActiveProducts(active.data || []);
+    setArchivedProducts(archived.data || []);
+    setBranches([...activeBranches,...archivedBranches])
+  },[active.data, archived.data, trigger, activeBranches, archivedBranches])
+    // useEffect(() => {
   //   const getAvBranches = async () => {
   //     try {
   //       const res = await getBranches();
@@ -874,7 +906,20 @@ const innerText = tempElement.textContent || tempElement.innerText;
     enableRowOrdering: true,
     enableSorting: false,
     enableExpandAll: false,
+    enablePagination: true,
+    manualPagination: true, // If you're handling pagination manually
+    rowCount: active.total || 0, // Total records for pagination
+    onPaginationChange: (updater) => {
+      const newPagination = typeof updater === 'function' 
+        ? updater(table1.getState().pagination) 
+        : updater;
+      handleActivePaginationChange(newPagination);
+    },
     state: {
+      pagination: {
+        pageIndex: activePagination.page - 1,
+        pageSize: activePagination.pageSize
+      },
       columnOrder: [
         'mrt-row-select', //move the built-in selection column to the end of the table
         'mrt-row-drag',
@@ -1185,6 +1230,16 @@ const innerText = tempElement.textContent || tempElement.innerText;
     enableEditing: true,
     editDisplayMode: 'row',
     createDisplayMode: 'row', 
+     // Add pagination props:
+    enablePagination: true,
+    manualPagination: true,
+    rowCount: archived.total || 0,
+    onPaginationChange: (updater) => {
+      const newPagination = typeof updater === 'function' 
+        ? updater(table2.getState().pagination) 
+        : updater;
+      handleArchivedPaginationChange(newPagination);
+    },
     rowPinningDisplayMode: 'select-sticky',
     positionToolbarAlertBanner: 'bottom',
     positionActionsColumn:'last',
@@ -1192,6 +1247,10 @@ const innerText = tempElement.textContent || tempElement.innerText;
     enableSorting: false,
     enableExpandAll: false,
     state: {
+      pagination: {
+        pageIndex: archivedPagination.page - 1,
+        pageSize: archivedPagination.pageSize
+      },
       columnOrder: [
         'mrt-row-select', //move the built-in selection column to the end of the table
         'mrt-row-drag',
@@ -1253,7 +1312,7 @@ const innerText = tempElement.textContent || tempElement.innerText;
         <div>
         Categories : 
         {row.original.category.map((category,index) => <span key={index} className="badge badge-warning me-1">
-              {category.category.name}
+              {category.category?.name}
             </span>)}
           </div>
         <div>

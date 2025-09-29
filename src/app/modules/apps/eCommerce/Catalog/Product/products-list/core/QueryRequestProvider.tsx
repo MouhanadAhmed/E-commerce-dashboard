@@ -10,11 +10,18 @@ import {
 const QueryRequestContext = createContext<QueryRequestContextProps>(initialQueryRequest)
 
 const QueryRequestProvider: FC<WithChildren> = ({children}) => {
-  const [state, setState] = useState<QueryState>(initialQueryRequest.state)
+  const [state, setState] = useState({
+    ...initialQueryRequest.state,
+    // Separate pagination for active and archived tables
+    activePage: 1,
+    activePageSize: 10,
+    archivedPage: 1,
+    archivedPageSize: 10
+  })
 
-  const updateState = (updates: Partial<QueryState>) => {
+  const updateState = (updates: any) => {
     const updatedState = {...state, ...updates} as QueryState
-    setState(updatedState)
+    setState(updatedState as any)
   }
 
   return (

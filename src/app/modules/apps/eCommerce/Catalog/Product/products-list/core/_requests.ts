@@ -15,23 +15,35 @@ if (initialQueryRequest.state && typeof initialQueryRequest.state === 'object') 
   .join('&');
   baseUrl=GET_PRODUCTS_URL+'&'+queryString
 }
-const getProducts = (query?:string): Promise<ProductsQueryResponse> => {
-  // console.log(query);
-  baseUrl=GET_PRODUCTS_URL+'&'+query
+const getProducts = (query?: string): Promise<ProductsQueryResponse> => {
+  baseUrl = GET_PRODUCTS_URL + '&' + query
   return axios
-    .get(`${query != undefined?baseUrl:GET_PRODUCTS_URL}`)
-    .then(((response) => {
-      // console.log("_requests => Product",response.data.data)
-      return response.data}));
+    .get(`${query != undefined ? baseUrl : GET_PRODUCTS_URL}`)
+    .then((response) => {
+      // Return both data and pagination info
+      return {
+        data: response.data.data,           // The actual products array
+        total: response.data.totalItems,         // Total records
+        page: response.data.currentPage,           // Current page
+        pageSize: response.data.limit,   // Page size  
+        totalPages: response.data.totalPages // Total pages
+      };
+    });
 };
-const getArchivedProducts = (query?:string): Promise<ProductsQueryResponse> => {
-  // console.log(initialQueryRequest.state)
-  baseUrl=GET_ARCHIVED_PRODUCTS_URL+'&'+query
+
+const getArchivedProducts = (query?: string): Promise<ProductsQueryResponse> => {
+  baseUrl = GET_ARCHIVED_PRODUCTS_URL + '&' + query
   return axios
-    .get(`${query != undefined?baseUrl:GET_ARCHIVED_PRODUCTS_URL}`)
-    .then(((response) => {
-      // console.log("_requests => Product",response.data.data)
-      return response.data}));
+    .get(`${query != undefined ? baseUrl : GET_ARCHIVED_PRODUCTS_URL}`)
+    .then((response) => {
+      return {
+        data: response.data.data,           // The actual products array
+        total: response.data.totalItems,         // Total records
+        page: response.data.currentPage,           // Current page
+        pageSize: response.data.limit,   // Page size  
+        totalPages: response.data.totalPages // Total pages
+      };
+    });
 };
 
 const getProductById = async (id: ID) => {
