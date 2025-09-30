@@ -37,6 +37,8 @@ const PrivateRoutes = () => {
   const TypesPage = lazy(()=> import('../modules/apps/eCommerce/Catalog/Type/Type'))
   const SubCategoriesPage = lazy(()=> import('../modules/apps/eCommerce/Catalog/SubCategory/SubCategoriesPage'))
   const CategoriesPage = lazy(()=> import('../modules/apps/eCommerce/Catalog/Category/CategoriesPage'))
+  const GroupOfOptionsPage = lazy(()=> import('../modules/apps/eCommerce/Catalog/GroupOfOptions/GroupOfOptionsPage'))
+  // const OptionsPage = lazy(()=> import('../modules/apps/eCommerce/Catalog/Options/OptionsPage'))
   
   
   
@@ -113,6 +115,8 @@ const PrivateRoutes = () => {
               <BranchesPage />
               <ProductsPage/>
               <AddProductsPage/>
+              <GroupOfOptionsPage/>
+              {/* <OptionsPage/> */}
             </SuspensedView>
           }
         />

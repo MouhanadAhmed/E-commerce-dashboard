@@ -118,6 +118,8 @@ const SidebarMenuMain = () => {
         <SidebarMenuItem to='/apps/eCommerce/types' title='Types' hasBullet={true} />
         <SidebarMenuItem to='/apps/eCommerce/extras' title='Extras' hasBullet={true} />
         <SidebarMenuItem to='/apps/eCommerce/branches' title='Branches' hasBullet={true} />
+        <SidebarMenuItem to='/apps/eCommerce/groupOfOptions' title='Group Of Options' hasBullet={true} />
+        <SidebarMenuItem to='/apps/eCommerce/options' title='Options' hasBullet={true} />
         <SidebarMenuItemWithSub
         to='/apps/eCommerce/products'
         title='Products'
