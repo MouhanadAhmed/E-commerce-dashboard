@@ -1053,7 +1053,7 @@ const ProductsTable = () => {
     enablePagination: true,
     initialState: {
       pagination: {
-        pageSize: 1000,
+        pageSize: 10,
       },
     },
     state: {
@@ -1399,6 +1399,11 @@ const ProductsTable = () => {
     createDisplayMode: "row",
     // Add pagination props:
     enablePagination: true,
+    initialState: {
+      pagination: {
+        pageSize: 10,
+      },
+    },
     rowPinningDisplayMode: "select-sticky",
     positionToolbarAlertBanner: "bottom",
     positionActionsColumn: "last",
