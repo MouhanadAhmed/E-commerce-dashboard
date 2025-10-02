@@ -82,6 +82,7 @@ export type QueryResponseContextProps<T> = {
   refetch: () => void;
   isLoading: boolean;
   query: string;
+  activeResponse?: Response<Array<T>> | undefined;
 };
 
 export const initialQueryResponse = {

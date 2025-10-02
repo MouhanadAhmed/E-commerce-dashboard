@@ -26,24 +26,18 @@ if (
   baseUrl = GET_GROUPS_URL + "&" + queryString;
 }
 const getGroups = (query?: string): Promise<GroupsQueryResponse> => {
-  // console.log(query);
-  // if(query != undefined)
   baseUrl = GET_GROUPS_URL + "&" + query;
   return axios
     .get(`${query != undefined ? baseUrl : GET_GROUPS_URL}`)
     .then((response) => {
-      // console.log("_requests => categories",response.data.data)
       return response.data;
     });
 };
 const getArchivedGroups = (query?: string): Promise<GroupsQueryResponse> => {
-  // console.log(initialQueryRequest.state)
-  // console.log(query);
   baseUrl = GET_ARCHIVED_GROUPS_URL + "&" + query;
   return axios
     .get(`${query != undefined ? baseUrl : GET_ARCHIVED_GROUPS_URL}`)
     .then((response) => {
-      // console.log("_requests => Groups",response.data.data)
       return response.data;
     });
 };

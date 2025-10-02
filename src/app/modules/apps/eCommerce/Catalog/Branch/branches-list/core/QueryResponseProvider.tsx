@@ -1,7 +1,14 @@
 /* eslint-disable react-refresh/only-export-components */
 /* eslint-disable react-hooks/exhaustive-deps */
-import { FC, useContext, useState, useEffect, useMemo } from 'react'
-import { useQuery } from 'react-query'
+import {
+  FC,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+  createContext,
+} from "react";
+import { useQuery } from "react-query";
 import {
   createResponseContext,
   initialQueryResponse,
@@ -10,103 +17,217 @@ import {
   QUERIES,
   stringifyRequestQuery,
   WithChildren,
-} from '../../../../../../../../_metronic/helpers'
-import { useQueryRequest } from './QueryRequestProvider'
-import { getBranches, getArchivedBranches } from './_requests'
-import { Branch } from './_models'
+} from "../../../../../../../../_metronic/helpers";
+import { useQueryRequest } from "./QueryRequestProvider";
+import { getBranches, getArchivedBranches } from "./_requests";
+import { Branch } from "./_models";
 
-const QueryResponseContext = createResponseContext<Branch>(initialQueryResponse)
-const QueryResponseProvider: FC<WithChildren> = ({ children }) => {
-  const { state } = useQueryRequest()
-  const [query, setQuery] = useState<string>(stringifyRequestQuery(state))
-  const [archivedQuery, setArchivedQuery] = useState<string>(stringifyRequestQuery(state))
-  const updatedQuery = useMemo(() => stringifyRequestQuery(state), [state])
-  const updatedArchivedQuery = useMemo(() => stringifyRequestQuery(state), [state])
+// Create separate contexts for active and archived branches
+const ActiveBranchesContext =
+  createResponseContext<Branch>(initialQueryResponse);
+const ArchivedBranchesContext =
+  createResponseContext<Branch>(initialQueryResponse);
+
+// Active Branches Provider
+const ActiveBranchesProvider: FC<WithChildren> = ({ children }) => {
+  const { state } = useQueryRequest();
+  const [query, setQuery] = useState<string>(stringifyRequestQuery(state));
+  const updatedQuery = useMemo(() => stringifyRequestQuery(state), [state]);
 
   useEffect(() => {
     if (query !== updatedQuery) {
-      if(query.match(/search=([^&]*)/)){
-        setQuery(query.replace(/search=/, 'keyword='))
+      if (query.match(/search=([^&]*)/)) {
+        setQuery(query.replace(/search=/, "keyword="));
       }
-      console.log('query',   decodeURIComponent(query))
-      setQuery(decodeURIComponent(updatedQuery))
+      console.log("active query", decodeURIComponent(query));
+      setQuery(decodeURIComponent(updatedQuery));
     }
-  }, [updatedQuery])
-
-  useEffect(() => {
-    if (archivedQuery !== updatedArchivedQuery) {
-      if(archivedQuery.match(/search=([^&]*)/)){
-        setArchivedQuery(archivedQuery.replace(/search=/, 'keyword='))
-      }
-      console.log('archivedQuery', decodeURIComponent(archivedQuery))
-      setArchivedQuery(decodeURIComponent(updatedArchivedQuery))
-    }
-  }, [updatedArchivedQuery])
+  }, [updatedQuery]);
 
   const {
-    isFetching: isFetchingBranches,
-    refetch: refetchBranches,
-    data: responseBranches,
-  } = useQuery(
-    `${QUERIES.BRNACHES_LIST}-${query}`,
-    () => getBranches(query),
-    { cacheTime: 0, keepPreviousData: true, refetchOnWindowFocus: false }
-  )
-
-  const {
-    isFetching: isFetchingArchived,
-    refetch: refetchArchived,
-    data: responseArchived,
-  } = useQuery(
-    `${QUERIES.ARCHIVED_BRNACHES_LIST}-${archivedQuery}`,
-    () => getArchivedBranches(archivedQuery),
-    { cacheTime: 0, keepPreviousData: true, refetchOnWindowFocus: false }
-  )
+    isFetching,
+    refetch,
+    data: response,
+  } = useQuery(`${QUERIES.BRNACHES_LIST}-${query}`, () => getBranches(query), {
+    cacheTime: 0,
+    keepPreviousData: true,
+    refetchOnWindowFocus: false,
+  });
 
   return (
-    <QueryResponseContext.Provider value={{
-      isLoading: isFetchingBranches || isFetchingArchived,
-      refetch: () => { refetchBranches(); refetchArchived() },
-      response: { active: responseBranches, archived: responseArchived },
-      query,
-      
-    }}>
+    <ActiveBranchesContext.Provider
+      value={{
+        isLoading: isFetching,
+        refetch,
+        response,
+        query,
+      }}
+    >
       {children}
-    </QueryResponseContext.Provider>
-  )
-}
+    </ActiveBranchesContext.Provider>
+  );
+};
 
-const useQueryResponse = () => useContext(QueryResponseContext)
+// Archived Branches Provider
+const ArchivedBranchesProvider: FC<WithChildren> = ({ children }) => {
+  const { state } = useQueryRequest();
+  const [query, setQuery] = useState<string>(stringifyRequestQuery(state));
+  const updatedQuery = useMemo(() => stringifyRequestQuery(state), [state]);
 
-const useQueryResponseData = () => {
-  const { response } = useQueryResponse()
+  useEffect(() => {
+    if (query !== updatedQuery) {
+      if (query.match(/search=([^&]*)/)) {
+        setQuery(query.replace(/search=/, "keyword="));
+      }
+      console.log("archived query", decodeURIComponent(query));
+      setQuery(decodeURIComponent(updatedQuery));
+    }
+  }, [updatedQuery]);
+
+  const {
+    isFetching,
+    refetch,
+    data: response,
+  } = useQuery(
+    `${QUERIES.ARCHIVED_BRNACHES_LIST}-${query}`,
+    () => getArchivedBranches(query),
+    {
+      cacheTime: 0,
+      keepPreviousData: true,
+      refetchOnWindowFocus: false,
+    }
+  );
+
+  return (
+    <ArchivedBranchesContext.Provider
+      value={{
+        isLoading: isFetching,
+        refetch,
+        response,
+        query,
+      }}
+    >
+      {children}
+    </ArchivedBranchesContext.Provider>
+  );
+};
+
+// Main Query Response Provider (combines both)
+const QueryResponseProvider: FC<WithChildren> = ({ children }) => {
+  return (
+    <ActiveBranchesProvider>
+      <ArchivedBranchesProvider>{children}</ArchivedBranchesProvider>
+    </ActiveBranchesProvider>
+  );
+};
+
+// Active Branches Hooks
+const useActiveBranches = () => useContext(ActiveBranchesContext);
+
+const useActiveBranchesData = () => {
+  const { response } = useActiveBranches();
   if (!response) {
-    return { active: [], archived: [] }
+    return [];
   }
-  return {
-    active: response?.active?.data || [],
-    archived: response?.archived?.data || []
-  }
-}
+  return response?.data || [];
+};
 
-const useQueryResponsePagination = () => {
+const useActiveBranchesPagination = () => {
   const defaultPaginationState: PaginationState = {
     links: [],
     ...initialQueryState,
+  };
+
+  const { response } = useActiveBranches();
+  if (!response || !response.payload || !response.payload.pagination) {
+    return defaultPaginationState;
   }
 
-  const { response } = useQueryResponse()
-  if (!response || !response.active || !response.active.payload || !response.active.payload.pagination) {
-    return defaultPaginationState
+  return response.payload.pagination;
+};
+
+const useActiveBranchesLoading = (): boolean => {
+  const { isLoading } = useActiveBranches();
+  return isLoading;
+};
+
+// Archived Branches Hooks
+const useArchivedBranches = () => useContext(ArchivedBranchesContext);
+
+const useArchivedBranchesData = () => {
+  const { response } = useArchivedBranches();
+  console.log("archived response", response);
+  if (!response) {
+    return [];
+  }
+  return response?.data || [];
+};
+
+const useArchivedBranchesPagination = () => {
+  const defaultPaginationState: PaginationState = {
+    links: [],
+    ...initialQueryState,
+  };
+
+  const { response } = useArchivedBranches();
+  if (!response || !response.payload || !response.payload.pagination) {
+    return defaultPaginationState;
   }
 
-  return response.active.payload.pagination
-}
+  return response.payload.pagination;
+};
+
+const useArchivedBranchesLoading = (): boolean => {
+  const { isLoading } = useArchivedBranches();
+  return isLoading;
+};
+
+// Legacy hooks for backward compatibility
+const useQueryResponse = () => {
+  const active = useActiveBranches();
+  const archived = useArchivedBranches();
+
+  return {
+    isLoading: active.isLoading || archived.isLoading,
+    refetch: () => {
+      active.refetch();
+      archived.refetch();
+    },
+    response: {
+      active: active.response,
+      archived: archived.response,
+    },
+    activeResponse: active.response,
+    query: active.query,
+  };
+};
+
+const useQueryResponseData = () => {
+  const activeData = useActiveBranchesData();
+  const archivedData = useArchivedBranchesData();
+
+  return {
+    active: activeData,
+    archived: archivedData,
+  };
+};
+
+const useQueryActiveResponseData = () => {
+  const activeData = useActiveBranchesData();
+  return {
+    active: activeData,
+  };
+};
+
+const useQueryResponsePagination = () => {
+  return useActiveBranchesPagination();
+};
 
 const useQueryResponseLoading = (): boolean => {
-  const { isLoading } = useQueryResponse()
-  return isLoading
-}
+  const activeLoading = useActiveBranchesLoading();
+  const archivedLoading = useArchivedBranchesLoading();
+  return activeLoading || archivedLoading;
+};
 
 export {
   QueryResponseProvider,
@@ -114,8 +235,14 @@ export {
   useQueryResponseData,
   useQueryResponsePagination,
   useQueryResponseLoading,
-}
-// function stringIComponent(query: string): any {
-//   throw new Error('Function not implemented.')
-// }
-
+  useQueryActiveResponseData,
+  // New separate hooks
+  useActiveBranches,
+  useActiveBranchesData,
+  useActiveBranchesPagination,
+  useActiveBranchesLoading,
+  useArchivedBranches,
+  useArchivedBranchesData,
+  useArchivedBranchesPagination,
+  useArchivedBranchesLoading,
+};
