@@ -1,13 +1,13 @@
-import {FC} from 'react'
+import { FC } from "react";
 
 type Props = {
-  lastLogin?: string
-}
+  lastLogin?: string;
+};
 
-const UserLastLoginCell: FC<Props> = ({lastLogin}) => {
+const UserLastLoginCell: FC<Props> = ({ lastLogin }) => {
   const calculateTimeDifference = (timestamp) => {
     if (!timestamp) {
-      return '';
+      return "";
     }
     const timestampDate = new Date(timestamp);
     const now = new Date();
@@ -23,14 +23,18 @@ const UserLastLoginCell: FC<Props> = ({lastLogin}) => {
 
     if (differenceInMilliseconds < oneDay) {
       if (differenceInMilliseconds < oneHour) {
-        const differenceInMinutes = Math.floor(differenceInMilliseconds / oneMinute);
+        const differenceInMinutes = Math.floor(
+          differenceInMilliseconds / oneMinute,
+        );
         formattedDifference = `${differenceInMinutes} minutes ago`;
       } else {
-        const differenceInHours = Math.floor(differenceInMilliseconds / oneHour);
+        const differenceInHours = Math.floor(
+          differenceInMilliseconds / oneHour,
+        );
         formattedDifference = `${differenceInHours} hours ago`;
       }
     } else if (differenceInMilliseconds < oneDay * 2) {
-      formattedDifference = 'yesterday';
+      formattedDifference = "yesterday";
     } else if (differenceInMilliseconds < oneWeek) {
       const differenceInDays = Math.floor(differenceInMilliseconds / oneDay);
       formattedDifference = `${differenceInDays} days ago`;
@@ -43,12 +47,14 @@ const UserLastLoginCell: FC<Props> = ({lastLogin}) => {
   };
 
   return (
-    <div className='badge badge-light fw-bolder'>{calculateTimeDifference(lastLogin)}</div>
+    <div className="badge badge-light fw-bolder">
+      {calculateTimeDifference(lastLogin)}
+    </div>
   );
 };
 
+{
+  /* <div className='badge badge-light fw-bolder'>{last_login}</div> */
+}
 
-{/* <div className='badge badge-light fw-bolder'>{last_login}</div> */}
-
-
-export {UserLastLoginCell}
+export { UserLastLoginCell };

@@ -1,65 +1,64 @@
-
-import {useEffect, useRef, FC} from 'react'
-import ApexCharts, {ApexOptions} from 'apexcharts'
-import {KTIcon} from '../../../helpers'
-import {getCSSVariableValue} from '../../../assets/ts/_utils'
-import {Dropdown1} from '../../content/dropdown/Dropdown1'
-import clsx from 'clsx'
-import {useThemeMode} from '../../layout/theme-mode/ThemeModeProvider'
+import { useEffect, useRef, FC } from "react";
+import ApexCharts, { ApexOptions } from "apexcharts";
+import { KTIcon } from "../../../helpers";
+import { getCSSVariableValue } from "../../../assets/ts/_utils";
+import { Dropdown1 } from "../../content/dropdown/Dropdown1";
+import clsx from "clsx";
+import { useThemeMode } from "../../layout/theme-mode/ThemeModeProvider";
 
 type Props = {
-  className: string
-  chartColor: string
-  chartHeight: string
-}
+  className: string;
+  chartColor: string;
+  chartHeight: string;
+};
 
-const MixedWidget3: FC<Props> = ({className, chartColor, chartHeight}) => {
-  const chartRef = useRef<HTMLDivElement | null>(null)
-  const {mode} = useThemeMode()
+const MixedWidget3: FC<Props> = ({ className, chartColor, chartHeight }) => {
+  const chartRef = useRef<HTMLDivElement | null>(null);
+  const { mode } = useThemeMode();
   const refreshChart = () => {
     if (!chartRef.current) {
-      return
+      return;
     }
 
-    const chart = new ApexCharts(chartRef.current, chartOptions(chartHeight))
+    const chart = new ApexCharts(chartRef.current, chartOptions(chartHeight));
     if (chart) {
-      chart.render()
+      chart.render();
     }
 
-    return chart
-  }
+    return chart;
+  };
 
   useEffect(() => {
-    const chart = refreshChart()
+    const chart = refreshChart();
 
     return () => {
       if (chart) {
-        chart.destroy()
+        chart.destroy();
       }
-    }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chartRef, mode])
+  }, [chartRef, mode]);
 
   return (
     <div className={`card ${className}`}>
       {/* begin::Header  */}
       <div className={`card-header border-0 bg-${chartColor} py-5`}>
-        <h3 className='card-title fw-bold text-white'>Sales Progress</h3>
+        <h3 className="card-title fw-bold text-white">Sales Progress</h3>
 
-        <div className='card-toolbar'>
+        <div className="card-toolbar">
           {/* begin::Menu  */}
           <button
-            type='button'
+            type="button"
             className={clsx(
-              'btn btn-sm btn-icon btn-color-white btn-active-white',
+              "btn btn-sm btn-icon btn-color-white btn-active-white",
               `btn-active-color-${chartColor}`,
-              'border-0 me-n3'
+              "border-0 me-n3",
             )}
-            data-kt-menu-trigger='click'
-            data-kt-menu-placement='bottom-end'
-            data-kt-menu-flip='top-end'
+            data-kt-menu-trigger="click"
+            data-kt-menu-placement="bottom-end"
+            data-kt-menu-flip="top-end"
           >
-            <KTIcon iconName='category' className='fs-2' />
+            <KTIcon iconName="category" className="fs-2" />
           </button>
           <Dropdown1 />
           {/* end::Menu  */}
@@ -68,7 +67,7 @@ const MixedWidget3: FC<Props> = ({className, chartColor, chartHeight}) => {
       {/* end::Header  */}
 
       {/* begin::Body  */}
-      <div className='card-body p-0'>
+      <div className="card-body p-0">
         {/* begin::Chart  */}
         <div
           ref={chartRef}
@@ -77,38 +76,38 @@ const MixedWidget3: FC<Props> = ({className, chartColor, chartHeight}) => {
         {/* end::Chart  */}
 
         {/* begin::Stats  */}
-        <div className='card-rounded bg-body mt-n10 position-relative card-px py-15'>
+        <div className="card-rounded bg-body mt-n10 position-relative card-px py-15">
           {/* begin::Row  */}
-          <div className='row g-0 mb-7'>
+          <div className="row g-0 mb-7">
             {/* begin::Col  */}
-            <div className='col mx-5'>
-              <div className='fs-6 text-gray-500'>Avarage Sale</div>
-              <div className='fs-2 fw-bold text-gray-800'>$650</div>
+            <div className="col mx-5">
+              <div className="fs-6 text-gray-500">Avarage Sale</div>
+              <div className="fs-2 fw-bold text-gray-800">$650</div>
             </div>
             {/* end::Col  */}
 
             {/* begin::Col  */}
-            <div className='col mx-5'>
-              <div className='fs-6 text-gray-500'>Comissions</div>
-              <div className='fs-2 fw-bold text-gray-800'>$29,500</div>
+            <div className="col mx-5">
+              <div className="fs-6 text-gray-500">Comissions</div>
+              <div className="fs-2 fw-bold text-gray-800">$29,500</div>
             </div>
             {/* end::Col  */}
           </div>
           {/* end::Row  */}
 
           {/* begin::Row  */}
-          <div className='row g-0'>
+          <div className="row g-0">
             {/* begin::Col  */}
-            <div className='col mx-5'>
-              <div className='fs-6 text-gray-500'>Revenue</div>
-              <div className='fs-2 fw-bold text-gray-800'>$55,000</div>
+            <div className="col mx-5">
+              <div className="fs-6 text-gray-500">Revenue</div>
+              <div className="fs-2 fw-bold text-gray-800">$55,000</div>
             </div>
             {/* end::Col  */}
 
             {/* begin::Col  */}
-            <div className='col mx-5'>
-              <div className='fs-6 text-gray-500'>Expenses</div>
-              <div className='fs-2 fw-bold text-gray-800'>$1,130,600</div>
+            <div className="col mx-5">
+              <div className="fs-6 text-gray-500">Expenses</div>
+              <div className="fs-2 fw-bold text-gray-800">$1,130,600</div>
             </div>
             {/* end::Col  */}
           </div>
@@ -118,27 +117,27 @@ const MixedWidget3: FC<Props> = ({className, chartColor, chartHeight}) => {
       </div>
       {/* end::Body  */}
     </div>
-  )
-}
+  );
+};
 
 const chartOptions = (chartHeight: string): ApexOptions => {
-  const labelColor = getCSSVariableValue('--bs-gray-500')
-  const borderColor = getCSSVariableValue('--bs-gray-200')
+  const labelColor = getCSSVariableValue("--bs-gray-500");
+  const borderColor = getCSSVariableValue("--bs-gray-200");
 
   return {
     series: [
       {
-        name: 'Net Profit',
+        name: "Net Profit",
         data: [35, 65, 75, 55, 45, 60, 55],
       },
       {
-        name: 'Revenue',
+        name: "Revenue",
         data: [40, 70, 80, 60, 50, 65, 60],
       },
     ],
     chart: {
-      fontFamily: 'inherit',
-      type: 'bar',
+      fontFamily: "inherit",
+      type: "bar",
       height: chartHeight,
       toolbar: {
         show: false,
@@ -150,7 +149,7 @@ const chartOptions = (chartHeight: string): ApexOptions => {
     plotOptions: {
       bar: {
         horizontal: false,
-        columnWidth: '30%',
+        columnWidth: "30%",
         borderRadius: 5,
       },
     },
@@ -163,10 +162,10 @@ const chartOptions = (chartHeight: string): ApexOptions => {
     stroke: {
       show: true,
       width: 1,
-      colors: ['transparent'],
+      colors: ["transparent"],
     },
     xaxis: {
-      categories: ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+      categories: ["Feb", "Mar", "Apr", "May", "Jun", "Jul"],
       axisBorder: {
         show: false,
       },
@@ -176,7 +175,7 @@ const chartOptions = (chartHeight: string): ApexOptions => {
       labels: {
         style: {
           colors: labelColor,
-          fontSize: '12px',
+          fontSize: "12px",
         },
       },
     },
@@ -186,49 +185,49 @@ const chartOptions = (chartHeight: string): ApexOptions => {
       labels: {
         style: {
           colors: labelColor,
-          fontSize: '12px',
+          fontSize: "12px",
         },
       },
     },
     fill: {
-      type: ['solid', 'solid'],
+      type: ["solid", "solid"],
       opacity: [0.25, 1],
     },
     states: {
       normal: {
         filter: {
-          type: 'none',
+          type: "none",
           value: 0,
         },
       },
       hover: {
         filter: {
-          type: 'none',
+          type: "none",
           value: 0,
         },
       },
       active: {
         allowMultipleDataPointsSelection: false,
         filter: {
-          type: 'none',
+          type: "none",
           value: 0,
         },
       },
     },
     tooltip: {
       style: {
-        fontSize: '12px',
+        fontSize: "12px",
       },
       y: {
         formatter: function (val) {
-          return '$' + val + ' thousands'
+          return "$" + val + " thousands";
         },
       },
       marker: {
         show: false,
       },
     },
-    colors: ['#ffffff', '#ffffff'],
+    colors: ["#ffffff", "#ffffff"],
     grid: {
       borderColor: borderColor,
       strokeDashArray: 4,
@@ -242,7 +241,7 @@ const chartOptions = (chartHeight: string): ApexOptions => {
         right: 20,
       },
     },
-  }
-}
+  };
+};
 
-export {MixedWidget3}
+export { MixedWidget3 };

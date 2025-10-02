@@ -104,10 +104,10 @@ const ProductsTable = () => {
   const [trigger, setTrigger] = useState(false);
   // const isLoading = useQueryResponseLoading()
   const [activeProducts, setActiveProducts] = useState<Product[]>(
-    active.data || []
+    active.data || [],
   );
   const [archivedProducts, setArchivedProducts] = useState<Product[]>(
-    () => archived.data || []
+    () => archived.data || [],
   );
   const [draggingRow, setDraggingRow] = useState<MRT_Row<Product> | null>(null);
   const [hoveredTable, setHoveredTable] = useState<string | null>(null);
@@ -215,7 +215,7 @@ const ProductsTable = () => {
 
   const memoizedBranches = useMemo(
     () => branches.map((branch) => ({ value: branch._id, label: branch.name })),
-    [branches]
+    [branches],
   );
   const memoizedCategories = useMemo(
     () =>
@@ -223,7 +223,7 @@ const ProductsTable = () => {
         value: category._id,
         label: category.name,
       })),
-    [categories]
+    [categories],
   );
   const memoizedSubCategories = useMemo(
     () =>
@@ -231,7 +231,7 @@ const ProductsTable = () => {
         value: subCategory._id,
         label: subCategory.name,
       })),
-    [subcategories]
+    [subcategories],
   );
   const memoizedChildSubCategories = useMemo(
     () =>
@@ -239,15 +239,15 @@ const ProductsTable = () => {
         value: childSubCategory._id,
         label: childSubCategory.name,
       })),
-    [childSubCategories]
+    [childSubCategories],
   );
   const memoizedExtras = useMemo(
     () => extras.map((extra) => ({ value: extra._id, label: extra.name })),
-    [extras]
+    [extras],
   );
   const memoizedTypes = useMemo(
     () => types.map((type) => ({ value: type._id, label: type.name })),
-    [types]
+    [types],
   );
 
   const parser = new DOMParser();
@@ -847,7 +847,7 @@ const ProductsTable = () => {
       memoizedChildSubCategories,
       memoizedExtras,
       memoizedTypes,
-    ]
+    ],
   );
 
   const editCategoriesSchema = Yup.object().shape({
@@ -926,13 +926,13 @@ const ProductsTable = () => {
         queryClient.refetchQueries([`${QUERIES.ARCHIVED_CATEGORIES_LIST}`]);
         setTrigger(true);
       },
-    }
+    },
   );
   const duplicateItem = useMutation(
     () =>
       duplicateProduct(
         productToDuplicate?._id,
-        Number(duplicateRef?.current?.value)
+        Number(duplicateRef?.current?.value),
       ),
     {
       // 💡 response of the mutation is passed to onSuccess
@@ -944,7 +944,7 @@ const ProductsTable = () => {
         setTrigger(true);
         handleCloseSubCategoriesModal();
       },
-    }
+    },
   );
 
   const deleteSelectedItems = useMutation(
@@ -960,7 +960,7 @@ const ProductsTable = () => {
         setTrigger(true);
         clearSelected();
       },
-    }
+    },
   );
 
   // const {
@@ -995,7 +995,7 @@ const ProductsTable = () => {
         refetch();
         setTrigger(true);
       },
-    }
+    },
   );
 
   const commonTableProps: Partial<MRT_TableOptions<Product>> & {
@@ -1173,7 +1173,7 @@ const ProductsTable = () => {
             draggingRow!.original,
           ]);
           setActiveProducts((activeProducts) =>
-            activeProducts.filter((d) => d !== draggingRow!.original)
+            activeProducts.filter((d) => d !== draggingRow!.original),
           );
         } else if (hoveredRow && draggingRow) {
           // console.log('hoveredRow',hoveredRow)
@@ -1506,7 +1506,7 @@ const ProductsTable = () => {
             draggingRow!.original,
           ]);
           setActiveProducts((activeProducts) =>
-            activeProducts.filter((d) => d !== draggingRow!.original)
+            activeProducts.filter((d) => d !== draggingRow!.original),
           );
         } else if (hoveredRow && draggingRow) {
           // console.log('hoveredRow',hoveredRow)

@@ -95,7 +95,7 @@ const ArchivedBranchesProvider: FC<WithChildren> = ({ children }) => {
       cacheTime: 0,
       keepPreviousData: true,
       refetchOnWindowFocus: false,
-    }
+    },
   );
 
   return (

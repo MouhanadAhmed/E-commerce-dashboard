@@ -5,12 +5,13 @@ import { Permission, PermissionsQueryResponse } from "./_models";
 const API_URL = import.meta.env.VITE_APP_THEME_API_URL;
 const USER_URL = `${API_URL}/permission`;
 const GET_USERS_URL = `${API_URL}/permission`;
-let baseUrl ="";
-const getPermissions = async (query?:string): Promise<PermissionsQueryResponse> => {
-  console.log('query',query,query?.length)
-  baseUrl=GET_USERS_URL+'?'+query
-  const d = await axios
-    .get(`${query != undefined?baseUrl:GET_USERS_URL}`);
+let baseUrl = "";
+const getPermissions = async (
+  query?: string,
+): Promise<PermissionsQueryResponse> => {
+  console.log("query", query, query?.length);
+  baseUrl = GET_USERS_URL + "?" + query;
+  const d = await axios.get(`${query != undefined ? baseUrl : GET_USERS_URL}`);
   return d.data;
 };
 
@@ -21,16 +22,20 @@ const getPermissionById = (id: ID): Promise<Permission | undefined> => {
     .then((response: Response<Permission>) => response.Permission);
 };
 
-const createPermission = (Permission: Permission): Promise<Permission | undefined> => {
+const createPermission = (
+  Permission: Permission,
+): Promise<Permission | undefined> => {
   return axios
-    .post(USER_URL, {name:Permission.name})
+    .post(USER_URL, { name: Permission.name })
     .then((response: AxiosResponse<Response<Permission>>) => response.data)
     .then((response: Response<Permission>) => response.data);
 };
 
-const updatePermission = (Permission: Permission): Promise<Permission | undefined> => {
+const updatePermission = (
+  Permission: Permission,
+): Promise<Permission | undefined> => {
   return axios
-    .put(`${USER_URL}/${Permission._id}`,{name: Permission.name})
+    .put(`${USER_URL}/${Permission._id}`, { name: Permission.name })
     .then((response: AxiosResponse<Response<Permission>>) => response.data)
     .then((response: Response<Permission>) => response.data);
 };

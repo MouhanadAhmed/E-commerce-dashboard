@@ -48,7 +48,7 @@ const editGroupSchema = Yup.object().shape({
           .required("Price is required"),
         available: Yup.boolean().required("Option availability is required"),
         isDefault: Yup.boolean().required("Default selection is required"),
-      })
+      }),
     )
     .test(
       "single-default",
@@ -56,10 +56,10 @@ const editGroupSchema = Yup.object().shape({
       function (options) {
         if (!options || options.length === 0) return true;
         const defaultCount = options.filter(
-          (option) => option.isDefault
+          (option) => option.isDefault,
         ).length;
         return defaultCount <= 1;
-      }
+      },
     ),
 });
 
@@ -99,7 +99,7 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
           price: 0,
           available: true,
           isDefault: index === 0, // First option is default by default
-        })
+        }),
       );
 
       console.log("Generated options:", newOptions);
@@ -114,7 +114,7 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
   const updateOption = (
     index: number,
     field: keyof OptionField,
-    value: any
+    value: any,
   ) => {
     console.log(`=== UPDATING OPTION ${index} ===`);
     console.log(`Field: ${field}, Value:`, value);
@@ -139,10 +139,10 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
   // Helper function to create options in parallel using Promise.all
   const createOptionsInParallel = async (
     optionsData: any[],
-    groupId: string
+    groupId: string,
   ) => {
     console.log(
-      `Starting to create ${optionsData.length} options in parallel for group ID: ${groupId}`
+      `Starting to create ${optionsData.length} options in parallel for group ID: ${groupId}`,
     );
 
     // Create all option promises
@@ -155,11 +155,17 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
         groupId: groupId,
       };
 
-      console.log(`Preparing option ${index + 1}/${optionsData.length}:`, optionWithGroupId);
-      
+      console.log(
+        `Preparing option ${index + 1}/${optionsData.length}:`,
+        optionWithGroupId,
+      );
+
       return createOption(optionWithGroupId)
         .then((createdOption) => {
-          console.log(`Option ${index + 1} created successfully:`, createdOption);
+          console.log(
+            `Option ${index + 1} created successfully:`,
+            createdOption,
+          );
           return { success: true, option: createdOption, index };
         })
         .catch((optionError) => {
@@ -169,7 +175,9 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
     });
 
     // Execute all promises in parallel
-    console.log(`Executing ${optionPromises.length} option creation requests in parallel...`);
+    console.log(
+      `Executing ${optionPromises.length} option creation requests in parallel...`,
+    );
     const results = await Promise.all(optionPromises);
 
     console.log("All options processed in parallel. Results:", results);
@@ -227,7 +235,7 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
           console.error("=== GROUP ID VALIDATION FAILED ===");
           console.error("Expected a valid group ID but got:", groupId);
           throw new Error(
-            `Failed to get group ID after creating/updating group. Received: ${groupId}`
+            `Failed to get group ID after creating/updating group. Received: ${groupId}`,
           );
         }
 
@@ -244,7 +252,7 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
           const failureCount = results.filter((r) => !r.success).length;
 
           console.log(
-            `Options creation summary: ${successCount} succeeded, ${failureCount} failed`
+            `Options creation summary: ${successCount} succeeded, ${failureCount} failed`,
           );
 
           if (failureCount > 0) {
@@ -309,7 +317,7 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
               className={clsx(
                 "form-control form-control-solid mb-3 mb-lg-0",
                 { "is-invalid": formik.touched.name && formik.errors.name },
-                { "is-valid": formik.touched.name && !formik.errors.name }
+                { "is-valid": formik.touched.name && !formik.errors.name },
               )}
               autoComplete="off"
               disabled={formik.isSubmitting || isGroupLoading}
@@ -335,7 +343,7 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
               className={clsx(
                 "form-control form-control-solid mb-3 mb-lg-0",
                 { "is-invalid": formik.touched.min && formik.errors.min },
-                { "is-valid": formik.touched.min && !formik.errors.min }
+                { "is-valid": formik.touched.min && !formik.errors.min },
               )}
               disabled={formik.isSubmitting || isGroupLoading}
             />
@@ -358,7 +366,7 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
               className={clsx(
                 "form-control form-control-solid mb-3 mb-lg-0",
                 { "is-invalid": formik.touched.stock && formik.errors.stock },
-                { "is-valid": formik.touched.stock && !formik.errors.stock }
+                { "is-valid": formik.touched.stock && !formik.errors.stock },
               )}
               disabled={formik.isSubmitting || isGroupLoading}
             />
@@ -381,7 +389,7 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
               className={clsx(
                 "form-control form-control-solid mb-3 mb-lg-0",
                 { "is-invalid": formik.touched.order && formik.errors.order },
-                { "is-valid": formik.touched.order && !formik.errors.order }
+                { "is-valid": formik.touched.order && !formik.errors.order },
               )}
               disabled={formik.isSubmitting || isGroupLoading}
             />
@@ -500,7 +508,7 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
                         updateOption(
                           index,
                           "price",
-                          Number(e.target.value) || 0
+                          Number(e.target.value) || 0,
                         )
                       }
                       type="number"

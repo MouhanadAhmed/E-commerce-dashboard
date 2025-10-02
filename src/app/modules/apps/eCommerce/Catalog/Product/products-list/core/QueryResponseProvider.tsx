@@ -27,7 +27,7 @@ const QueryResponseProvider: FC<WithChildren> = ({ children }) => {
       // Use active-specific pagination if available, fallback to general
       page: state.activePage || state.page || 1,
       pageSize: state.activePageSize || state.pageSize || 10,
-    })
+    }),
   );
 
   const [archivedQuery, setArchivedQuery] = useState<string>(
@@ -36,7 +36,7 @@ const QueryResponseProvider: FC<WithChildren> = ({ children }) => {
       // Use archived-specific pagination if available, fallback to general
       page: state.archivedPage || state.page || 1,
       pageSize: state.archivedPageSize || state.pageSize || 10,
-    })
+    }),
   );
 
   // Update memo dependencies to include the specific pagination states
@@ -47,7 +47,7 @@ const QueryResponseProvider: FC<WithChildren> = ({ children }) => {
         page: state.activePage || state.page || 1,
         pageSize: state.activePageSize || state.pageSize || 10,
       }),
-    [state, state.activePage, state.activePageSize]
+    [state, state.activePage, state.activePageSize],
   ); // Add specific dependencies
 
   const updatedArchivedQuery = useMemo(
@@ -57,7 +57,7 @@ const QueryResponseProvider: FC<WithChildren> = ({ children }) => {
         page: state.archivedPage || state.page || 1,
         pageSize: state.archivedPageSize || state.pageSize || 10,
       }),
-    [state, state.archivedPage, state.archivedPageSize]
+    [state, state.archivedPage, state.archivedPageSize],
   ); // Add specific dependencies
 
   useEffect(() => {
@@ -87,7 +87,7 @@ const QueryResponseProvider: FC<WithChildren> = ({ children }) => {
     () => {
       return getProducts(activeQuery); // Use activeQuery
     },
-    { cacheTime: 0, keepPreviousData: true, refetchOnWindowFocus: false }
+    { cacheTime: 0, keepPreviousData: true, refetchOnWindowFocus: false },
   );
 
   const {
@@ -97,7 +97,7 @@ const QueryResponseProvider: FC<WithChildren> = ({ children }) => {
   } = useQuery(
     `${QUERIES.ARCHIVED_PRODUCTS_LIST}-${archivedQuery}`, // Use archivedQuery
     () => getArchivedProducts(archivedQuery), // Use archivedQuery
-    { cacheTime: 0, keepPreviousData: true, refetchOnWindowFocus: false }
+    { cacheTime: 0, keepPreviousData: true, refetchOnWindowFocus: false },
   );
 
   return (

@@ -1,93 +1,102 @@
-import {useEffect, useRef, FC} from 'react'
-import ApexCharts, {ApexOptions} from 'apexcharts'
-import {getCSSVariableValue} from '../../../assets/ts/_utils'
-import {useThemeMode} from '../../layout/theme-mode/ThemeModeProvider'
+import { useEffect, useRef, FC } from "react";
+import ApexCharts, { ApexOptions } from "apexcharts";
+import { getCSSVariableValue } from "../../../assets/ts/_utils";
+import { useThemeMode } from "../../layout/theme-mode/ThemeModeProvider";
 
 type Props = {
-  className: string
-  chartHeight: string
-  backGroundColor: string
-}
+  className: string;
+  chartHeight: string;
+  backGroundColor: string;
+};
 
-const MixedWidget13: FC<Props> = ({className, backGroundColor, chartHeight}) => {
-  const chartRef = useRef<HTMLDivElement | null>(null)
-  const {mode} = useThemeMode()
+const MixedWidget13: FC<Props> = ({
+  className,
+  backGroundColor,
+  chartHeight,
+}) => {
+  const chartRef = useRef<HTMLDivElement | null>(null);
+  const { mode } = useThemeMode();
 
   useEffect(() => {
-    const chart = refreshChart()
+    const chart = refreshChart();
 
     return () => {
       if (chart) {
-        chart.destroy()
+        chart.destroy();
       }
-    }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chartRef, mode])
+  }, [chartRef, mode]);
 
   const refreshChart = () => {
     if (!chartRef.current) {
-      return
+      return;
     }
 
-    const chart = new ApexCharts(chartRef.current, chartOptions(chartHeight))
+    const chart = new ApexCharts(chartRef.current, chartOptions(chartHeight));
     if (chart) {
-      chart.render()
+      chart.render();
     }
 
-    return chart
-  }
+    return chart;
+  };
 
   return (
     <div
       className={`card ${className} theme-dark-bg-body`}
-      style={{backgroundColor: backGroundColor}}
+      style={{ backgroundColor: backGroundColor }}
     >
       {/* begin::Body */}
-      <div className='card-body d-flex flex-column'>
+      <div className="card-body d-flex flex-column">
         {/* begin::Wrapper */}
-        <div className='d-flex flex-column flex-grow-1'>
+        <div className="d-flex flex-column flex-grow-1">
           {/* begin::Title                    */}
-          <a href='#' className='text-gray-900 text-hover-primary fw-bolder fs-3'>
+          <a
+            href="#"
+            className="text-gray-900 text-hover-primary fw-bolder fs-3"
+          >
             Earnings
           </a>
           {/* end::Title */}
 
           <div
             ref={chartRef}
-            className='mixed-widget-13-chart'
-            style={{height: chartHeight, minHeight: chartHeight}}
+            className="mixed-widget-13-chart"
+            style={{ height: chartHeight, minHeight: chartHeight }}
           ></div>
         </div>
         {/* end::Wrapper */}
 
         {/* begin::Stats */}
-        <div className='pt-5'>
+        <div className="pt-5">
           {/* begin::Symbol */}
-          <span className='text-gray-900 fw-bolder fs-2x lh-0'>$</span>
+          <span className="text-gray-900 fw-bolder fs-2x lh-0">$</span>
           {/* end::Symbol */}
 
           {/* begin::Number */}
-          <span className='text-gray-900 fw-bolder fs-3x me-2 lh-0'>560</span>
+          <span className="text-gray-900 fw-bolder fs-3x me-2 lh-0">560</span>
           {/* end::Number */}
 
           {/* begin::Text */}
-          <span className='text-gray-900 fw-bolder fs-6 lh-0'>+ 28% this week</span>
+          <span className="text-gray-900 fw-bolder fs-6 lh-0">
+            + 28% this week
+          </span>
           {/* end::Text */}
         </div>
         {/* end::Stats */}
       </div>
     </div>
-  )
-}
+  );
+};
 
 const chartOptions = (chartHeight: string): ApexOptions => {
-  const labelColor = getCSSVariableValue('--bs-gray-800')
-  const strokeColor = getCSSVariableValue('--bs-gray-300') as string
+  const labelColor = getCSSVariableValue("--bs-gray-800");
+  const strokeColor = getCSSVariableValue("--bs-gray-300") as string;
 
   return {
     series: [
       {
-        name: 'Net Profit',
+        name: "Net Profit",
         data: [15, 25, 15, 40, 20, 50],
       },
     ],
@@ -101,8 +110,8 @@ const chartOptions = (chartHeight: string): ApexOptions => {
       },
     },
     chart: {
-      fontFamily: 'inherit',
-      type: 'area',
+      fontFamily: "inherit",
+      type: "area",
       height: chartHeight,
       toolbar: {
         show: false,
@@ -122,7 +131,7 @@ const chartOptions = (chartHeight: string): ApexOptions => {
       enabled: false,
     },
     fill: {
-      type: 'gradient',
+      type: "gradient",
       gradient: {
         opacityFrom: 0.4,
         opacityTo: 0,
@@ -130,13 +139,13 @@ const chartOptions = (chartHeight: string): ApexOptions => {
       },
     },
     stroke: {
-      curve: 'smooth',
+      curve: "smooth",
       show: true,
       width: 3,
-      colors: ['#FFFFFF'],
+      colors: ["#FFFFFF"],
     },
     xaxis: {
-      categories: ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+      categories: ["Feb", "Mar", "Apr", "May", "Jun", "Jul"],
       axisBorder: {
         show: false,
       },
@@ -147,12 +156,12 @@ const chartOptions = (chartHeight: string): ApexOptions => {
         show: false,
         style: {
           colors: labelColor,
-          fontSize: '12px',
+          fontSize: "12px",
         },
       },
       crosshairs: {
         show: false,
-        position: 'front',
+        position: "front",
         stroke: {
           color: strokeColor,
           width: 1,
@@ -164,7 +173,7 @@ const chartOptions = (chartHeight: string): ApexOptions => {
         formatter: undefined,
         offsetY: 0,
         style: {
-          fontSize: '12px',
+          fontSize: "12px",
         },
       },
     },
@@ -175,48 +184,48 @@ const chartOptions = (chartHeight: string): ApexOptions => {
         show: false,
         style: {
           colors: labelColor,
-          fontSize: '12px',
+          fontSize: "12px",
         },
       },
     },
     states: {
       normal: {
         filter: {
-          type: 'none',
+          type: "none",
           value: 0,
         },
       },
       hover: {
         filter: {
-          type: 'none',
+          type: "none",
           value: 0,
         },
       },
       active: {
         allowMultipleDataPointsSelection: false,
         filter: {
-          type: 'none',
+          type: "none",
           value: 0,
         },
       },
     },
     tooltip: {
       style: {
-        fontSize: '12px',
+        fontSize: "12px",
       },
       y: {
         formatter: function (val) {
-          return '$' + val + ' thousands'
+          return "$" + val + " thousands";
         },
       },
     },
-    colors: ['#ffffff'],
+    colors: ["#ffffff"],
     markers: {
       colors: [labelColor],
       strokeColors: [strokeColor],
       strokeWidth: 3,
     },
-  }
-}
+  };
+};
 
-export {MixedWidget13}
+export { MixedWidget13 };

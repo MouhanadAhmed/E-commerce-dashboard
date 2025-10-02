@@ -1,48 +1,50 @@
-
-import React from 'react'
-import {KTIcon, toAbsoluteUrl} from '../../../helpers'
-import {Dropdown1} from '../../content/dropdown/Dropdown1'
+import React from "react";
+import { KTIcon, toAbsoluteUrl } from "../../../helpers";
+import { Dropdown1 } from "../../content/dropdown/Dropdown1";
 
 type Props = {
-  className: string
-}
+  className: string;
+};
 
-const FeedsWidget6: React.FC<Props> = ({className}) => {
+const FeedsWidget6: React.FC<Props> = ({ className }) => {
   return (
     <div className={`card ${className}`}>
       {/* begin::Body */}
-      <div className='card-body pb-0'>
+      <div className="card-body pb-0">
         {/* begin::Header */}
-        <div className='d-flex align-items-center mb-5'>
+        <div className="d-flex align-items-center mb-5">
           {/* begin::User */}
-          <div className='d-flex align-items-center flex-grow-1'>
+          <div className="d-flex align-items-center flex-grow-1">
             {/* begin::Avatar */}
-            <div className='symbol symbol-45px me-5'>
-              <img src={toAbsoluteUrl('media/avatars/300-13.jpg')} alt='' />
+            <div className="symbol symbol-45px me-5">
+              <img src={toAbsoluteUrl("media/avatars/300-13.jpg")} alt="" />
             </div>
             {/* end::Avatar */}
 
             {/* begin::Info */}
-            <div className='d-flex flex-column'>
-              <a href='#' className='text-gray-800 text-hover-primary fs-6 fw-bold'>
+            <div className="d-flex flex-column">
+              <a
+                href="#"
+                className="text-gray-800 text-hover-primary fs-6 fw-bold"
+              >
                 Mat Dillon
               </a>
-              <span className='text-gray-500 fw-semibold'>Last month</span>
+              <span className="text-gray-500 fw-semibold">Last month</span>
             </div>
             {/* end::Info */}
           </div>
           {/* end::User */}
 
           {/* begin::Menu */}
-          <div className='my-0'>
+          <div className="my-0">
             <button
-              type='button'
-              className='btn btn-sm btn-icon btn-color-primary btn-active-light-primary'
-              data-kt-menu-trigger='click'
-              data-kt-menu-placement='bottom-end'
-              data-kt-menu-flip='top-end'
+              type="button"
+              className="btn btn-sm btn-icon btn-color-primary btn-active-light-primary"
+              data-kt-menu-trigger="click"
+              data-kt-menu-placement="bottom-end"
+              data-kt-menu-flip="top-end"
             >
-              <KTIcon iconName='category' className='fs-2' />
+              <KTIcon iconName="category" className="fs-2" />
             </button>
             <Dropdown1 />
           </div>
@@ -51,39 +53,40 @@ const FeedsWidget6: React.FC<Props> = ({className}) => {
         {/* end::Header */}
 
         {/* begin::Post */}
-        <div className='mb-6'>
+        <div className="mb-6">
           {/* begin::Text */}
-          <div className='text-gray-800 fs-6 fw-normal mb-5'>
-            Outlines keep you honest. They stop you from indulging in poorly thought-out metaphors
+          <div className="text-gray-800 fs-6 fw-normal mb-5">
+            Outlines keep you honest. They stop you from indulging in poorly
+            thought-out metaphors
           </div>
           {/* end::Text */}
 
           {/* begin::Video */}
-          <div className='mb-5'>
+          <div className="mb-5">
             <iframe
-              title='widget11-video'
-              className='embed-responsive-item rounded h-300px w-100'
-              src='https://www.youtube.com/embed/qIHXpnASPAA'
+              title="widget11-video"
+              className="embed-responsive-item rounded h-300px w-100"
+              src="https://www.youtube.com/embed/qIHXpnASPAA"
               allowFullScreen={true}
             />
           </div>
           {/* end::Video */}
 
           {/* begin::Toolbar */}
-          <div className='d-flex align-items-center mb-5'>
+          <div className="d-flex align-items-center mb-5">
             <a
-              href='#'
-              className='btn btn-sm btn-light btn-color-muted btn-active-light-success px-4 py-2 me-4'
+              href="#"
+              className="btn btn-sm btn-light btn-color-muted btn-active-light-success px-4 py-2 me-4"
             >
-              <KTIcon iconName='message-text-2' className='fs-3' />
+              <KTIcon iconName="message-text-2" className="fs-3" />
               189
             </a>
 
             <a
-              href='#'
-              className='btn btn-sm btn-light btn-color-muted btn-active-light-danger px-4 py-2'
+              href="#"
+              className="btn btn-sm btn-light btn-color-muted btn-active-light-danger px-4 py-2"
             >
-              <KTIcon iconName='heart' className='fs-2' />
+              <KTIcon iconName="heart" className="fs-2" />
               229
             </a>
           </div>
@@ -92,25 +95,25 @@ const FeedsWidget6: React.FC<Props> = ({className}) => {
         {/* end::Bottom */}
 
         {/* begin::Separator */}
-        <div className='separator mb-4'></div>
+        <div className="separator mb-4"></div>
         {/* end::Separator */}
 
         {/* begin::Reply input */}
-        <form className='position-relative mb-6'>
+        <form className="position-relative mb-6">
           <textarea
-            className='form-control border-0 p-0 pe-10 resize-none min-h-25px'
-            data-kt-autosize='true'
+            className="form-control border-0 p-0 pe-10 resize-none min-h-25px"
+            data-kt-autosize="true"
             rows={1}
-            placeholder='Reply..'
+            placeholder="Reply.."
           ></textarea>
 
-          <div className='position-absolute top-0 end-0 me-n5'>
-            <span className='btn btn-icon btn-sm btn-active-color-primary pe-0 me-2'>
-              <KTIcon iconName='paper-clip' className='fs-3 mb-3' />
+          <div className="position-absolute top-0 end-0 me-n5">
+            <span className="btn btn-icon btn-sm btn-active-color-primary pe-0 me-2">
+              <KTIcon iconName="paper-clip" className="fs-3 mb-3" />
             </span>
 
-            <span className='btn btn-icon btn-sm btn-active-color-primary ps-0'>
-              <KTIcon iconName='geolocation' className='fs-2 mb-3' />
+            <span className="btn btn-icon btn-sm btn-active-color-primary ps-0">
+              <KTIcon iconName="geolocation" className="fs-2 mb-3" />
             </span>
           </div>
         </form>
@@ -118,7 +121,7 @@ const FeedsWidget6: React.FC<Props> = ({className}) => {
       </div>
       {/* end::Body */}
     </div>
-  )
-}
+  );
+};
 
-export {FeedsWidget6}
+export { FeedsWidget6 };

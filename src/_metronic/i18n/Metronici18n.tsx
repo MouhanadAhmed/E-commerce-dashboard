@@ -1,43 +1,44 @@
 /* eslint-disable react-refresh/only-export-components */
-import {FC, createContext, useContext} from 'react'
-import {WithChildren} from '../helpers'
+import { FC, createContext, useContext } from "react";
+import { WithChildren } from "../helpers";
 
-const I18N_CONFIG_KEY = import.meta.env.VITE_APP_I18N_CONFIG_KEY || 'i18nConfig'
+const I18N_CONFIG_KEY =
+  import.meta.env.VITE_APP_I18N_CONFIG_KEY || "i18nConfig";
 
 type Props = {
-  selectedLang: 'de' | 'en' | 'es' | 'fr' | 'ja' | 'zh'
-}
+  selectedLang: "de" | "en" | "es" | "fr" | "ja" | "zh";
+};
 const initialState: Props = {
-  selectedLang: 'en',
-}
+  selectedLang: "en",
+};
 
 function getConfig(): Props {
-  const ls = localStorage.getItem(I18N_CONFIG_KEY)
+  const ls = localStorage.getItem(I18N_CONFIG_KEY);
   if (ls) {
     try {
-      return JSON.parse(ls) as Props
+      return JSON.parse(ls) as Props;
     } catch (er) {
-      console.error(er)
+      console.error(er);
     }
   }
-  return initialState
+  return initialState;
 }
 
 // Side effect
 export function setLanguage(lang: string) {
-  localStorage.setItem(I18N_CONFIG_KEY, JSON.stringify({selectedLang: lang}))
-  window.location.reload()
+  localStorage.setItem(I18N_CONFIG_KEY, JSON.stringify({ selectedLang: lang }));
+  window.location.reload();
 }
 
-const I18nContext = createContext<Props>(initialState)
+const I18nContext = createContext<Props>(initialState);
 
 const useLang = () => {
-  return useContext(I18nContext).selectedLang
-}
+  return useContext(I18nContext).selectedLang;
+};
 
-const MetronicI18nProvider: FC<WithChildren> = ({children}) => {
-  const lang = getConfig()
-  return <I18nContext.Provider value={lang}>{children}</I18nContext.Provider>
-}
+const MetronicI18nProvider: FC<WithChildren> = ({ children }) => {
+  const lang = getConfig();
+  return <I18nContext.Provider value={lang}>{children}</I18nContext.Provider>;
+};
 
-export {MetronicI18nProvider, useLang}
+export { MetronicI18nProvider, useLang };

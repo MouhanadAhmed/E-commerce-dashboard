@@ -1,52 +1,59 @@
-import {useEffect, useRef, FC} from 'react'
-import ApexCharts, {ApexOptions} from 'apexcharts'
-import {useThemeMode} from '../../layout/theme-mode/ThemeModeProvider'
+import { useEffect, useRef, FC } from "react";
+import ApexCharts, { ApexOptions } from "apexcharts";
+import { useThemeMode } from "../../layout/theme-mode/ThemeModeProvider";
 
 type Props = {
-  className: string
-  chartHeight: string
-  backGroundColor: string
-}
+  className: string;
+  chartHeight: string;
+  backGroundColor: string;
+};
 
-const MixedWidget14: FC<Props> = ({className, backGroundColor, chartHeight = '150px'}) => {
-  const chartRef = useRef<HTMLDivElement | null>(null)
-  const {mode} = useThemeMode()
+const MixedWidget14: FC<Props> = ({
+  className,
+  backGroundColor,
+  chartHeight = "150px",
+}) => {
+  const chartRef = useRef<HTMLDivElement | null>(null);
+  const { mode } = useThemeMode();
 
   const refreshChart = () => {
     if (!chartRef.current) {
-      return
+      return;
     }
 
-    const chart = new ApexCharts(chartRef.current, chartOptions(chartHeight))
+    const chart = new ApexCharts(chartRef.current, chartOptions(chartHeight));
     if (chart) {
-      chart.render()
+      chart.render();
     }
 
-    return chart
-  }
+    return chart;
+  };
 
   useEffect(() => {
-    const chart = refreshChart()
+    const chart = refreshChart();
 
     return () => {
       if (chart) {
-        chart.destroy()
+        chart.destroy();
       }
-    }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chartRef, mode])
+  }, [chartRef, mode]);
 
   return (
     <div
       className={`card ${className} theme-dark-bg-body`}
-      style={{backgroundColor: backGroundColor}}
+      style={{ backgroundColor: backGroundColor }}
     >
       {/* begin::Body */}
-      <div className='card-body d-flex flex-column'>
+      <div className="card-body d-flex flex-column">
         {/* begin::Wrapper */}
-        <div className='d-flex flex-column flex-grow-1'>
+        <div className="d-flex flex-column flex-grow-1">
           {/* begin::Title                    */}
-          <a href='#' className='text-gray-900 text-hover-primary fw-bolder fs-3'>
+          <a
+            href="#"
+            className="text-gray-900 text-hover-primary fw-bolder fs-3"
+          >
             Contributors
           </a>
 
@@ -54,31 +61,33 @@ const MixedWidget14: FC<Props> = ({className, backGroundColor, chartHeight = '15
 
           <div
             ref={chartRef}
-            className='mixed-widget-14-chart'
-            style={{height: chartHeight, minHeight: chartHeight}}
+            className="mixed-widget-14-chart"
+            style={{ height: chartHeight, minHeight: chartHeight }}
           ></div>
         </div>
         {/* end::Wrapper */}
 
         {/* begin::Stats */}
-        <div className='pt-5'>
+        <div className="pt-5">
           {/* begin::Symbol */}
-          <span className='text-gray-900 fw-bolder fs-2x lh-0'>$</span>
+          <span className="text-gray-900 fw-bolder fs-2x lh-0">$</span>
           {/* end::Symbol */}
 
           {/* begin::Number */}
-          <span className='text-gray-900 fw-bolder fs-3x me-2 lh-0'>47</span>
+          <span className="text-gray-900 fw-bolder fs-3x me-2 lh-0">47</span>
           {/* end::Number */}
 
           {/* begin::Text */}
-          <span className='text-gray-900 fw-bolder fs-6 lh-0'>- 12% this week</span>
+          <span className="text-gray-900 fw-bolder fs-6 lh-0">
+            - 12% this week
+          </span>
           {/* end::Text */}
         </div>
         {/* end::Stats */}
       </div>
     </div>
-  )
-}
+  );
+};
 
 const chartOptions = (chartHeight: string): ApexOptions => {
   // const labelColor = getCSSVariableValue('--bs-gray-800')
@@ -86,14 +95,16 @@ const chartOptions = (chartHeight: string): ApexOptions => {
   return {
     series: [
       {
-        name: 'Inflation',
-        data: [1, 2.1, 1, 2.1, 4.1, 6.1, 4.1, 4.1, 2.1, 4.1, 2.1, 3.1, 1, 1, 2.1],
+        name: "Inflation",
+        data: [
+          1, 2.1, 1, 2.1, 4.1, 6.1, 4.1, 4.1, 2.1, 4.1, 2.1, 3.1, 1, 1, 2.1,
+        ],
       },
     ],
     chart: {
-      fontFamily: 'inherit',
+      fontFamily: "inherit",
       height: chartHeight,
-      type: 'bar',
+      type: "bar",
       toolbar: {
         show: false,
       },
@@ -107,25 +118,25 @@ const chartOptions = (chartHeight: string): ApexOptions => {
         right: 0,
       },
     },
-    colors: ['#ffffff'],
+    colors: ["#ffffff"],
     plotOptions: {
       bar: {
         borderRadius: 2.5,
         dataLabels: {
-          position: 'top', // top, center, bottom
+          position: "top", // top, center, bottom
         },
-        columnWidth: '20%',
+        columnWidth: "20%",
       },
     },
     dataLabels: {
       enabled: false,
       formatter: function (val) {
-        return val + '%'
+        return val + "%";
       },
       offsetY: -20,
       style: {
-        fontSize: '12px',
-        colors: ['#304758'],
+        fontSize: "12px",
+        colors: ["#304758"],
       },
     },
     xaxis: {
@@ -133,23 +144,23 @@ const chartOptions = (chartHeight: string): ApexOptions => {
         show: false,
       },
       categories: [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'May',
-        'Jun',
-        'Jul',
-        'Aug',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dec',
-        'Jan',
-        'Feb',
-        'Mar',
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+        "Jan",
+        "Feb",
+        "Mar",
       ],
-      position: 'top',
+      position: "top",
       axisBorder: {
         show: false,
       },
@@ -175,11 +186,11 @@ const chartOptions = (chartHeight: string): ApexOptions => {
       labels: {
         show: false,
         formatter: function (val) {
-          return val + '%'
+          return val + "%";
         },
       },
     },
-  }
-}
+  };
+};
 
-export {MixedWidget14}
+export { MixedWidget14 };

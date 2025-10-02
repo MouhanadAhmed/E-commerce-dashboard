@@ -1,100 +1,105 @@
-
-import React, {useEffect, useRef} from 'react'
-import {KTIcon} from '../../../helpers'
-import ApexCharts, {ApexOptions} from 'apexcharts'
-import {getCSS, getCSSVariableValue} from '../../../assets/ts/_utils'
-import clsx from 'clsx'
-import {useThemeMode} from '../../layout/theme-mode/ThemeModeProvider'
+import React, { useEffect, useRef } from "react";
+import { KTIcon } from "../../../helpers";
+import ApexCharts, { ApexOptions } from "apexcharts";
+import { getCSS, getCSSVariableValue } from "../../../assets/ts/_utils";
+import clsx from "clsx";
+import { useThemeMode } from "../../layout/theme-mode/ThemeModeProvider";
 
 type Props = {
-  className: string
-  svgIcon: string
-  color: string
-  change: string
-  description: string
-}
+  className: string;
+  svgIcon: string;
+  color: string;
+  change: string;
+  description: string;
+};
 
-const StatisticsWidget4: React.FC<Props> = ({className, svgIcon, color, change, description}) => {
-  const chartRef = useRef<HTMLDivElement | null>(null)
-  const {mode} = useThemeMode()
+const StatisticsWidget4: React.FC<Props> = ({
+  className,
+  svgIcon,
+  color,
+  change,
+  description,
+}) => {
+  const chartRef = useRef<HTMLDivElement | null>(null);
+  const { mode } = useThemeMode();
   const refreshChart = () => {
     if (!chartRef.current) {
-      return
+      return;
     }
 
-    const height = parseInt(getCSS(chartRef.current, 'height'))
-    const labelColor = getCSSVariableValue('--bs-gray-800')
-    const baseColor = getCSSVariableValue('--bs-' + color)
-    const lightColor = getCSSVariableValue('--bs-' + color + '-light')
+    const height = parseInt(getCSS(chartRef.current, "height"));
+    const labelColor = getCSSVariableValue("--bs-gray-800");
+    const baseColor = getCSSVariableValue("--bs-" + color);
+    const lightColor = getCSSVariableValue("--bs-" + color + "-light");
 
     const chart = new ApexCharts(
       chartRef.current,
-      getChartOptions(height, labelColor, baseColor, lightColor)
-    )
+      getChartOptions(height, labelColor, baseColor, lightColor),
+    );
     if (chart) {
-      chart.render()
+      chart.render();
     }
 
-    return chart
-  }
+    return chart;
+  };
 
   useEffect(() => {
-    const chart = refreshChart()
+    const chart = refreshChart();
     return () => {
       if (chart) {
-        chart.destroy()
+        chart.destroy();
       }
-    }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chartRef, color, mode])
+  }, [chartRef, color, mode]);
 
   return (
     <div className={`card ${className}`}>
       {/* begin::Body */}
-      <div className='card-body p-0'>
-        <div className='d-flex flex-stack card-p flex-grow-1'>
-          <span className={clsx('symbol symbol-50px', 'me-2')}>
-            <span className={clsx('symbol-label', `bg-light-${color}`)}>
+      <div className="card-body p-0">
+        <div className="d-flex flex-stack card-p flex-grow-1">
+          <span className={clsx("symbol symbol-50px", "me-2")}>
+            <span className={clsx("symbol-label", `bg-light-${color}`)}>
               <KTIcon iconName={svgIcon} className={`fs-2x text-${color}`} />
             </span>
           </span>
 
-          <div className='d-flex flex-column text-end'>
-            <span className='text-gray-900 fw-bold fs-2'>{change}</span>
+          <div className="d-flex flex-column text-end">
+            <span className="text-gray-900 fw-bold fs-2">{change}</span>
 
-            <span className='text-muted fw-semibold mt-1'>{description}</span>
+            <span className="text-muted fw-semibold mt-1">{description}</span>
           </div>
         </div>
 
         <div
           ref={chartRef}
-          className='statistics-widget-4-chart card-rounded-bottom'
-          style={{height: '150px'}}
+          className="statistics-widget-4-chart card-rounded-bottom"
+          style={{ height: "150px" }}
         ></div>
       </div>
       {/* end::Body */}
     </div>
-  )
-}
+  );
+};
 
-export {StatisticsWidget4}
+export { StatisticsWidget4 };
 
 function getChartOptions(
   height: number,
   labelColor: string,
   baseColor: string,
-  lightColor: string
+  lightColor: string,
 ): ApexOptions {
   return {
     series: [
       {
-        name: 'Net Profit',
+        name: "Net Profit",
         data: [40, 40, 30, 30, 35, 35, 50],
       },
     ],
     chart: {
-      fontFamily: 'inherit',
-      type: 'area',
+      fontFamily: "inherit",
+      type: "area",
       height: height,
       toolbar: {
         show: false,
@@ -114,17 +119,17 @@ function getChartOptions(
       enabled: false,
     },
     fill: {
-      type: 'solid',
+      type: "solid",
       opacity: 1,
     },
     stroke: {
-      curve: 'smooth',
+      curve: "smooth",
       show: true,
       width: 3,
       colors: [baseColor],
     },
     xaxis: {
-      categories: ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+      categories: ["Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug"],
       axisBorder: {
         show: false,
       },
@@ -135,14 +140,14 @@ function getChartOptions(
         show: false,
         style: {
           colors: labelColor,
-          fontSize: '12px',
+          fontSize: "12px",
         },
       },
       crosshairs: {
         show: false,
-        position: 'front',
+        position: "front",
         stroke: {
-          color: '#E4E6EF',
+          color: "#E4E6EF",
           width: 1,
           dashArray: 3,
         },
@@ -158,38 +163,38 @@ function getChartOptions(
         show: false,
         style: {
           colors: labelColor,
-          fontSize: '12px',
+          fontSize: "12px",
         },
       },
     },
     states: {
       normal: {
         filter: {
-          type: 'none',
+          type: "none",
           value: 0,
         },
       },
       hover: {
         filter: {
-          type: 'none',
+          type: "none",
           value: 0,
         },
       },
       active: {
         allowMultipleDataPointsSelection: false,
         filter: {
-          type: 'none',
+          type: "none",
           value: 0,
         },
       },
     },
     tooltip: {
       style: {
-        fontSize: '12px',
+        fontSize: "12px",
       },
       y: {
         formatter: function (val) {
-          return '$' + val + ' thousands'
+          return "$" + val + " thousands";
         },
       },
     },
@@ -199,5 +204,5 @@ function getChartOptions(
       strokeColors: [baseColor],
       strokeWidth: 3,
     },
-  }
+  };
 }

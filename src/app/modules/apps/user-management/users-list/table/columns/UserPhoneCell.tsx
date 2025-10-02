@@ -1,11 +1,9 @@
-import {FC} from 'react'
+import { FC } from "react";
 
 type Props = {
-  phone?: string
-}
+  phone?: string;
+};
 
-const UserPhoneCell: FC<Props> = ({phone}) => (
-  <div >{phone}</div>
-)
+const UserPhoneCell: FC<Props> = ({ phone }) => <div>{phone}</div>;
 
-export {UserPhoneCell}
+export { UserPhoneCell };

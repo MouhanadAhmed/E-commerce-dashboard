@@ -1,1 +1,1 @@
-export * from './ScrollTop'
+export * from "./ScrollTop";

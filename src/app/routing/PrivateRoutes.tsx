@@ -1,60 +1,80 @@
-import {lazy, FC, Suspense} from 'react'
-import {Route, Routes, Navigate} from 'react-router-dom'
-import {MasterLayout} from '../../_metronic/layout/MasterLayout'
-import TopBarProgress from 'react-topbar-progress-indicator'
-import {DashboardWrapper} from '../pages/dashboard/DashboardWrapper'
-import {MenuTestPage} from '../pages/MenuTestPage'
-import {getCSSVariableValue} from '../../_metronic/assets/ts/_utils'
-import {WithChildren} from '../../_metronic/helpers'
-import BuilderPageWrapper from '../pages/layout-builder/BuilderPageWrapper'
+import { lazy, FC, Suspense } from "react";
+import { Route, Routes, Navigate } from "react-router-dom";
+import { MasterLayout } from "../../_metronic/layout/MasterLayout";
+import TopBarProgress from "react-topbar-progress-indicator";
+import { DashboardWrapper } from "../pages/dashboard/DashboardWrapper";
+import { MenuTestPage } from "../pages/MenuTestPage";
+import { getCSSVariableValue } from "../../_metronic/assets/ts/_utils";
+import { WithChildren } from "../../_metronic/helpers";
+import BuilderPageWrapper from "../pages/layout-builder/BuilderPageWrapper";
 // import CategoriesPage from '../modules/apps/eCommerce/Catalog/Category/CategoriesPage'
 // import SubCategoriesPage from '../modules/apps/eCommerce/Catalog/SubCategory/SubCategoriesPage'
 // import TypesPage from '../modules/apps/eCommerce/Catalog/Type/Type'
 // import ExtrasPage from '../modules/apps/eCommerce/Catalog/Extra/ExtrasPage'
 // import ChildSubCategoriesPage from '../modules/apps/eCommerce/Catalog/ChildSubCategory/ChildSubCategoriesPage'
 // import BranchesPage from '../modules/apps/eCommerce/Catalog/Branch/BranchesPage'
-import ProductsPage from '../modules/apps/eCommerce/Catalog/Product/ProductsPage'
-import ProductForm from '../modules/apps/eCommerce/Catalog/Product/products-list/AddProduct/ProductForm'
-import AddProductsPage from '../modules/apps/eCommerce/Catalog/Product/products-list/AddProduct/AddProductPage'
-import PermsPage from '../modules/apps/user-management/perms-list/PermsPage'
-import RolesPage from '../modules/apps/user-management/roles-list/RolesPage'
+import ProductsPage from "../modules/apps/eCommerce/Catalog/Product/ProductsPage";
+import ProductForm from "../modules/apps/eCommerce/Catalog/Product/products-list/AddProduct/ProductForm";
+import AddProductsPage from "../modules/apps/eCommerce/Catalog/Product/products-list/AddProduct/AddProductPage";
+import PermsPage from "../modules/apps/user-management/perms-list/PermsPage";
+import RolesPage from "../modules/apps/user-management/roles-list/RolesPage";
 // import { Categories } from '../modules/apps/eCommerce/Catalog/Categories/category'
 
-
 const PrivateRoutes = () => {
-  const ProfilePage = lazy(() => import('../modules/profile/ProfilePage'))
-  const WizardsPage = lazy(() => import('../modules/wizards/WizardsPage'))
-  const AccountPage = lazy(() => import('../modules/accounts/AccountPage'))
-  const WidgetsPage = lazy(() => import('../modules/widgets/WidgetsPage'))
-  const ChatPage = lazy(() => import('../modules/apps/chat/ChatPage'))
-  const UsersPage = lazy(() => import('../modules/apps/user-management/UsersPage'))
+  const ProfilePage = lazy(() => import("../modules/profile/ProfilePage"));
+  const WizardsPage = lazy(() => import("../modules/wizards/WizardsPage"));
+  const AccountPage = lazy(() => import("../modules/accounts/AccountPage"));
+  const WidgetsPage = lazy(() => import("../modules/widgets/WidgetsPage"));
+  const ChatPage = lazy(() => import("../modules/apps/chat/ChatPage"));
+  const UsersPage = lazy(
+    () => import("../modules/apps/user-management/UsersPage"),
+  );
   // const AddProductsPage = lazy(()=> import('../modules/apps/eCommerce/Catalog/Product/products-list/AddProduct/AddProductPage'))
   // const ProductForm = lazy(()=> import('../modules/apps/eCommerce/Catalog/Product/products-list/AddProduct/ProductForm'))
   // const ProductsPage = lazy(()=> import('../modules/apps/eCommerce/Catalog/Product/ProductsPage'))
-  const BranchesPage = lazy(()=> import('../modules/apps/eCommerce/Catalog/Branch/BranchesPage'))
-  const ChildSubCategoriesPage = lazy(()=> import('../modules/apps/eCommerce/Catalog/ChildSubCategory/ChildSubCategoriesPage'))
-  const ExtrasPage = lazy(()=> import('../modules/apps/eCommerce/Catalog/Extra/ExtrasPage'))
-  const TypesPage = lazy(()=> import('../modules/apps/eCommerce/Catalog/Type/Type'))
-  const SubCategoriesPage = lazy(()=> import('../modules/apps/eCommerce/Catalog/SubCategory/SubCategoriesPage'))
-  const CategoriesPage = lazy(()=> import('../modules/apps/eCommerce/Catalog/Category/CategoriesPage'))
-  const GroupOfOptionsPage = lazy(()=> import('../modules/apps/eCommerce/Catalog/GroupOfOptions/GroupOfOptionsPage'))
+  const BranchesPage = lazy(
+    () => import("../modules/apps/eCommerce/Catalog/Branch/BranchesPage"),
+  );
+  const ChildSubCategoriesPage = lazy(
+    () =>
+      import(
+        "../modules/apps/eCommerce/Catalog/ChildSubCategory/ChildSubCategoriesPage"
+      ),
+  );
+  const ExtrasPage = lazy(
+    () => import("../modules/apps/eCommerce/Catalog/Extra/ExtrasPage"),
+  );
+  const TypesPage = lazy(
+    () => import("../modules/apps/eCommerce/Catalog/Type/Type"),
+  );
+  const SubCategoriesPage = lazy(
+    () =>
+      import("../modules/apps/eCommerce/Catalog/SubCategory/SubCategoriesPage"),
+  );
+  const CategoriesPage = lazy(
+    () => import("../modules/apps/eCommerce/Catalog/Category/CategoriesPage"),
+  );
+  const GroupOfOptionsPage = lazy(
+    () =>
+      import(
+        "../modules/apps/eCommerce/Catalog/GroupOfOptions/GroupOfOptionsPage"
+      ),
+  );
   // const OptionsPage = lazy(()=> import('../modules/apps/eCommerce/Catalog/Options/OptionsPage'))
-  
-  
-  
+
   return (
     <Routes>
       <Route element={<MasterLayout />}>
         {/* Redirect to Dashboard after success login/registartion */}
-        <Route path='auth/*' element={<Navigate to='/dashboard' />} />
+        <Route path="auth/*" element={<Navigate to="/dashboard" />} />
         {/* Pages */}
         {/* <Route path='/categories' element={<Categories />} /> */}
-        <Route path='dashboard' element={<DashboardWrapper />} />
-        <Route path='builder' element={<BuilderPageWrapper />} />
-        <Route path='menu-test' element={<MenuTestPage />} />
+        <Route path="dashboard" element={<DashboardWrapper />} />
+        <Route path="builder" element={<BuilderPageWrapper />} />
+        <Route path="menu-test" element={<MenuTestPage />} />
         {/* Lazy Modules */}
         <Route
-          path='crafted/pages/profile/*'
+          path="crafted/pages/profile/*"
           element={
             <SuspensedView>
               <ProfilePage />
@@ -62,7 +82,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='crafted/pages/wizards/*'
+          path="crafted/pages/wizards/*"
           element={
             <SuspensedView>
               <WizardsPage />
@@ -70,7 +90,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='crafted/widgets/*'
+          path="crafted/widgets/*"
           element={
             <SuspensedView>
               <WidgetsPage />
@@ -78,7 +98,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='crafted/account/*'
+          path="crafted/account/*"
           element={
             <SuspensedView>
               <AccountPage />
@@ -86,7 +106,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='apps/chat/*'
+          path="apps/chat/*"
           element={
             <SuspensedView>
               <ChatPage />
@@ -94,28 +114,28 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='apps/user-management/*'
+          path="apps/user-management/*"
           element={
             <SuspensedView>
               <UsersPage />
-              <PermsPage/>
-              <RolesPage/>
+              <PermsPage />
+              <RolesPage />
             </SuspensedView>
           }
         />
         <Route
-          path='apps/eCommerce/*'
+          path="apps/eCommerce/*"
           element={
             <SuspensedView>
               <CategoriesPage />
               <SubCategoriesPage />
-              <ChildSubCategoriesPage/>
-              <TypesPage/>
-              <ExtrasPage/>
+              <ChildSubCategoriesPage />
+              <TypesPage />
+              <ExtrasPage />
               <BranchesPage />
-              <ProductsPage/>
-              <AddProductsPage/>
-              <GroupOfOptionsPage/>
+              <ProductsPage />
+              <AddProductsPage />
+              <GroupOfOptionsPage />
               {/* <OptionsPage/> */}
             </SuspensedView>
           }
@@ -134,22 +154,22 @@ const PrivateRoutes = () => {
           }
         /> */}
         {/* Page Not Found */}
-        <Route path='*' element={<Navigate to='/error/404' />} />
+        <Route path="*" element={<Navigate to="/error/404" />} />
       </Route>
     </Routes>
-  )
-}
+  );
+};
 
-const SuspensedView: FC<WithChildren> = ({children}) => {
-  const baseColor = getCSSVariableValue('--bs-primary')
+const SuspensedView: FC<WithChildren> = ({ children }) => {
+  const baseColor = getCSSVariableValue("--bs-primary");
   TopBarProgress.config({
     barColors: {
-      '0': baseColor,
+      "0": baseColor,
     },
     barThickness: 1,
     shadowBlur: 5,
-  })
-  return <Suspense fallback={<TopBarProgress />}>{children}</Suspense>
-}
+  });
+  return <Suspense fallback={<TopBarProgress />}>{children}</Suspense>;
+};
 
-export {PrivateRoutes}
+export { PrivateRoutes };

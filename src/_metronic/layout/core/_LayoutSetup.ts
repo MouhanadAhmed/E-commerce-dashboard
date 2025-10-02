@@ -220,7 +220,7 @@ class LayoutSetup {
     LayoutSetup.initHTMLAttributes();
     LayoutSetup.isLoaded = false;
     LayoutSetup.config = LayoutSetup.initConfig(
-      Object.assign({}, updatedConfig)
+      Object.assign({}, updatedConfig),
     );
     LayoutSetup.isLoaded = true; // remove loading there
     return updatedConfig;

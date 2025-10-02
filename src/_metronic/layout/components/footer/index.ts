@@ -1,1 +1,1 @@
-export * from './FooterWrapper'
+export * from "./FooterWrapper";

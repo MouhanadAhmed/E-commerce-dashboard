@@ -1,15 +1,15 @@
-import {ListViewProvider, useListView} from './core/ListViewProvider'
-import {QueryRequestProvider} from './core/QueryRequestProvider'
-import {QueryResponseProvider} from './core/QueryResponseProvider'
-import {UsersListHeader} from './components/header/UsersListHeader'
-import {UsersTable} from './table/UsersTable'
-import {UserEditModal} from './user-edit-modal/UserEditModal'
-import {KTCard} from '../../../../../_metronic/helpers'
-import { ToolbarWrapper } from '../../../../../_metronic/layout/components/toolbar'
-import { Content } from '../../../../../_metronic/layout/components/content'
+import { ListViewProvider, useListView } from "./core/ListViewProvider";
+import { QueryRequestProvider } from "./core/QueryRequestProvider";
+import { QueryResponseProvider } from "./core/QueryResponseProvider";
+import { UsersListHeader } from "./components/header/UsersListHeader";
+import { UsersTable } from "./table/UsersTable";
+import { UserEditModal } from "./user-edit-modal/UserEditModal";
+import { KTCard } from "../../../../../_metronic/helpers";
+import { ToolbarWrapper } from "../../../../../_metronic/layout/components/toolbar";
+import { Content } from "../../../../../_metronic/layout/components/content";
 
 const UsersList = () => {
-  const {itemIdForUpdate} = useListView()
+  const { itemIdForUpdate } = useListView();
   return (
     <>
       <KTCard>
@@ -18,8 +18,8 @@ const UsersList = () => {
       </KTCard>
       {itemIdForUpdate !== undefined && <UserEditModal />}
     </>
-  )
-}
+  );
+};
 
 const UsersListWrapper = () => (
   <QueryRequestProvider>
@@ -32,6 +32,6 @@ const UsersListWrapper = () => (
       </ListViewProvider>
     </QueryResponseProvider>
   </QueryRequestProvider>
-)
+);
 
-export {UsersListWrapper}
+export { UsersListWrapper };

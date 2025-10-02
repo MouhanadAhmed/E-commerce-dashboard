@@ -1,15 +1,15 @@
-import {ListViewProvider, useListView} from './core/ListViewProvider'
-import {QueryRequestProvider} from './core/QueryRequestProvider'
-import {QueryResponseProvider} from './core/QueryResponseProvider'
-import {UsersListHeader} from './components/header/UsersListHeader'
-import {PermsTable} from './table/PermsTable'
-import {PermEditModal} from './perm-edit-modal/PermEditModal'
-import {KTCard} from '../../../../../_metronic/helpers'
-import { ToolbarWrapper } from '../../../../../_metronic/layout/components/toolbar'
-import { Content } from '../../../../../_metronic/layout/components/content'
+import { ListViewProvider, useListView } from "./core/ListViewProvider";
+import { QueryRequestProvider } from "./core/QueryRequestProvider";
+import { QueryResponseProvider } from "./core/QueryResponseProvider";
+import { UsersListHeader } from "./components/header/UsersListHeader";
+import { PermsTable } from "./table/PermsTable";
+import { PermEditModal } from "./perm-edit-modal/PermEditModal";
+import { KTCard } from "../../../../../_metronic/helpers";
+import { ToolbarWrapper } from "../../../../../_metronic/layout/components/toolbar";
+import { Content } from "../../../../../_metronic/layout/components/content";
 
 const PermsList = () => {
-  const {itemIdForUpdate} = useListView()
+  const { itemIdForUpdate } = useListView();
   return (
     <>
       <KTCard>
@@ -18,8 +18,8 @@ const PermsList = () => {
       </KTCard>
       {itemIdForUpdate !== undefined && <PermEditModal />}
     </>
-  )
-}
+  );
+};
 
 const PermissionsListWrapper = () => (
   <QueryRequestProvider>
@@ -32,6 +32,6 @@ const PermissionsListWrapper = () => (
       </ListViewProvider>
     </QueryResponseProvider>
   </QueryRequestProvider>
-)
+);
 
-export {PermissionsListWrapper}
+export { PermissionsListWrapper };

@@ -22,7 +22,7 @@ export function register(
   firstname: string,
   lastname: string,
   password: string,
-  password_confirmation: string
+  password_confirmation: string,
 ) {
   return axios.post(REGISTER_URL, {
     email,

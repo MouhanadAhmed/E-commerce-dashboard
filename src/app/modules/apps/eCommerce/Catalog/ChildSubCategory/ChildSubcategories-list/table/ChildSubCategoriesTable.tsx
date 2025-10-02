@@ -134,7 +134,7 @@ const ChildSubCategoriesTable = () => {
   }, []);
   const memoizedBranches = useMemo(
     () => branches.map((branch) => ({ value: branch._id, label: branch.name })),
-    [branches]
+    [branches],
   );
   const memoizedCategories = useMemo(
     () =>
@@ -142,7 +142,7 @@ const ChildSubCategoriesTable = () => {
         value: category._id,
         label: category.name,
       })),
-    [categories]
+    [categories],
   );
   const memoizedSubCategories = useMemo(
     () =>
@@ -150,7 +150,7 @@ const ChildSubCategoriesTable = () => {
         value: subCategory._id,
         label: subCategory.name,
       })),
-    [subcategories]
+    [subcategories],
   );
 
   const columns = useMemo<MRT_ColumnDef<ChildSubCategories>[]>(
@@ -425,7 +425,7 @@ const ChildSubCategoriesTable = () => {
       archivedBranches,
       branches,
       validationErrors,
-    ]
+    ],
   );
 
   const editSubCategoriesSchema = Yup.object().shape({
@@ -498,7 +498,7 @@ const ChildSubCategoriesTable = () => {
         queryClient.refetchQueries([`${QUERIES.ARCHIVED_CATEGORIES_LIST}`]);
         setTrigger(true);
       },
-    }
+    },
   );
 
   const deleteSelectedItems = useMutation(
@@ -514,7 +514,7 @@ const ChildSubCategoriesTable = () => {
         setTrigger(true);
         clearSelected();
       },
-    }
+    },
   );
 
   // const {
@@ -548,7 +548,7 @@ const ChildSubCategoriesTable = () => {
         refetch();
         setTrigger(true);
       },
-    }
+    },
   );
 
   const commonTableProps: Partial<MRT_TableOptions<ChildSubCategories>> & {
@@ -697,7 +697,7 @@ const ChildSubCategoriesTable = () => {
             draggingRow!.original,
           ]);
           setActiveCategorieses((activeCategorieses) =>
-            activeCategorieses.filter((d) => d !== draggingRow!.original)
+            activeCategorieses.filter((d) => d !== draggingRow!.original),
           );
           setHoveredTable(null);
         } else if (hoveredTable === "table-1") {
@@ -966,7 +966,7 @@ const ChildSubCategoriesTable = () => {
             draggingRow!.original,
           ]);
           setActiveCategorieses((activeCategorieses) =>
-            activeCategorieses.filter((d) => d !== draggingRow!.original)
+            activeCategorieses.filter((d) => d !== draggingRow!.original),
           );
           setHoveredTable(null);
         } else if (hoveredTable === "table-2") {

@@ -56,7 +56,7 @@ function parseRequestQuery(query: string): QueryState {
 
 function calculatedGroupingIsDisabled<T>(
   isLoading: boolean,
-  data: Array<T> | undefined
+  data: Array<T> | undefined,
 ): boolean {
   if (isLoading) {
     return true;
@@ -67,7 +67,7 @@ function calculatedGroupingIsDisabled<T>(
 
 function calculateIsAllDataSelected<T>(
   data: Array<T> | undefined,
-  selected: Array<ID>
+  selected: Array<ID>,
 ): boolean {
   if (!data) {
     return false;
@@ -79,7 +79,7 @@ function calculateIsAllDataSelected<T>(
 function groupingOnSelect(
   id: ID,
   selected: Array<ID>,
-  setSelected: Dispatch<SetStateAction<Array<ID>>>
+  setSelected: Dispatch<SetStateAction<Array<ID>>>,
 ) {
   if (!id) {
     return;
@@ -97,7 +97,7 @@ function groupingOnSelect(
 function groupingOnSelectAll<T>(
   isAllSelected: boolean,
   setSelected: Dispatch<SetStateAction<Array<ID>>>,
-  data?: Array<T & { id?: ID }>
+  data?: Array<T & { id?: ID }>,
 ) {
   if (isAllSelected) {
     setSelected([]);
@@ -128,7 +128,7 @@ function useDebounce(value: string | undefined, delay: number) {
         clearTimeout(handler);
       };
     },
-    [value, delay] // Only re-call effect if value or delay changes
+    [value, delay], // Only re-call effect if value or delay changes
   );
   return debouncedValue;
 }

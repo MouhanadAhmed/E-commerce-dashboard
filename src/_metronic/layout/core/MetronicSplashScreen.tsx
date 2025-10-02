@@ -6,72 +6,72 @@ import {
   useContext,
   useEffect,
   useState,
-} from 'react'
-import {WithChildren} from '../../helpers'
+} from "react";
+import { WithChildren } from "../../helpers";
 
-const MetronicSplashScreenContext = createContext<Dispatch<SetStateAction<number>> | undefined>(
-  undefined
-)
+const MetronicSplashScreenContext = createContext<
+  Dispatch<SetStateAction<number>> | undefined
+>(undefined);
 
-const MetronicSplashScreenProvider: FC<WithChildren> = ({children}) => {
-  const [count, setCount] = useState(0)
-  const visible = count > 0
+const MetronicSplashScreenProvider: FC<WithChildren> = ({ children }) => {
+  const [count, setCount] = useState(0);
+  const visible = count > 0;
 
   useEffect(() => {
     // Show SplashScreen
     if (visible) {
-      document.body.classList.remove('page-loading')
+      document.body.classList.remove("page-loading");
 
       return () => {
-        document.body.classList.add('page-loading')
-      }
+        document.body.classList.add("page-loading");
+      };
     }
 
     // Hide SplashScreen
-    let timeout: number
+    let timeout: number;
     if (!visible) {
       timeout = window.setTimeout(() => {
-        document.body.classList.add('page-loading')
-      }, 3000)
+        document.body.classList.add("page-loading");
+      }, 3000);
     }
 
     return () => {
-      clearTimeout(timeout)
-    }
-  }, [visible])
+      clearTimeout(timeout);
+    };
+  }, [visible]);
 
   return (
     <MetronicSplashScreenContext.Provider value={setCount}>
       {children}
     </MetronicSplashScreenContext.Provider>
-  )
-}
+  );
+};
 
-const LayoutSplashScreen: FC<{visible?: boolean}> = ({visible = true}) => {
+const LayoutSplashScreen: FC<{ visible?: boolean }> = ({ visible = true }) => {
   // Everything are ready - remove splashscreen
-  const setCount = useContext(MetronicSplashScreenContext)
+  const setCount = useContext(MetronicSplashScreenContext);
 
   useEffect(() => {
     if (!visible) {
-      return
+      return;
     }
 
     if (setCount) {
       setCount((prev) => {
-        return prev + 1
-      })
+        return prev + 1;
+      });
     }
 
     return () => {
       if (setCount) {
         setCount((prev) => {
-          return prev - 1
-        })
+          return prev - 1;
+        });
       }
-    }
-  }, [setCount, visible])
+    };
+  }, [setCount, visible]);
 
-  return null
-}
+  return null;
+};
 
-export {MetronicSplashScreenProvider, LayoutSplashScreen}
+export { MetronicSplashScreenProvider, LayoutSplashScreen };

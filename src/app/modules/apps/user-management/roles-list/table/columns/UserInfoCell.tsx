@@ -1,13 +1,12 @@
-
-import {FC} from 'react'
-import {Role} from '../../core/_models'
+import { FC } from "react";
+import { Role } from "../../core/_models";
 
 type Props = {
-  Role: string
-}
+  Role: string;
+};
 
-const UserInfoCell: FC<Props> = ({Role}) => (
-  <div className='d-flex align-items-center'>
+const UserInfoCell: FC<Props> = ({ Role }) => (
+  <div className="d-flex align-items-center">
     {/* begin:: Avatar */}
     {/* <div className='symbol symbol-circle symbol-50px overflow-hidden me-3'>
       <a href='#'>
@@ -28,12 +27,12 @@ const UserInfoCell: FC<Props> = ({Role}) => (
         )}
       </a>
     </div> */}
-    <div className='d-flex flex-column'>
+    <div className="d-flex flex-column">
       {/* <a href='#' className='text-gray-800 text-hover-primary mb-1'> */}
-        {Role}
+      {Role}
       {/* </a> */}
     </div>
   </div>
-)
+);
 
-export {UserInfoCell}
+export { UserInfoCell };

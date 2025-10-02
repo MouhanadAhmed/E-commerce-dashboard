@@ -14,7 +14,7 @@ export type Categories = {
       branch: Branch;
       available: boolean;
       order: number;
-    }
+    },
   ];
   available?: boolean;
   createdAt?: string;
@@ -30,7 +30,7 @@ export type Products = {
     {
       order?: number;
       id?: string | null;
-    }
+    },
   ];
   id?: string | null;
 };

@@ -9,16 +9,16 @@ export const useIllustrationsPath = (illustrationName: string): string => {
 
   const extension = illustrationName.substring(
     illustrationName.lastIndexOf("."),
-    illustrationName.length
+    illustrationName.length,
   );
   const illustration =
     ThemeModeComponent.getMode() === "dark"
       ? `${illustrationName.substring(
           0,
-          illustrationName.lastIndexOf(".")
+          illustrationName.lastIndexOf("."),
         )}-dark`
       : illustrationName.substring(0, illustrationName.lastIndexOf("."));
   return toAbsoluteUrl(
-    `media/illustrations/${config.illustrations?.set}/${illustration}${extension}`
+    `media/illustrations/${config.illustrations?.set}/${illustration}${extension}`,
   );
 };

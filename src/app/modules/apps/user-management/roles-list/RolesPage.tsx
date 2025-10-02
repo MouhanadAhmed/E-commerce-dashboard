@@ -1,28 +1,28 @@
-import {Route, Routes, Outlet, Navigate} from 'react-router-dom'
-import {PageLink, PageTitle} from '../../../../../_metronic/layout/core'
-import { RolesListWrapper } from './RolesList'
+import { Route, Routes, Outlet, Navigate } from "react-router-dom";
+import { PageLink, PageTitle } from "../../../../../_metronic/layout/core";
+import { RolesListWrapper } from "./RolesList";
 
 const rolesBreadcrumbs: Array<PageLink> = [
   {
-    title: 'Roles Management',
-    path: '/apps/user-management/roles',
+    title: "Roles Management",
+    path: "/apps/user-management/roles",
     isSeparator: false,
     isActive: false,
   },
   {
-    title: '',
-    path: '',
+    title: "",
+    path: "",
     isSeparator: true,
     isActive: false,
   },
-]
+];
 
 const RolesPage = () => {
   return (
     <Routes>
       <Route element={<Outlet />}>
         <Route
-          path='roles'
+          path="roles"
           element={
             <>
               <PageTitle breadcrumbs={rolesBreadcrumbs}>Roles list</PageTitle>
@@ -31,9 +31,9 @@ const RolesPage = () => {
           }
         />
       </Route>
-      <Route index element={<Navigate to='/apps/user-management/roles' />} />
+      <Route index element={<Navigate to="/apps/user-management/roles" />} />
     </Routes>
-  )
-}
+  );
+};
 
-export default RolesPage
+export default RolesPage;

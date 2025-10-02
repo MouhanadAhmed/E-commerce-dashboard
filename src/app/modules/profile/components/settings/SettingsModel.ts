@@ -1,26 +1,26 @@
 export interface ISettings {
   setupEmailNotifications: {
-    emailNotifications: boolean
-    sendCopyToPersonalEmail: boolean
-  }
+    emailNotifications: boolean;
+    sendCopyToPersonalEmail: boolean;
+  };
   activityRelatedEmail: {
     whenToEmail: {
-      youHaveNewNotifications: boolean
-      youAreADirectMessage: boolean
-      someoneAddsYouAsAConnection: boolean
-    }
+      youHaveNewNotifications: boolean;
+      youAreADirectMessage: boolean;
+      someoneAddsYouAsAConnection: boolean;
+    };
     whenToEscalateEmails: {
-      uponNewOrder: boolean
-      newMembershipApproval: boolean
-      memberRegistration: boolean
-    }
-  }
+      uponNewOrder: boolean;
+      newMembershipApproval: boolean;
+      memberRegistration: boolean;
+    };
+  };
   updatesFromKeenthemes: {
-    newsAboutKTProducts: boolean
-    tipsOnGettingMore: boolean
-    thingsYouMissed: boolean
-    newsAboutKTPartners: boolean
-  }
+    newsAboutKTProducts: boolean;
+    tipsOnGettingMore: boolean;
+    thingsYouMissed: boolean;
+    newsAboutKTPartners: boolean;
+  };
 }
 
 export const defaultSettings: ISettings = {
@@ -46,4 +46,4 @@ export const defaultSettings: ISettings = {
     thingsYouMissed: false,
     newsAboutKTPartners: false,
   },
-}
+};

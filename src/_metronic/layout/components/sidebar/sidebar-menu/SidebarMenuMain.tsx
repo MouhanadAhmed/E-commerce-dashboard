@@ -1,23 +1,28 @@
-import {useIntl} from 'react-intl'
-import {KTIcon} from '../../../../helpers'
-import {SidebarMenuItemWithSub} from './SidebarMenuItemWithSub'
-import {SidebarMenuItem} from './SidebarMenuItem'
+import { useIntl } from "react-intl";
+import { KTIcon } from "../../../../helpers";
+import { SidebarMenuItemWithSub } from "./SidebarMenuItemWithSub";
+import { SidebarMenuItem } from "./SidebarMenuItem";
 
 const SidebarMenuMain = () => {
-  const intl = useIntl()
+  const intl = useIntl();
 
   return (
     <>
       <SidebarMenuItem
-        to='/dashboard'
-        icon='element-11'
-        title={intl.formatMessage({id: 'MENU.DASHBOARD'})}
-        fontIcon='bi-app-indicator'
+        to="/dashboard"
+        icon="element-11"
+        title={intl.formatMessage({ id: "MENU.DASHBOARD" })}
+        fontIcon="bi-app-indicator"
       />
-      
-      <i className='ki-duotone ki-basket fs-2'></i>
+
+      <i className="ki-duotone ki-basket fs-2"></i>
       {/* <SidebarMenuItem title='Category' to='/categories' hasBullet={true}/> */}
-      <SidebarMenuItem to='/builder' icon='switch' title='Layout Builder' fontIcon='bi-layers' />
+      <SidebarMenuItem
+        to="/builder"
+        icon="switch"
+        title="Layout Builder"
+        fontIcon="bi-layers"
+      />
       {/* <div className='menu-item'>
         <div className='menu-content pt-8 pb-2'>
           <span className='menu-section text-muted text-uppercase fs-8 ls-1'>Crafted</span>
@@ -84,9 +89,11 @@ const SidebarMenuMain = () => {
         <SidebarMenuItem to='/crafted/widgets/tables' title='Tables' hasBullet={true} />
         <SidebarMenuItem to='/crafted/widgets/feeds' title='Feeds' hasBullet={true} />
       </SidebarMenuItemWithSub> */}
-      <div className='menu-item'>
-        <div className='menu-content pt-8 pb-2'>
-          <span className='menu-section text-muted text-uppercase fs-8 ls-1'>Apps</span>
+      <div className="menu-item">
+        <div className="menu-content pt-8 pb-2">
+          <span className="menu-section text-muted text-uppercase fs-8 ls-1">
+            Apps
+          </span>
         </div>
       </div>
       {/* <SidebarMenuItemWithSub
@@ -100,74 +107,117 @@ const SidebarMenuMain = () => {
         <SidebarMenuItem to='/apps/chat/drawer-chat' title='Drawer Chart' hasBullet={true} />
       </SidebarMenuItemWithSub> */}
       <SidebarMenuItemWithSub
-        to='/apps/eCommerce'
-        title='eCommerce'
-        fontIcon='bi-basket2-fill'
-        icon='basket'
+        to="/apps/eCommerce"
+        title="eCommerce"
+        fontIcon="bi-basket2-fill"
+        icon="basket"
       >
-         <SidebarMenuItemWithSub
-        to='/apps/eCommerce'
-        title='Menu Management'
-        // fontIcon='bi-basket2-fill'
-        icon='menu'
-      >
-
-        <SidebarMenuItem to='/apps/eCommerce/categories' title='Category' hasBullet={true} />
-        <SidebarMenuItem to='/apps/eCommerce/subCategories' title='SubCategory' hasBullet={true} />
-        <SidebarMenuItem to='/apps/eCommerce/childSubCategories' title='ChildSubCategory' hasBullet={true} />
-        <SidebarMenuItem to='/apps/eCommerce/types' title='Types' hasBullet={true} />
-        <SidebarMenuItem to='/apps/eCommerce/extras' title='Extras' hasBullet={true} />
-        <SidebarMenuItem to='/apps/eCommerce/branches' title='Branches' hasBullet={true} />
-        <SidebarMenuItem to='/apps/eCommerce/groupOfOptions' title='Group Of Options' hasBullet={true} />
-        <SidebarMenuItem to='/apps/eCommerce/options' title='Options' hasBullet={true} />
         <SidebarMenuItemWithSub
-        to='/apps/eCommerce/products'
-        title='Products'
-        fontIcon='bi-file-ppt'
-        icon='cube-2'
-        // hasBullet={true} 
-        
-      >
-
-        <SidebarMenuItem to='/apps/eCommerce/products' title='Products List' hasBullet={true} />
-        <SidebarMenuItem to='/apps/eCommerce/productForm/new' title='Add Product' hasBullet={true} />
-      </SidebarMenuItemWithSub>
-      </SidebarMenuItemWithSub>
+          to="/apps/eCommerce"
+          title="Menu Management"
+          // fontIcon='bi-basket2-fill'
+          icon="menu"
+        >
+          <SidebarMenuItem
+            to="/apps/eCommerce/categories"
+            title="Category"
+            hasBullet={true}
+          />
+          <SidebarMenuItem
+            to="/apps/eCommerce/subCategories"
+            title="SubCategory"
+            hasBullet={true}
+          />
+          <SidebarMenuItem
+            to="/apps/eCommerce/childSubCategories"
+            title="ChildSubCategory"
+            hasBullet={true}
+          />
+          <SidebarMenuItem
+            to="/apps/eCommerce/types"
+            title="Types"
+            hasBullet={true}
+          />
+          <SidebarMenuItem
+            to="/apps/eCommerce/extras"
+            title="Extras"
+            hasBullet={true}
+          />
+          <SidebarMenuItem
+            to="/apps/eCommerce/branches"
+            title="Branches"
+            hasBullet={true}
+          />
+          <SidebarMenuItem
+            to="/apps/eCommerce/groupOfOptions"
+            title="Group Of Options"
+            hasBullet={true}
+          />
+          <SidebarMenuItem
+            to="/apps/eCommerce/options"
+            title="Options"
+            hasBullet={true}
+          />
+          <SidebarMenuItemWithSub
+            to="/apps/eCommerce/products"
+            title="Products"
+            fontIcon="bi-file-ppt"
+            icon="cube-2"
+            // hasBullet={true}
+          >
+            <SidebarMenuItem
+              to="/apps/eCommerce/products"
+              title="Products List"
+              hasBullet={true}
+            />
+            <SidebarMenuItem
+              to="/apps/eCommerce/productForm/new"
+              title="Add Product"
+              hasBullet={true}
+            />
+          </SidebarMenuItemWithSub>
+        </SidebarMenuItemWithSub>
         {/* <SidebarMenuItem to='/apps/chat/group-chat' title='Group Chart' hasBullet={true} /> */}
         {/* <SidebarMenuItem to='/apps/chat/drawer-chat' title='Drawer Chart' hasBullet={true} /> */}
       </SidebarMenuItemWithSub>
       <SidebarMenuItemWithSub
-        to='/apps/user-management/users'
-        title='User management'
-        fontIcon='bi-layers'
-        icon='abstract-28'
-        // hasBullet={true} 
-        
+        to="/apps/user-management/users"
+        title="User management"
+        fontIcon="bi-layers"
+        icon="abstract-28"
+        // hasBullet={true}
       >
         <SidebarMenuItemWithSub
-        to='/apps/user-management/users'
-        title='Users'
-        // fontIcon='bi-layers'
-        // icon='abstract-28'
-        hasBullet={true} 
-        
-      >
-
-        <SidebarMenuItem to='/apps/user-management/users' title='Users List' hasBullet={true} />
-      </SidebarMenuItemWithSub>
+          to="/apps/user-management/users"
+          title="Users"
+          // fontIcon='bi-layers'
+          // icon='abstract-28'
+          hasBullet={true}
+        >
+          <SidebarMenuItem
+            to="/apps/user-management/users"
+            title="Users List"
+            hasBullet={true}
+          />
+        </SidebarMenuItemWithSub>
         <SidebarMenuItemWithSub
-        to='/apps/user-management/roles'
-        title='Roles'
-        // fontIcon='bi-layers'
-        // icon='abstract-28'
-        hasBullet={true} 
-        
-      >
-
-        <SidebarMenuItem to='/apps/user-management/roles' title='Roles List' hasBullet={true} />
-      </SidebarMenuItemWithSub>
-      <SidebarMenuItem to='/apps/user-management/permissions' title='Permissions' hasBullet={true} />
-
+          to="/apps/user-management/roles"
+          title="Roles"
+          // fontIcon='bi-layers'
+          // icon='abstract-28'
+          hasBullet={true}
+        >
+          <SidebarMenuItem
+            to="/apps/user-management/roles"
+            title="Roles List"
+            hasBullet={true}
+          />
+        </SidebarMenuItemWithSub>
+        <SidebarMenuItem
+          to="/apps/user-management/permissions"
+          title="Permissions"
+          hasBullet={true}
+        />
       </SidebarMenuItemWithSub>
       {/* <SidebarMenuItem
         to='/apps/user-management/users'
@@ -175,20 +225,22 @@ const SidebarMenuMain = () => {
         title='User management'
         fontIcon='bi-layers'
       /> */}
-      <div className='menu-item'>
+      <div className="menu-item">
         <a
-          target='_blank'
-          className='menu-link'
-          href={import.meta.env.VITE_APP_PREVIEW_DOCS_URL + '/changelog'}
+          target="_blank"
+          className="menu-link"
+          href={import.meta.env.VITE_APP_PREVIEW_DOCS_URL + "/changelog"}
         >
-          <span className='menu-icon'>
-            <KTIcon iconName='code' className='fs-2' />
+          <span className="menu-icon">
+            <KTIcon iconName="code" className="fs-2" />
           </span>
-          <span className='menu-title'>Changelog {import.meta.env.VITE_APP_VERSION}</span>
+          <span className="menu-title">
+            Changelog {import.meta.env.VITE_APP_VERSION}
+          </span>
         </a>
       </div>
     </>
-  )
-}
+  );
+};
 
-export {SidebarMenuMain}
+export { SidebarMenuMain };

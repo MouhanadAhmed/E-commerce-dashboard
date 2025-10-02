@@ -1,15 +1,15 @@
-import {ListViewProvider, useListView} from './core/ListViewProvider'
-import {QueryRequestProvider} from './core/QueryRequestProvider'
-import {QueryResponseProvider} from './core/QueryResponseProvider'
-import {UsersListHeader} from './components/header/UsersListHeader'
-import {RolesTable} from './table/RolesTable'
-import {PermEditModal} from './role-edit-modal/PermEditModal'
-import {KTCard, KTCardBody} from '../../../../../_metronic/helpers'
-import { ToolbarWrapper } from '../../../../../_metronic/layout/components/toolbar'
-import { Content } from '../../../../../_metronic/layout/components/content'
+import { ListViewProvider, useListView } from "./core/ListViewProvider";
+import { QueryRequestProvider } from "./core/QueryRequestProvider";
+import { QueryResponseProvider } from "./core/QueryResponseProvider";
+import { UsersListHeader } from "./components/header/UsersListHeader";
+import { RolesTable } from "./table/RolesTable";
+import { PermEditModal } from "./role-edit-modal/PermEditModal";
+import { KTCard, KTCardBody } from "../../../../../_metronic/helpers";
+import { ToolbarWrapper } from "../../../../../_metronic/layout/components/toolbar";
+import { Content } from "../../../../../_metronic/layout/components/content";
 
 const RolesList = () => {
-  const {itemIdForUpdate} = useListView()
+  const { itemIdForUpdate } = useListView();
   return (
     <>
       <KTCard>
@@ -23,8 +23,8 @@ const RolesList = () => {
       </KTCard> */}
       {itemIdForUpdate !== undefined && <PermEditModal />}
     </>
-  )
-}
+  );
+};
 
 const RolesListWrapper = () => (
   <QueryRequestProvider>
@@ -37,6 +37,6 @@ const RolesListWrapper = () => (
       </ListViewProvider>
     </QueryResponseProvider>
   </QueryRequestProvider>
-)
+);
 
-export {RolesListWrapper}
+export { RolesListWrapper };

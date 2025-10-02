@@ -87,7 +87,7 @@ const UsersListPagination = () => {
         ...pageLinks,
         ...scopedLinks.slice(
           scopedLinks.length - PAGINATION_PAGES_COUNT,
-          scopedLinks.length
+          scopedLinks.length,
         ),
       ];
     }
@@ -103,7 +103,7 @@ const UsersListPagination = () => {
         ...pageLinks,
         ...scopedLinks.slice(
           pageNum - 1 - halfOfPagesCount,
-          pageNum + halfOfPagesCount
+          pageNum + halfOfPagesCount,
         ),
       ];
     }

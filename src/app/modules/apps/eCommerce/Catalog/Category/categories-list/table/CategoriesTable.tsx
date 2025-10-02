@@ -60,7 +60,7 @@ const CategoriesTable = () => {
 
   const memoizedBranches = useMemo(
     () => branches.map((branch) => ({ value: branch._id, label: branch.name })),
-    [branches]
+    [branches],
   );
 
   const columns = useMemo<MRT_ColumnDef<Categories>[]>(
@@ -176,7 +176,7 @@ const CategoriesTable = () => {
         },
       },
     ],
-    [memoizedBranches, activeBranches, branches, validationErrors]
+    [memoizedBranches, activeBranches, branches, validationErrors],
   );
 
   const editCategoriesSchema = Yup.object().shape({
@@ -246,7 +246,7 @@ const CategoriesTable = () => {
         queryClient.refetchQueries([`${QUERIES.ARCHIVED_CATEGORIES_LIST}`]);
         setTrigger(true);
       },
-    }
+    },
   );
 
   const restoreItem = useMutation(
@@ -259,7 +259,7 @@ const CategoriesTable = () => {
         queryClient.refetchQueries([`${QUERIES.ARCHIVED_CATEGORIES_LIST}`]);
         setTrigger(true);
       },
-    }
+    },
   );
 
   const deleteSelectedItems = useMutation(
@@ -273,7 +273,7 @@ const CategoriesTable = () => {
         setTrigger(true);
         clearSelected();
       },
-    }
+    },
   );
 
   const updateCategoryAvailable = useMutation(
@@ -284,7 +284,7 @@ const CategoriesTable = () => {
         refetch();
         setTrigger(true);
       },
-    }
+    },
   );
 
   const commonTableProps: Partial<MRT_TableOptions<Categories>> & {
@@ -372,7 +372,7 @@ const CategoriesTable = () => {
             draggingRow!.original,
           ]);
           setActiveCategorieses((activeCategorieses) =>
-            activeCategorieses.filter((d) => d !== draggingRow!.original)
+            activeCategorieses.filter((d) => d !== draggingRow!.original),
           );
         } else if (hoveredRow && draggingRow) {
           await updateCategoryAvailable.mutateAsync({
@@ -465,7 +465,7 @@ const CategoriesTable = () => {
           <IconButton
             color="error"
             onClick={() => {
-              setCategoriesDelete(row.original._id);
+              setCategoriesDelete(row.original._id as any);
               handleDeleteClick("delete");
             }}
           >
@@ -476,7 +476,7 @@ const CategoriesTable = () => {
           <IconButton
             color="success"
             onClick={() => {
-              setCategoriesDelete(row.original);
+              setCategoriesDelete(row.original as any);
               handleArrangeProductsClick();
             }}
           >
@@ -487,7 +487,7 @@ const CategoriesTable = () => {
           <IconButton
             color="warning"
             onClick={() => {
-              setCategoriesDelete(row.original);
+              setCategoriesDelete(row.original as any);
               handleArrangeSubsClick();
             }}
           >
@@ -567,7 +567,7 @@ const CategoriesTable = () => {
             draggingRow!.original,
           ]);
           setActiveCategorieses((activeCategorieses) =>
-            activeCategorieses.filter((d) => d !== draggingRow!.original)
+            activeCategorieses.filter((d) => d !== draggingRow!.original),
           );
         } else if (hoveredRow && draggingRow) {
           await updateCategoryAvailable.mutateAsync({
@@ -613,16 +613,18 @@ const CategoriesTable = () => {
           <Button
             color="error"
             onClick={async () => {
-              let selcetedIDs = [];
-              table
-                .getSelectedRowModel()
-                .rows.map((item) => selcetedIDs.push(item.original._id));
-              await deleteSelectedItems.mutateAsync(selcetedIDs);
+              // let selcetedIDs =[];
+              table.getSelectedRowModel().rows.map(async (item) => {
+                await updateCategoryAvailable.mutateAsync({
+                  id: item.original._id,
+                  update: { deleted: false },
+                });
+              });
               table.toggleAllRowsSelected(false);
             }}
             variant="contained"
           >
-            Delete Selected
+            Restore Selected
           </Button>
         </Box>
       </>
@@ -765,9 +767,7 @@ const CategoriesTable = () => {
         </Modal.Header>
         <Modal.Body>
           {CategoriesDelete && (
-            <CategoryProductsTable
-              id={(CategoriesDelete as Categories)?._id as string}
-            />
+            <CategoryProductsTable id={(CategoriesDelete as Categories)?._id} />
           )}
         </Modal.Body>
         <Modal.Footer>
@@ -797,9 +797,7 @@ const CategoriesTable = () => {
         </Modal.Header>
         <Modal.Body>
           {CategoriesDelete && (
-            <CategorySubsTable
-              id={(CategoriesDelete as Categories)?._id as string}
-            />
+            <CategorySubsTable id={(CategoriesDelete as Categories)?._id} />
           )}
         </Modal.Body>
         <Modal.Footer>
