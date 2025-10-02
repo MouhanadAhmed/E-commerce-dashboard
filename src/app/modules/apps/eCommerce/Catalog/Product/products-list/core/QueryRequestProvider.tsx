@@ -1,35 +1,36 @@
 /* eslint-disable react-refresh/only-export-components */
-import {FC, useState, createContext, useContext} from 'react'
+import { FC, useState, createContext, useContext } from "react";
 import {
   QueryState,
   QueryRequestContextProps,
   initialQueryRequest,
   WithChildren,
-} from '../../../../../../../../_metronic/helpers'
+} from "../../../../../../../../_metronic/helpers";
 
-const QueryRequestContext = createContext<QueryRequestContextProps>(initialQueryRequest)
+const QueryRequestContext =
+  createContext<QueryRequestContextProps>(initialQueryRequest);
 
-const QueryRequestProvider: FC<WithChildren> = ({children}) => {
+const QueryRequestProvider: FC<WithChildren> = ({ children }) => {
   const [state, setState] = useState({
     ...initialQueryRequest.state,
     // Separate pagination for active and archived tables
     activePage: 1,
-    activePageSize: 10,
+    activePageSize: 1000,
     archivedPage: 1,
-    archivedPageSize: 10
-  })
+    archivedPageSize: 1000,
+  });
 
   const updateState = (updates: any) => {
-    const updatedState = {...state, ...updates} as QueryState
-    setState(updatedState as any)
-  }
+    const updatedState = { ...state, ...updates } as QueryState;
+    setState(updatedState as any);
+  };
 
   return (
-    <QueryRequestContext.Provider value={{state, updateState}}>
+    <QueryRequestContext.Provider value={{ state, updateState }}>
       {children}
     </QueryRequestContext.Provider>
-  )
-}
+  );
+};
 
-const useQueryRequest = () => useContext(QueryRequestContext)
-export {QueryRequestProvider, useQueryRequest}
+const useQueryRequest = () => useContext(QueryRequestContext);
+export { QueryRequestProvider, useQueryRequest };
