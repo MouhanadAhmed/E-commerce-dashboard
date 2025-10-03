@@ -1,7 +1,7 @@
 import { KTIcon } from "../../../../../../../../_metronic/helpers";
 import { useListView } from "../core/ListViewProvider";
 
-const CategoryEditModalHeader = () => {
+const ExtraEditModalHeader = () => {
   const { setItemIdForUpdate } = useListView();
 
   return (
@@ -24,4 +24,4 @@ const CategoryEditModalHeader = () => {
   );
 };
 
-export { CategoryEditModalHeader };
+export { ExtraEditModalHeader };

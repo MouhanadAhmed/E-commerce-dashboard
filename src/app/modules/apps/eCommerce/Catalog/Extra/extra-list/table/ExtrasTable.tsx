@@ -1,10 +1,10 @@
-// export {CategoriesesTable}
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   useQueryResponseData,
   useQueryRefetch,
+  useActiveExtrasLoading,
+  useArchivedExtrasLoading,
 } from "../core/QueryResponseProvider";
-// import { useQueryResponseData as branchesData } from '../../../Branch/branches-list/core/QueryResponseProvider';
 import { Extras } from "../core/_models";
 import {
   type MRT_TableOptions,
@@ -12,31 +12,21 @@ import {
   type MRT_Row,
   MaterialReactTable,
   useMaterialReactTable,
-  // MRT_TableContainer,
-  // MRT_ActionMenuItem,
-  // MRT_ToggleDensePaddingButton,
 } from "material-react-table";
-// import { Divider } from '@mui/material';
-import Select from "react-select";
 import { Box, Button, IconButton, Tooltip } from "@mui/material";
 import {
   deleteExtra,
   deleteSelectedExtras,
   updateExtra,
-  updateSelectedExtras,
 } from "../core/_requests";
 import { useMutation, useQueryClient } from "react-query";
 import { QUERIES } from "../../../../../../../../_metronic/helpers";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import RestoreFromTrashIcon from "@mui/icons-material/RestoreFromTrash";
 import * as Yup from "yup";
 import { Modal } from "react-bootstrap";
 import { useListView } from "../core/ListViewProvider";
-// import { TablesWidget12 } from '../../../../../../../../_metronic/partials/widgets';
-// import { getArchivedBranches,getBranches } from '../../../Branch/branches-list/core/_requests';
-// import { CategoryProductsTable } from '../../products-list/categoryProductsTable';
-// import { CategorySubsTable } from '../../subCategories-list/categorySubsTable';
-// import { ArchivedCategoriesTable } from './ArchivedCategoriesTable';
 import Flatpickr from "react-flatpickr";
 
 const ExtrasTable = () => {
@@ -47,42 +37,18 @@ const ExtrasTable = () => {
     Record<string, string | undefined>
   >({});
   const { active, archived } = useQueryResponseData();
-  // const {active : activeBranches,archived : archivedBranches} = branchesData();
-  // console.log("activeBranches",[...activeBranches,...archivedBranches])
+
   const refetch = useQueryRefetch();
   const [trigger, setTrigger] = useState(false);
-  // const isLoading = useQueryResponseLoading()
-  const [activeCategorieses, setActiveCategorieses] =
-    useState<Extras[]>(active);
-  const [archivedCategorieses, setArchivedCategorieses] = useState<Extras[]>(
-    () => archived,
-  );
-  const [draggingRow, setDraggingRow] = useState<MRT_Row<Extras> | null>(null);
+
   const [hoveredTable, setHoveredTable] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [showProductsModal, setShowProductsModal] = useState(false);
-  const [showSubCategoriesModal, setShowSubCategoriesModal] = useState(false);
-  const [CategoriesDelete, setCategoriesDelete] = useState();
-  // const[branches,setBranches]=useState([...activeBranches,...archivedBranches]);
-  const [loading, setLoading] = useState(true);
-  const [editCategory, setEditCategory] = useState();
-  // let enableQuery = CategoriesDelete?._id !== undefined? true:false
-  // setBranches([...activeBranches,...archivedBranches]);
-  // console.log('branches',branches)
-  // Fetch branches data
-  // useEffect(() => {
-  //   const fetchBranches = async () => {
-  //     try {
-  //       const resActive = await getBranches();
-  //       const resArchived = await getArchivedBranches();
-  //       setBranches([...resActive.data, ...resArchived.data]);
-  //     } catch (error) {
-  //       console.error('Error fetching branches:', error);
-  //     }
-  //   };
-  //   fetchBranches();
-  // }, []);
-  // const memoizedBranches = useMemo(() => branches.map(branch => ({ value: branch._id, label: branch.name })), [branches]);
+  const [showSubExtrasModal, setShowSubExtrasModal] = useState(false);
+  const [ExtrasDelete, setExtrasDelete] = useState();
+  const [editExtra, setEditExtra] = useState();
+  const isActiveLoading = useActiveExtrasLoading();
+  const isArchivedLoading = useArchivedExtrasLoading();
 
   const columns = useMemo<MRT_ColumnDef<Extras>[]>(
     //column definitions...
@@ -129,21 +95,19 @@ const ExtrasTable = () => {
           align: "left",
         },
         Cell: ({ cell }) => (
-          // <span className={`badge ${cell.getValue<boolean>() == true?'badge-success':'badge-danger'}`}>{cell.getValue<number>().toLocaleString()}</span>
           <div className="form-check form-switch form-check-custom form-check-solid">
             <input
               className="form-check-input cursor-pointer"
               type="checkbox"
               checked={cell.getValue<boolean>()}
-              onClick={() =>
-                updateCategoryAvailable.mutateAsync({
+              onChange={() =>
+                updateExtraAvailable.mutateAsync({
                   id: cell.row.original._id,
                   update: { available: !cell.row.original.available },
                 })
               }
               id={cell.row.original._id}
             />
-            {/* {console.log('cell',cell.row.original)} */}
           </div>
         ),
       },
@@ -239,142 +203,58 @@ const ExtrasTable = () => {
         Cell: ({ cell }) => (
           <span className={`badge `}>
             {cell?.getValue()
-              ? new Date(cell?.getValue())?.toLocaleDateString("en-US")
+              ? new Date((cell?.getValue() as any))?.toLocaleDateString("en-US")
               : ""}
           </span>
         ),
         Edit: ({ cell, row, table }) => {
-          // const branchs = cell.getValue<{ branch: { name: string , _id:string} }[]>();
-          // let defV =[]
-          // branchs.map(branch => {
-          //   defV.push({value:branch.branch._id, label:branch.branch.name})
-
-          // })
-          // console.log('edit',defV)
-
           return (
-            // loading ? (
-            //   <div>Loading...</div>
-            // ) : (
             <Flatpickr
               placeholder="Discount Expiry Date"
               value={cell.getValue()}
-              // data-enable-time
               options={{ dateFormat: "Y-m-d" }}
-              // value={formik.values.priceAfterExpirest}
-              onChange={(date) => setEditCategory(date[0].toISOString())}
-              // {...formik.getFieldProps('priceAfterExpirest')}
+              onChange={(date) => setEditExtra(date[0].toISOString())}
               type="text"
               name="priceAfterExpirest"
               dateFormat="z"
-              // className={clsx(
-              //   'form-control form-control-solid mb-3 ms-2 mb-lg-0',
-
-              // )}
               autoComplete="off"
-              // disabled={formik.isSubmitting || isCategoryLoading}
             />
-            // )
           );
         },
       },
-
-      // {
-      //   accessorKey: 'branch',
-      //   header: 'Branch',
-      //   editVariant: 'select',
-      //   grow: true,
-      //   size: 200,
-      //   muiTableBodyCellProps: {
-      //     align: 'center',
-      //   },
-      //   muiTableHeadCellProps: {
-      //     align: 'center',
-      //   },
-      //   Edit: ({cell, row, table}) => {
-      //     const branchs = cell.getValue<{ branch: { name: string , _id:string} }[]>();
-      //     let defV =[]
-      //     branchs.map(branch => {
-      //       defV.push({value:branch.branch._id, label:branch.branch.name})
-
-      //     })
-      //     // console.log('edit',defV)
-
-      //     return (
-      //       // loading ? (
-      //       //   <div>Loading...</div>
-      //       // ) : (
-      //         <Select
-      //           className='react-select-styled'
-      //           classNamePrefix='react-select'
-      //           isMulti
-      //           options={memoizedBranches}
-      //           defaultValue={defV}
-      //           menuPortalTarget={document.body}
-      //           styles={{
-      //             menuPortal: base => ({ ...base, zIndex: 9999 })
-      //           }}
-      //           onChange={(selected) => {
-      //             const updatedBranches = selected ? selected.map((option) => option.value  ) : [];
-      //           //  console.log('updatedBranches',updatedBranches)
-      //            setEditCategory(updatedBranches)
-      //            // table.setEditingCell(row.id, 'branch', updatedBranches);
-      //           }}
-      //         />
-      //       // )
-      //     );
-      //   },
-      //   Cell: ({ cell }) => {
-      //     const branchs = cell.getValue<{ branch: { name: string } }[]>();
-      //     return (
-      //       <>
-      //         {branchs.map(branch => <span className="badge badge-secondary me-1">
-      //         {branch.branch.name}
-      //       </span>)}
-      //       </>
-      //       // <span className="badge badge-secondary">
-      //       //   {branch.branch.name}
-      //       // </span>
-      //     );
-      //   },
-      // },
     ],
     [validationErrors],
   );
 
-  const editCategoriesSchema = Yup.object().shape({
+  const editExtrasSchema = Yup.object().shape({
     order: Yup.number().min(0, "Order can't be negative"),
     name: Yup.string().min(3, "Minimum 3 symbols").required("Name is required"),
     description: Yup.string().min(3, "Minimum 3 symbols"),
 
-    // name:Yup.string().min(2).max(30).required(),
     price: Yup.number().min(0).optional(),
     available: Yup.boolean().optional(),
     stock: Yup.string().optional(),
     qty: Yup.number().min(0).optional(),
     priceAfterDiscount: Yup.number().min(0).optional(),
     priceAfterExpirest: Yup.string().optional(),
-    // description:Yup.string().min(3).max(100).optional(),
     sold: Yup.string().min(0).optional(),
   });
   //UPDATE Extras
-  const handleSaveCategories = async (originalRow) => {
+  const handleSaveExtras = async (originalRow) => {
     originalRow.values.stock = originalRow.values.stock
       ? originalRow.values.stock.toString()
       : "null";
     console.log("values", originalRow);
-    editCategoriesSchema
+    editExtrasSchema
       .validate(originalRow.row.original)
       .catch((err) => setValidationErrors(err.message));
     setValidationErrors({});
     const updatedRowValues = {
       ...originalRow.values,
-      priceAfterExpirest: editCategory,
-      // branch: editCategory.map(str => ({ branch: str })), // assuming branch is an array of objects with value and label
+      priceAfterExpirest: editExtra,
     };
-    // console.log(editCategory)
 
-    await updateCategoryAvailable.mutateAsync({
+    await updateExtraAvailable.mutateAsync({
       id: originalRow.row.original._id,
       update: updatedRowValues,
     });
@@ -388,12 +268,12 @@ const ExtrasTable = () => {
   const handleCloseProductsModal = () => {
     setShowProductsModal(false);
   };
-  //Arrange SubCategories action
+  //Arrange SubExtras action
   const handleArrangeSubsClick = () => {
-    setShowSubCategoriesModal(true);
+    setShowSubExtrasModal(true);
   };
-  const handleCloseSubCategoriesModal = () => {
-    setShowSubCategoriesModal(false);
+  const handleCloseSubExtrasModal = () => {
+    setShowSubExtrasModal(false);
   };
   //DELETE action
   const handleDeleteClick = () => {
@@ -403,14 +283,14 @@ const ExtrasTable = () => {
     await deleteItem.mutateAsync();
     setShowModal(false);
   };
-  const openAddCategoryModal = () => {
+  const openAddExtraModal = () => {
     setItemIdForUpdate(null);
   };
   const handleClose = () => {
     setShowModal(false);
   };
   const deleteItem = useMutation(
-    () => deleteExtra(CategoriesDelete as string),
+    () => deleteExtra(ExtrasDelete as string),
     {
       // 💡 response of the mutation is passed to onSuccess
       onSuccess: () => {
@@ -440,34 +320,10 @@ const ExtrasTable = () => {
     },
   );
 
-  // const {
-  //   isLoading,
-  //   data: productsData,
-  //   error,
-  // } = useQuery(
-  //   `${QUERIES.CATEGORIES_LIST}-products-${CategoriesDelete?._id}`,
-  //   () => {
-  //     retur(CategoriesDelete?._id)
-  //   },
-  //   {
-  //     cacheTime: 0,
-  //     enabled: enableQuery,
-  //     onError: (err) => {
-  //       // setItemIdForUpdate(undefined)
-  //       console.error(err)
-  //     },
-  //   }
-  // )
-  const updateCategoryAvailable = useMutation(
-    ({ id, update }) => updateExtra(id, update),
+  const updateExtraAvailable = useMutation(
+    ({ id, update }: { id: string; update: Partial<Extras> }) => updateExtra(id, update),
     {
-      // 💡 response of the mutation is passed to onSuccess
       onSuccess: () => {
-        // ✅ update detail view directly
-        // queryClient.invalidateQueries([`${QUERIES.CATEGORIES_LIST}`]);
-        // queryClient.invalidateQueries([`${QUERIES.ARCHIVED_CATEGORIES_LIST}`]);
-        // queryClient.refetchQueries([`${QUERIES.CATEGORIES_LIST}`])
-        // queryClient.refetchQueries([`${QUERIES.ARCHIVED_CATEGORIES_LIST}`])
         refetch();
         setTrigger(true);
       },
@@ -485,33 +341,9 @@ const ExtrasTable = () => {
         minHeight: "320px",
       },
     },
-    // onDraggingRowChange: setDraggingRow,
-    // state: { draggingRow },
   };
-  // useEffect(()=>{
-  //     // console.log("Categoriese",active)
-  //     setActiveCategorieses(active);
-  //     setArchivedCategorieses(archived);
-  //     // console.log('brnaches',activeBranches)
-  //     setBranches([...activeBranches,...archivedBranches])
-  // },[active,archived, trigger,activeBranches,archivedBranches])
-  // useEffect(() => {
-  //   const getAvBranches = async () => {
-  //     try {
-  //       const res = await getBranches();
-  //       const res2 = await getArchivedBranches();
-  //       setBranches([...res.data, ...res2.data]);
-  //       setLoading(false);
-  //     } catch (error) {
-  //       console.error("Error fetching branches:", error);
-  //       setLoading(false);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //   getAvBranches();
-  // }, []);
-  // console.log('brenacj',branches.map(branch => ({ value: branch._id, label: branch.name })))
+
+
   const table1 = useMaterialReactTable({
     ...commonTableProps,
     enableRowSelection: true,
@@ -535,7 +367,6 @@ const ExtrasTable = () => {
         "description",
         "order",
         "mrt-row-expand",
-        // 'branch',
         "price",
         "priceAfterDiscount",
         "priceAfterExpirest",
@@ -544,6 +375,7 @@ const ExtrasTable = () => {
         "sold",
         "available",
       ],
+      isLoading: isActiveLoading,
     },
     muiDetailPanelProps: () => ({
       sx: (theme) => ({
@@ -561,68 +393,25 @@ const ExtrasTable = () => {
         transition: "transform 0.2s",
       },
     }),
-    //conditionally render detail panel
-    // renderDetailPanel: ({ row }) =>
-    //   row.original.branch ? (
-    //     // <Box
-    //     //   sx={{
-    //     //     display: 'grid',
-    //     //     margin: 'auto',
-    //     //     gridTemplateColumns: '1fr 1fr',
-    //     //     width: '100%',
-    //     //   }}
-    //     // >
 
-    //     //   {/* <Typography>Address: {row.original.name}</Typography> */}
-    //     //   {/* <Typography>City: {row.original.description}</Typography> */}
-    //     //   {/* <Typography>State: {row.original.state}</Typography>
-    //     //   <Typography>Country: {row.original.country}</Typography> */}
-    //     // </Box>
-    //     <>
-    //     {row.original.branch.map(branch => <span className="badge badge-secondary me-1">
-    //           {branch.branch.name}
-    //         </span>)}
-    //     </>
-    //   ) : null,
     muiRowDragHandleProps: ({ table }) => ({
       onDragEnd: async () => {
         const { draggingRow, hoveredRow } = table.getState();
-        // console.log('hoveredRow',hoveredRow)
         if (hoveredTable === "table-2") {
-          // console.log('draggingRow',draggingRow)
           setHoveredTable(null);
-          await updateCategoryAvailable.mutateAsync({
+          await updateExtraAvailable.mutateAsync({
             id: draggingRow?.original._id,
             update: { deleted: true },
           });
-
-          setArchivedCategorieses((archivedCategorieses) => [
-            ...archivedCategorieses,
-            draggingRow!.original,
-          ]);
-          setActiveCategorieses((activeCategorieses) =>
-            activeCategorieses.filter((d) => d !== draggingRow!.original),
-          );
         } else if (hoveredRow && draggingRow) {
-          // console.log('hoveredRow',hoveredRow)
-          // console.log('draggingRow',draggingRow)
-          await updateCategoryAvailable.mutateAsync({
+          await updateExtraAvailable.mutateAsync({
             id: draggingRow?.original._id,
             update: { order: hoveredRow?.original.order },
           });
           setHoveredTable(null);
-          // setTrigger(true)
-          // data.splice(
-          // (hoveredRow as MRT_Row<Person>).index,
-          // 0,
-          // data.splice(draggingRow.index, 1)[0],
-          // );
-          // setData([...data]);
         }
       },
     }),
-    // pinnedColumn:'selection',
-    // positionSelectionColumn:'first',
     renderTopToolbarCustomActions: ({ table }) => (
       <>
         <div className="card-header ribbon ribbon-start">
@@ -638,32 +427,22 @@ const ExtrasTable = () => {
             justifyContent: "right",
           }}
         >
-          {/* <Typography color="success.main" component="span" variant="h4">
-        Active List
-      </Typography> */}
           <Button
             color="info"
-            onClick={openAddCategoryModal}
+            onClick={openAddExtraModal}
             variant="contained"
           >
             Add Extra
           </Button>
           <Button
             color="warning"
-            // disabled={!table.getIsSomeRowsSelected()}
             onClick={async () => {
-              // let selcetedIDs =[];
               table.getSelectedRowModel().rows.map(async (item) => {
-                await updateCategoryAvailable.mutateAsync({
+                await updateExtraAvailable.mutateAsync({
                   id: item.original._id,
                   update: { available: !item.original.available },
                 });
-                // selcetedIDs.push(item.original._id)
               });
-              // console.log(selcetedIDs);
-              // console.log(table.getState().rowSelection);
-              // selected = selcetedIDs;
-              //  await updateSelectedItems.mutateAsync(selcetedIDs);
               table.toggleAllRowsSelected(false);
             }}
             variant="contained"
@@ -672,15 +451,11 @@ const ExtrasTable = () => {
           </Button>
           <Button
             color="error"
-            // disabled={!table.getIsSomeRowsSelected()}
             onClick={async () => {
               let selcetedIDs = [];
               table
                 .getSelectedRowModel()
                 .rows.map((item) => selcetedIDs.push(item.original._id));
-              // console.log(selcetedIDs);
-              // console.log(table.getState().rowSelection);
-              // selected = selcetedIDs;
               await deleteSelectedItems.mutateAsync(selcetedIDs);
               table.toggleAllRowsSelected(false);
             }}
@@ -693,19 +468,8 @@ const ExtrasTable = () => {
     ),
     data: active,
     onEditingRowCancel: () => setValidationErrors({}),
-    onEditingRowSave: (originalRow) => handleSaveCategories(originalRow),
+    onEditingRowSave: (originalRow) => handleSaveExtras(originalRow),
     getRowId: (originalRow) => `table-1-${originalRow.name}`,
-    // muiRowDragHandleProps: {
-    //   onDragEnd: async() => {
-    //     if (hoveredTable === 'table-2') {
-    //       await updateCategoryAvailable.mutateAsync({id:draggingRow?.original._id,update:{deleted:true}})
-
-    //       setArchivedCategorieses((archivedCategorieses) => [...archivedCategorieses, draggingRow!.original]);
-    //       setActiveCategorieses((activeCategorieses) => activeCategorieses.filter((d) => d !== draggingRow!.original));
-    //     }
-    //     setHoveredTable(null);
-    //   },
-    // },
     muiTablePaperProps: {
       onDragEnter: () => setHoveredTable("table-1"),
       sx: {
@@ -714,7 +478,6 @@ const ExtrasTable = () => {
     },
     displayColumnDefOptions: {
       "mrt-row-actions": {
-        // size: 50, //set custom width
         muiTableHeadCellProps: {
           align: "center", //change head cell props
         },
@@ -731,36 +494,13 @@ const ExtrasTable = () => {
           <IconButton
             color="error"
             onClick={() => {
-              setCategoriesDelete(row.original._id);
+              setExtrasDelete(row.original._id as any);
               handleDeleteClick();
-              // table.toggleAllRowsSelected(false)
             }}
           >
             <DeleteIcon />
           </IconButton>
         </Tooltip>
-        {/* <Tooltip title="Arrange products">
-          <IconButton color="success" 
-          onClick={() =>{
-            setCategoriesDelete(row.original);
-            handleArrangeProductsClick(); 
-            // table.toggleAllRowsSelected(false) 
-          }}
-          >
-            <i className="fa-brands fa-2xl text-primary fa-product-hunt"></i>
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Arrange SubCategories">
-          <IconButton color="warning" 
-          onClick={() =>{
-            setCategoriesDelete(row.original);
-            handleArrangeSubsClick();
-            // table.toggleAllRowsSelected(false) 
-          }}
-          >
-            <i className="fa-solid fa-layer-group text-warning"></i>
-          </IconButton>
-        </Tooltip> */}
       </Box>
     ),
   });
@@ -771,106 +511,66 @@ const ExtrasTable = () => {
     enableRowSelection: true,
     enableStickyHeader: true,
     enableCellActions: true,
-    enableClickToCopy: "context-menu",
+    enableClickToCopy: 'context-menu',
     enableEditing: true,
-    editDisplayMode: "row",
-    createDisplayMode: "row",
-    rowPinningDisplayMode: "select-sticky",
-    positionToolbarAlertBanner: "bottom",
-    positionActionsColumn: "last",
+    editDisplayMode: 'row',
+    createDisplayMode: 'row',
+    rowPinningDisplayMode: 'select-sticky',
+    positionToolbarAlertBanner: 'bottom',
+    positionActionsColumn: 'last',
     enableRowOrdering: true,
     enableSorting: false,
     enableExpandAll: false,
     state: {
       columnOrder: [
-        "mrt-row-select", //move the built-in selection column to the end of the table
-        "mrt-row-drag",
-        "name",
-        "description",
-        "order",
-        "mrt-row-expand",
+        'mrt-row-select',
+        'mrt-row-drag',
+        'name',
+        'description',
+        'order',
+        'mrt-row-expand',
         // 'branch',
-        "price",
-        "priceAfterDiscount",
-        "priceAfterExpirest",
-        "stock",
-        "qty",
-        "sold",
-        "available",
+        'price',
+        'priceAfterDiscount',
+        'priceAfterExpirest',
+        'stock',
+        'qty',
+        'sold',
+        'available',
       ],
+      isLoading: isArchivedLoading,
     },
     muiDetailPanelProps: () => ({
       sx: (theme) => ({
         backgroundColor:
-          theme.palette.mode === "dark"
-            ? "rgba(255,210,244,0.1)"
-            : "rgba(0,0,0,0.1)",
+          theme.palette.mode === 'dark'
+            ? 'rgba(255,210,244,0.1)'
+            : 'rgba(0,0,0,0.1)',
       }),
     }),
     muiExpandButtonProps: ({ row, table }) => ({
       onClick: () => table.setExpanded({ [row.id]: !row.getIsExpanded() }), //only 1 detail panel open at a time
       sx: {
-        transform: row.getIsExpanded() ? "rotate(180deg)" : "rotate(-90deg)",
-        transition: "transform 0.2s",
+        transform: row.getIsExpanded() ? 'rotate(180deg)' : 'rotate(-90deg)',
+        transition: 'transform 0.2s',
       },
     }),
-    // renderDetailPanel: ({ row }) =>
-    //   row.original.branch ? (
-    //     // <Box
-    //     //   sx={{
-    //     //     display: 'grid',
-    //     //     margin: 'auto',
-    //     //     gridTemplateColumns: '1fr 1fr',
-    //     //     width: '100%',
-    //     //   }}
-    //     // >
-
-    //     //   {/* <Typography>Address: {row.original.name}</Typography> */}
-    //     //   {/* <Typography>City: {row.original.description}</Typography> */}
-    //     //   {/* <Typography>State: {row.original.state}</Typography>
-    //     //   <Typography>Country: {row.original.country}</Typography> */}
-    //     // </Box>
-    //     <>
-    //     {row.original.branch.map(branch => <span className="badge badge-secondary me-1">
-    //           {branch.branch.name}
-    //         </span>)}
-    //     </>
-    //   ) : null,
 
     muiRowDragHandleProps: ({ table }) => ({
       onDragEnd: async () => {
         const { draggingRow, hoveredRow } = table.getState();
-        // console.log('hoveredRow',hoveredRow)
-        if (hoveredTable === "table-1") {
-          // console.log('draggingRow',draggingRow)
+        if (hoveredTable === 'table-1') {
           setHoveredTable(null);
-          await updateCategoryAvailable.mutateAsync({
+          await updateExtraAvailable.mutateAsync({
             id: draggingRow?.original._id,
             update: { deleted: false },
           });
-
-          setArchivedCategorieses((archivedCategorieses) => [
-            ...archivedCategorieses,
-            draggingRow!.original,
-          ]);
-          setActiveCategorieses((activeCategorieses) =>
-            activeCategorieses.filter((d) => d !== draggingRow!.original),
-          );
         } else if (hoveredRow && draggingRow) {
-          // console.log('hoveredRow',hoveredRow)
-          // console.log('draggingRow',draggingRow)
-          await updateCategoryAvailable.mutateAsync({
+          await updateExtraAvailable.mutateAsync({
             id: draggingRow?.original._id,
             update: { order: hoveredRow?.original.order },
           });
           setHoveredTable(null);
-          // setTrigger(true)
-          // data.splice(
-          // (hoveredRow as MRT_Row<Person>).index,
-          // 0,
-          // data.splice(draggingRow.index, 1)[0],
-          // );
-          // setData([...data]);
         }
       },
     }),
@@ -884,38 +584,21 @@ const ExtrasTable = () => {
         </div>
         <Box
           sx={{
-            display: "flex",
-            gap: "1rem",
-            p: "4px",
-            justifyContent: "right",
+            display: 'flex',
+            gap: '1rem',
+            p: '4px',
+            justifyContent: 'right',
           }}
         >
-          {/* <Typography color="success.main" component="span" variant="h4">
-          Active List
-        </Typography> */}
-          {/* <Button
-            color="info"
-            onClick={openAddCategoryModal}
-            variant="contained"
-          >
-            Add Category
-          </Button> */}
           <Button
             color="warning"
-            // disabled={!table.getIsSomeRowsSelected()}
             onClick={async () => {
-              // let selcetedIDs =[];
               table.getSelectedRowModel().rows.map(async (item) => {
-                await updateCategoryAvailable.mutateAsync({
+                await updateExtraAvailable.mutateAsync({
                   id: item.original._id,
                   update: { available: !item.original.available },
                 });
-                // selcetedIDs.push(item.original._id)
               });
-              // console.log(selcetedIDs);
-              // console.log(table.getState().rowSelection);
-              // selected = selcetedIDs;
-              //  await updateSelectedItems.mutateAsync(selcetedIDs);
               table.toggleAllRowsSelected(false);
             }}
             variant="contained"
@@ -924,21 +607,18 @@ const ExtrasTable = () => {
           </Button>
           <Button
             color="error"
-            // disabled={!table.getIsSomeRowsSelected()}
             onClick={async () => {
-              let selcetedIDs = [];
-              table
-                .getSelectedRowModel()
-                .rows.map((item) => selcetedIDs.push(item.original._id));
-              // console.log(selcetedIDs);
-              // console.log(table.getState().rowSelection);
-              // selected = selcetedIDs;
-              await deleteSelectedItems.mutateAsync(selcetedIDs);
+              table.getSelectedRowModel().rows.map(async (item) => {
+                await updateExtraAvailable.mutateAsync({
+                  id: item.original._id,
+                  update: { deleted: false },
+                });
+              });
               table.toggleAllRowsSelected(false);
             }}
             variant="contained"
           >
-            Delete Selected
+            Restore Selected
           </Button>
         </Box>
       </>
@@ -948,24 +628,23 @@ const ExtrasTable = () => {
       size: 100,
     },
     onEditingRowCancel: () => setValidationErrors({}),
-    onEditingRowSave: (originalRow) => handleSaveCategories(originalRow),
+    onEditingRowSave: (originalRow) => handleSaveExtras(originalRow),
     getRowId: (originalRow) => `table-2-${originalRow.name}`,
     muiTablePaperProps: {
-      onDragEnter: () => setHoveredTable("table-2"),
+      onDragEnter: () => setHoveredTable('table-2'),
       sx: {
-        outline: hoveredTable === "table-2" ? "2px dashed pink" : undefined,
+        outline: hoveredTable === 'table-2' ? '2px dashed pink' : undefined,
       },
     },
     displayColumnDefOptions: {
-      "mrt-row-actions": {
-        // size: 350, //set custom width
+      'mrt-row-actions': {
         muiTableHeadCellProps: {
-          align: "center", //change head cell props
+          align: 'center', //change head cell props
         },
       },
     },
     renderRowActions: ({ row, table }) => (
-      <Box sx={{ display: "flex", gap: "1rem" }}>
+      <Box sx={{ display: 'flex', gap: '1rem' }}>
         <Tooltip title="Edit">
           <IconButton onClick={() => table.setEditingRow(row)}>
             <EditIcon />
@@ -974,37 +653,16 @@ const ExtrasTable = () => {
         <Tooltip title="Delete">
           <IconButton
             color="error"
-            onClick={() => {
-              setCategoriesDelete(row.original._id);
-              handleDeleteClick();
-              // table.toggleAllRowsSelected(false)
+            onClick={async () => {
+                await updateExtraAvailable.mutateAsync({
+                  id: row.original._id,
+                  update: { deleted: false },
+                });
             }}
           >
-            <DeleteIcon />
+            <RestoreFromTrashIcon />
           </IconButton>
         </Tooltip>
-        {/* <Tooltip title="Arrange products">
-            <IconButton color="success" 
-            onClick={() =>{
-              setCategoriesDelete(row.original);
-              handleArrangeProductsClick(); 
-              // table.toggleAllRowsSelected(false) 
-            }}
-            >
-              <i className="fa-brands fa-2xl text-primary fa-product-hunt"></i>
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Arrange SubCategories">
-            <IconButton color="warning" 
-            onClick={() =>{
-              setCategoriesDelete(row.original);
-              handleArrangeSubsClick();
-              // table.toggleAllRowsSelected(false) 
-            }}
-            >
-              <i className="fa-solid fa-layer-group text-warning"></i>
-            </IconButton>
-          </Tooltip> */}
       </Box>
     ),
   });
@@ -1014,7 +672,6 @@ const ExtrasTable = () => {
       <Box
         sx={{
           display: "grid",
-          // gridTemplateColumns: { xs: 'auto', lg: '1fr 1fr' },
           gap: "1rem",
           overflow: "auto",
           p: "4px",
@@ -1025,7 +682,6 @@ const ExtrasTable = () => {
       <Box
         sx={{
           display: "grid",
-          // gridTemplateColumns: { xs: 'auto', lg: '1fr 1fr' },
           gap: "1rem",
           overflow: "auto",
           p: "4px",
@@ -1033,7 +689,6 @@ const ExtrasTable = () => {
       >
         <MaterialReactTable table={table2} />
 
-        {/* <ArchivedCategoriesTable/> */}
       </Box>
       {/* Delete Modal */}
       <Modal show={showModal} onHide={handleClose}>
@@ -1061,11 +716,10 @@ const ExtrasTable = () => {
       <Modal show={showProductsModal} onHide={handleCloseProductsModal}>
         <Modal.Header closeButton>
           <Modal.Title>
-            Arrange Procusts Order in {CategoriesDelete?.name} Category
+            Arrange Procusts Order in {(ExtrasDelete as any)?.name} Extra
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {/* <CategoryProductsTable  id={CategoriesDelete?._id } /> */}
         </Modal.Body>
         <Modal.Footer>
           <Box sx={{ display: "flex", gap: "1rem", p: "4px" }}>
@@ -1080,25 +734,24 @@ const ExtrasTable = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* Arrange SubCategories Modal */}
+      {/* Arrange SubExtras Modal */}
       <Modal
-        show={showSubCategoriesModal}
-        onHide={handleCloseSubCategoriesModal}
+        show={showSubExtrasModal}
+        onHide={handleCloseSubExtrasModal}
       >
         <Modal.Header closeButton>
           <Modal.Title>
-            Arrange SubCategories Order in {CategoriesDelete?.name} Category
+            Arrange SubExtras Order in {(ExtrasDelete as any)?.name} Extra
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {/* <CategorySubsTable  id={CategoriesDelete?._id } /> */}
         </Modal.Body>
         <Modal.Footer>
           <Box sx={{ display: "flex", gap: "1rem", p: "4px" }}>
             <Button
               color="info"
               variant="contained"
-              onClick={handleCloseSubCategoriesModal}
+              onClick={handleCloseSubExtrasModal}
             >
               Close
             </Button>

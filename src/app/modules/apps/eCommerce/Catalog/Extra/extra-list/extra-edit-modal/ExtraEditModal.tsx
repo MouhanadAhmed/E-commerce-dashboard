@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import { CategoryEditModalFormWrapper } from "./CategoryEditModalFormWrapper";
-import { CategoryEditModalHeader } from "./CategoryEditModalHeader";
+import { ExtraEditModalFormWrapper } from "./ExtraEditModalFormWrapper";
+import { ExtraEditModalHeader } from "./ExtraEditModalHeader";
 
-const CategoryEditModal = () => {
+const ExtraEditModal = () => {
   useEffect(() => {
     document.body.classList.add("modal-open");
     return () => {
@@ -23,10 +23,10 @@ const CategoryEditModal = () => {
         <div className="modal-dialog modal-dialog-centered mw-650px">
           {/* begin::Modal content */}
           <div className="modal-content">
-            <CategoryEditModalHeader />
+            <ExtraEditModalHeader />
             {/* begin::Modal body */}
             <div className="modal-body scroll-y mx-5 mx-xl-15 my-7">
-              <CategoryEditModalFormWrapper />
+              <ExtraEditModalFormWrapper />
             </div>
             {/* end::Modal body */}
           </div>
@@ -41,4 +41,4 @@ const CategoryEditModal = () => {
   );
 };
 
-export { CategoryEditModal };
+export { ExtraEditModal };

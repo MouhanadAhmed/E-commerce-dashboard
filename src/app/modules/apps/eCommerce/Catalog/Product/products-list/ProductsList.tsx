@@ -11,8 +11,8 @@ import { QueryRequestProvider as ChildSubRequest } from "../../ChildSubCategory/
 import { QueryResponseProvider as ChildQuery } from "../../ChildSubCategory/ChildSubcategories-list/core/QueryResponseProvider";
 import { QueryRequestProvider as TypeRequest } from "../../Type/categories-list/core/QueryRequestProvider";
 import { QueryResponseProvider as TypeQuery } from "../../Type/categories-list/core/QueryResponseProvider";
-import { QueryRequestProvider as ExtraRequest } from "../../Extra/categories-list/core/QueryRequestProvider";
-import { QueryResponseProvider as ExtraQuery } from "../../Extra/categories-list/core/QueryResponseProvider";
+import { QueryRequestProvider as ExtraRequest } from "../../Extra/extra-list/core/QueryRequestProvider";
+import { QueryResponseProvider as ExtraQuery } from "../../Extra/extra-list/core/QueryResponseProvider";
 
 import { ProductEditModal } from "./category-edit-modal/ProductEditModal";
 import { KTCard } from "../../../../../../../_metronic/helpers";

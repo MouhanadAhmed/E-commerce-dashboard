@@ -8,7 +8,7 @@ import {
   KTIcon,
 } from "../../../../../../../../../_metronic/helpers";
 
-const CategoriesListSearchComponent = () => {
+const ExtrasListSearchComponent = () => {
   const { updateState } = useQueryRequest();
   const [searchTerm, setSearchTerm] = useState<string>("");
   // Debounce search term so that it only gives us latest value ...
@@ -36,7 +36,7 @@ const CategoriesListSearchComponent = () => {
           type="text"
           data-kt-user-table-filter="search"
           className="form-control form-control-solid w-250px ps-14"
-          placeholder="Search Category"
+          placeholder="Search Extra"
           value={searchTerm}
           onChange={(e) => {
             console.log(e.target.value);
@@ -49,4 +49,4 @@ const CategoriesListSearchComponent = () => {
   );
 };
 
-export { CategoriesListSearchComponent };
+export { ExtrasListSearchComponent };

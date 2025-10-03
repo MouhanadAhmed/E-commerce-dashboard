@@ -9,7 +9,7 @@ import { useQueryResponseData as categoriesData } from "../../../Category/catego
 import { useQueryResponseData as subcategoriesData } from "../../../SubCategory/Subcategories-list/core/QueryResponseProvider";
 import { useQueryResponseData as childSubCategoryData } from "../../../ChildSubCategory/ChildSubcategories-list/core/QueryResponseProvider";
 import { useQueryResponseData as typesData } from "../../../Type/categories-list/core/QueryResponseProvider";
-import { useQueryResponseData as extrasData } from "../../../Extra/categories-list/core/QueryResponseProvider";
+import { useQueryResponseData as extrasData } from "../../../Extra/extra-list/core/QueryResponseProvider";
 import { Product } from "../core/_models";
 import {
   type MRT_TableOptions,
@@ -70,7 +70,7 @@ import {
 import {
   getArchivedExtras,
   getExtras,
-} from "../../../Extra/categories-list/core/_requests";
+} from "../../../Extra/extra-list/core/_requests";
 import {
   getArchivedTypes,
   getTypes,

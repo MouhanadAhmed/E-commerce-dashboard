@@ -5,7 +5,7 @@ import clsx from "clsx";
 import { useListView } from "../core/ListViewProvider";
 import { UsersListLoading } from "../components/loading/UsersListLoading";
 import { useQueryResponse } from "../core/QueryResponseProvider";
-import { Extras as Category } from "../core/_models";
+import { Extras as Extra } from "../core/_models";
 import { createExtra, updateExtra } from "../core/_requests";
 import {
   isNotEmpty,
@@ -13,8 +13,8 @@ import {
 } from "../../../../../../../../_metronic/helpers";
 import Flatpickr from "react-flatpickr";
 type Props = {
-  isCategoryLoading: boolean;
-  category: Category;
+  isExtraLoading: boolean;
+  category: Extra;
 };
 
 const editUserSchema = Yup.object().shape({
@@ -22,24 +22,20 @@ const editUserSchema = Yup.object().shape({
   name: Yup.string().min(3, "Minimum 3 symbols").required("Name is required"),
   description: Yup.string().min(3, "Minimum 3 symbols"),
 
-  // name:Yup.string().min(2).max(30).required(),
   price: Yup.number().min(0).optional(),
   available: Yup.boolean().optional(),
   stock: Yup.string().optional(),
   qty: Yup.number().min(0).optional(),
   priceAfterDiscount: Yup.number().min(0).optional(),
   priceAfterExpirest: Yup.string().optional(),
-  // description:Yup.string().min(3).max(100).optional(),
   sold: Yup.number().min(0).optional(),
-  // imgCover:Yup.string().hex().length(24).optional(),
-  // order:Yup.number().min(1).optional()
 });
 
-const CategoryEditModalForm: FC<Props> = ({ category, isCategoryLoading }) => {
+const ExtraEditModalForm: FC<Props> = ({ category, isExtraLoading }) => {
   const { setItemIdForUpdate } = useListView();
   const { refetch } = useQueryResponse();
 
-  const [categoryForEdit] = useState<Category>({
+  const [categoryForEdit] = useState<Extra>({
     ...category,
     available: category.available || true,
     name: category.name || "",
@@ -113,48 +109,9 @@ const CategoryEditModalForm: FC<Props> = ({ category, isCategoryLoading }) => {
                 style={{ backgroundImage: `url('${userAvatarImg}')` }}
               ></div>
               {/* end::Preview existing imgCover */}
-
-              {/* begin::Label */}
-              {/* <label
-              className='btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow'
-              data-kt-image-input-action='change'
-              data-bs-toggle='tooltip'
-              title='Change imgCover'
-            >
-              <i className='bi bi-pencil-fill fs-7'></i>
-
-              <input type='file' name='imgCover' accept='.png, .jpg, .jpeg' />
-              <input type='hidden' name='avatar_remove' />
-            </label> */}
-              {/* end::Label */}
-
-              {/* begin::Cancel */}
-              {/* <span
-              className='btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow'
-              data-kt-image-input-action='cancel'
-              data-bs-toggle='tooltip'
-              title='Cancel imgCover'
-            >
-              <i className='bi bi-x fs-2'></i>
-            </span> */}
-              {/* end::Cancel */}
-
-              {/* begin::Remove */}
-              {/* <span
-              className='btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow'
-              data-kt-image-input-action='remove'
-              data-bs-toggle='tooltip'
-              title='Remove imgCover'
-            >
-              <i className='bi bi-x fs-2'></i>
-            </span> */}
-              {/* end::Remove */}
             </div>
             {/* end::Image input */}
 
-            {/* begin::Hint */}
-            {/* <div className='form-text'>Allowed file types: png, jpg, jpeg.</div> */}
-            {/* end::Hint */}
           </div>
           {/* end::Input group */}
 
@@ -178,7 +135,7 @@ const CategoryEditModalForm: FC<Props> = ({ category, isCategoryLoading }) => {
                 },
               )}
               autoComplete="off"
-              disabled={formik.isSubmitting || isCategoryLoading}
+              disabled={formik.isSubmitting || isExtraLoading}
             />
             {formik.touched.name && formik.errors.name && (
               <div className="fv-plugins-message-container">
@@ -217,7 +174,7 @@ const CategoryEditModalForm: FC<Props> = ({ category, isCategoryLoading }) => {
               type="text"
               name="description"
               autoComplete="off"
-              disabled={formik.isSubmitting || isCategoryLoading}
+              disabled={formik.isSubmitting || isExtraLoading}
             />
             {/* end::Input */}
             {formik.touched.description && formik.errors.description && (
@@ -248,7 +205,7 @@ const CategoryEditModalForm: FC<Props> = ({ category, isCategoryLoading }) => {
               type="text"
               name="order"
               autoComplete="off"
-              disabled={formik.isSubmitting || isCategoryLoading}
+              disabled={formik.isSubmitting || isExtraLoading}
             />
             {/* end::Input */}
             {formik.touched.order && formik.errors.order && (
@@ -279,7 +236,7 @@ const CategoryEditModalForm: FC<Props> = ({ category, isCategoryLoading }) => {
                 },
               )}
               autoComplete="off"
-              disabled={formik.isSubmitting || isCategoryLoading}
+              disabled={formik.isSubmitting || isExtraLoading}
             />
             {formik.touched.stock && formik.errors.stock && (
               <div className="fv-plugins-message-container">
@@ -312,7 +269,7 @@ const CategoryEditModalForm: FC<Props> = ({ category, isCategoryLoading }) => {
                 },
               )}
               autoComplete="off"
-              disabled={formik.isSubmitting || isCategoryLoading}
+              disabled={formik.isSubmitting || isExtraLoading}
             />
             {formik.touched.qty && formik.errors.qty && (
               <div className="fv-plugins-message-container">
@@ -345,7 +302,7 @@ const CategoryEditModalForm: FC<Props> = ({ category, isCategoryLoading }) => {
                 },
               )}
               autoComplete="off"
-              disabled={formik.isSubmitting || isCategoryLoading}
+              disabled={formik.isSubmitting || isExtraLoading}
             />
             {formik.touched.price && formik.errors.price && (
               <div className="fv-plugins-message-container">
@@ -386,7 +343,7 @@ const CategoryEditModalForm: FC<Props> = ({ category, isCategoryLoading }) => {
                 },
               )}
               autoComplete="off"
-              disabled={formik.isSubmitting || isCategoryLoading}
+              disabled={formik.isSubmitting || isExtraLoading}
             />
             {formik.touched.priceAfterDiscount &&
               formik.errors.priceAfterDiscount && (
@@ -429,7 +386,7 @@ const CategoryEditModalForm: FC<Props> = ({ category, isCategoryLoading }) => {
                 "form-control form-control-solid mb-3 ms-2 mb-lg-0",
               )}
               autoComplete="off"
-              disabled={formik.isSubmitting || isCategoryLoading}
+              disabled={formik.isSubmitting || isExtraLoading}
             />
             {formik.touched.priceAfterExpirest &&
               formik.errors.priceAfterExpirest && (
@@ -465,7 +422,7 @@ const CategoryEditModalForm: FC<Props> = ({ category, isCategoryLoading }) => {
               )}
               name="available"
               autoComplete="off"
-              disabled={formik.isSubmitting || isCategoryLoading}
+              disabled={formik.isSubmitting || isExtraLoading}
             >
               <option value="true">Yes</option>
               <option value="false">No</option>
@@ -488,7 +445,7 @@ const CategoryEditModalForm: FC<Props> = ({ category, isCategoryLoading }) => {
             onClick={() => cancel()}
             className="btn btn-light me-3"
             data-kt-users-modal-action="cancel"
-            disabled={formik.isSubmitting || isCategoryLoading}
+            disabled={formik.isSubmitting || isExtraLoading}
           >
             Discard
           </button>
@@ -498,14 +455,14 @@ const CategoryEditModalForm: FC<Props> = ({ category, isCategoryLoading }) => {
             className="btn btn-primary"
             data-kt-users-modal-action="submit"
             disabled={
-              isCategoryLoading ||
+              isExtraLoading ||
               formik.isSubmitting ||
               !formik.isValid ||
               !formik.touched
             }
           >
             <span className="indicator-label">Submit</span>
-            {(formik.isSubmitting || isCategoryLoading) && (
+            {(formik.isSubmitting || isExtraLoading) && (
               <span className="indicator-progress">
                 Please wait...{" "}
                 <span className="spinner-border spinner-border-sm align-middle ms-2"></span>
@@ -515,9 +472,9 @@ const CategoryEditModalForm: FC<Props> = ({ category, isCategoryLoading }) => {
         </div>
         {/* end::Actions */}
       </form>
-      {(formik.isSubmitting || isCategoryLoading) && <UsersListLoading />}
+      {(formik.isSubmitting || isExtraLoading) && <UsersListLoading />}
     </>
   );
 };
 
-export { CategoryEditModalForm };
+export { ExtraEditModalForm };

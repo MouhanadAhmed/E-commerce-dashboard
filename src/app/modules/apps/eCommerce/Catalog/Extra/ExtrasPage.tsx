@@ -1,6 +1,6 @@
 import { Route, Routes, Outlet, Navigate } from "react-router-dom";
 import { PageLink, PageTitle } from "../../../../../../_metronic/layout/core";
-import { ExtrasListWrapper } from "./categories-list/ExtrasList";
+import { ExtrasListWrapper } from "./extra-list/ExtrasList";
 
 const extrasBreadcrumbs: Array<PageLink> = [
   {

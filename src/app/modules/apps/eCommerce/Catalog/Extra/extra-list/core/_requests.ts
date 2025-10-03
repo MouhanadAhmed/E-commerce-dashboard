@@ -6,13 +6,11 @@ import {
 } from "../../../../../../../../_metronic/helpers";
 import { ExtrasQueryResponse, Extras } from "./_models";
 
-// const {state} = useQueryRequest()
 const API_URL = import.meta.env.VITE_APP_THEME_API_URL;
 const EXTRAS_URL = `${API_URL}/productExtra`;
 const GET_EXTRAS_URL = `${API_URL}/productExtra?deleted=false`;
 const GET_ARCHIVED_EXTRAS_URL = `${API_URL}/productExtra?deleted=true`;
 let baseUrl = "";
-// console.log("initialQueryRequest.state",initialQueryRequest.state)
 if (
   initialQueryRequest.state &&
   typeof initialQueryRequest.state === "object"
@@ -20,29 +18,25 @@ if (
   const queryString = Object.entries(initialQueryRequest.state)
     .map(
       ([key, value]) =>
-        `${encodeURIComponent(key)}=${encodeURIComponent(value)}`,
+        `${encodeURIComponent(key)}=${encodeURIComponent(value as string)}`,
     )
     .join("&");
   baseUrl = GET_EXTRAS_URL + "&" + queryString;
 }
 const getExtras = (query?: string): Promise<ExtrasQueryResponse> => {
-  // console.log(query);
   baseUrl = GET_EXTRAS_URL + "&" + query;
   return axios
     .get(`${query !== undefined ? baseUrl : GET_EXTRAS_URL}`)
     .then((response) => {
-      // console.log("_requests => Extras",response.data.data)
       return response.data;
     });
 };
 const getArchivedExtras = (query?: string): Promise<ExtrasQueryResponse> => {
-  // console.log(initialQueryRequest.state)
   baseUrl = GET_ARCHIVED_EXTRAS_URL + "&" + query;
 
   return axios
     .get(`${query !== undefined ? baseUrl : GET_ARCHIVED_EXTRAS_URL}`)
     .then((response) => {
-      // console.log("_requests => Extras",response.data.data)
       return response.data;
     });
 };

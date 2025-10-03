@@ -7,14 +7,6 @@ export type Extras = {
   slug?: string;
   description?: string;
   order?: number;
-  // branch?:[
-  //   {
-  //     _id?: string
-  //   branch: string,
-  //   available: boolean,
-  //   order: number
-  // }
-  // ]
   available?: boolean;
   createdAt?: string;
   updatedAt?: string;

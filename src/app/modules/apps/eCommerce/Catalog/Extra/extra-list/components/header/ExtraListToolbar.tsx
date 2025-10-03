@@ -2,9 +2,9 @@ import { KTIcon } from "../../../../../../../../../_metronic/helpers";
 import { useListView } from "../../core/ListViewProvider";
 import { UsersListFilter } from "./UsersListFilter";
 
-const CategoriesListToolbar = () => {
+const ExtrasListToolbar = () => {
   const { setItemIdForUpdate } = useListView();
-  const openAddCategoryModal = () => {
+  const openAddExtraModal = () => {
     setItemIdForUpdate(null);
   };
 
@@ -26,14 +26,14 @@ const CategoriesListToolbar = () => {
       <button
         type="button"
         className="btn btn-primary"
-        onClick={openAddCategoryModal}
+        onClick={openAddExtraModal}
       >
         <KTIcon iconName="plus" className="fs-2" />
-        Add Category
+        Add Extra
       </button>
       {/* end::Add user */}
     </div>
   );
 };
 
-export { CategoriesListToolbar };
+export { ExtrasListToolbar };

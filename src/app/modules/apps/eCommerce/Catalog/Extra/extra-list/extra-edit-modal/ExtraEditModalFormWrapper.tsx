@@ -2,9 +2,9 @@ import { useQuery } from "react-query";
 import { useListView } from "../core/ListViewProvider";
 import { getExtraById } from "../core/_requests";
 import { QUERIES, isNotEmpty } from "../../../../../../../../_metronic/helpers";
-import { CategoryEditModalForm } from "./CategoryEditModalForm";
+import { ExtraEditModalForm } from "./ExtraEditModalForm";
 
-const CategoryEditModalFormWrapper = () => {
+const ExtraEditModalFormWrapper = () => {
   const { itemIdForUpdate, setItemIdForUpdate } = useListView();
   const enabledQuery: boolean = isNotEmpty(itemIdForUpdate);
   const {
@@ -28,8 +28,8 @@ const CategoryEditModalFormWrapper = () => {
 
   if (!itemIdForUpdate) {
     return (
-      <CategoryEditModalForm
-        isCategoryLoading={isLoading}
+      <ExtraEditModalForm
+        isExtraLoading={isLoading}
         category={{ _id: undefined, available: true }}
       />
     );
@@ -37,8 +37,8 @@ const CategoryEditModalFormWrapper = () => {
 
   if (!isLoading && !error && category) {
     return (
-      <CategoryEditModalForm
-        isCategoryLoading={isLoading}
+      <ExtraEditModalForm
+        isExtraLoading={isLoading}
         category={category}
       />
     );
@@ -47,4 +47,4 @@ const CategoryEditModalFormWrapper = () => {
   return null;
 };
 
-export { CategoryEditModalFormWrapper };
+export { ExtraEditModalFormWrapper };

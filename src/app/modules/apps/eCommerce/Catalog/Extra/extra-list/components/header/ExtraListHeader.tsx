@@ -1,20 +1,20 @@
 import { useListView } from "../../core/ListViewProvider";
-import { CategoriesListToolbar } from "./CategoriesListToolbar";
+import { ExtrasListToolbar } from "./ExtraListToolbar";
 import { UsersListGrouping } from "./UsersListGrouping";
-import { CategoriesListSearchComponent } from "./CategoriesListSearchComponent";
+import { ExtrasListSearchComponent } from "./ExtraListSearchComponent";
 
-const CategoriesListHeader = () => {
+const ExtrasListHeader = () => {
   const { selected } = useListView();
   return (
     <div className="card-header border-0 pt-6">
-      <CategoriesListSearchComponent />
+      <ExtrasListSearchComponent />
       {/* begin::Card toolbar */}
       <div className="card-toolbar">
         {/* begin::Group actions */}
         {selected.length > 0 ? (
           <UsersListGrouping />
         ) : (
-          <CategoriesListToolbar />
+          <ExtrasListToolbar />
         )}
         {/* end::Group actions */}
       </div>
@@ -23,4 +23,4 @@ const CategoriesListHeader = () => {
   );
 };
 
-export { CategoriesListHeader };
+export { ExtrasListHeader };
