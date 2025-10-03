@@ -26,6 +26,7 @@ export type ChildSubCategories = {
   __v?: number;
   category?: [
     {
+      _id?: string;
       category?: Categories;
       available: boolean;
       order: number;
@@ -33,6 +34,7 @@ export type ChildSubCategories = {
   ];
   subCategory?: [
     {
+      _id?: string;
       subCategory?: SubCategories;
       available: boolean;
       order: number;

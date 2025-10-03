@@ -39,7 +39,6 @@ const ActiveBranchesProvider: FC<WithChildren> = ({ children }) => {
       if (query.match(/search=([^&]*)/)) {
         setQuery(query.replace(/search=/, "keyword="));
       }
-      console.log("active query", decodeURIComponent(query));
       setQuery(decodeURIComponent(updatedQuery));
     }
   }, [updatedQuery]);
@@ -79,7 +78,6 @@ const ArchivedBranchesProvider: FC<WithChildren> = ({ children }) => {
       if (query.match(/search=([^&]*)/)) {
         setQuery(query.replace(/search=/, "keyword="));
       }
-      console.log("archived query", decodeURIComponent(query));
       setQuery(decodeURIComponent(updatedQuery));
     }
   }, [updatedQuery]);
@@ -156,7 +154,6 @@ const useArchivedBranches = () => useContext(ArchivedBranchesContext);
 
 const useArchivedBranchesData = () => {
   const { response } = useArchivedBranches();
-  console.log("archived response", response);
   if (!response) {
     return [];
   }

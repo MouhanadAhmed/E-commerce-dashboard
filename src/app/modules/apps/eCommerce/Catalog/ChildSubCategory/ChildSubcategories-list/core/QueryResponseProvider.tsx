@@ -42,7 +42,6 @@ const ActiveChildSubCategoriesProvider: FC<WithChildren> = ({ children }) => {
       if (query.match(/search=([^&]*)/)) {
         setQuery(query.replace(/search=/, 'keyword='));
       }
-      console.log('query', decodeURIComponent(query));
       setQuery(decodeURIComponent(updatedQuery));
     }
   }, [updatedQuery]);
@@ -86,7 +85,6 @@ const ArchivedChildSubCategoriesProvider: FC<WithChildren> = ({ children }) => {
       if (query.match(/search=([^&]*)/)) {
         setQuery(query.replace(/search=/, 'keyword='));
       }
-      console.log('archivedQuery', decodeURIComponent(query));
       setQuery(decodeURIComponent(updatedQuery));
     }
   }, [updatedQuery]);
@@ -167,7 +165,6 @@ const useArchivedChildSubCategories = () =>
 
 const useArchivedChildSubCategoriesData = () => {
   const { response } = useArchivedChildSubCategories();
-  console.log('archived response', response);
   if (!response) {
     return [];
   }

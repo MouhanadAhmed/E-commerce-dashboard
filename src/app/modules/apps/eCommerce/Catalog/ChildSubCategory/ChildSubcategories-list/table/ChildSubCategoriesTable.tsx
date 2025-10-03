@@ -133,7 +133,7 @@ const ChildSubCategoriesTable = () => {
               className="form-check-input cursor-pointer"
               type="checkbox"
               checked={cell.getValue<boolean>()}
-              onClick={() =>
+              onChange={() =>
                 updateCategoryAvailable.mutateAsync({
                   id: cell.row.original._id,
                   update: { available: !cell.row.original.available },
@@ -193,7 +193,7 @@ const ChildSubCategoriesTable = () => {
           return (
             <>
               {categoriess?.map((category) => (
-                <span className="badge badge-warning me-1">
+                <span key={category._id} className="badge badge-warning me-1">
                   {category.category.name}
                 </span>
               ))}
@@ -249,7 +249,7 @@ const ChildSubCategoriesTable = () => {
           return (
             <>
               {categoriess?.map((subCategory) => (
-                <span className="badge badge-primary me-1">
+                <span key={subCategory._id} className="badge badge-primary me-1">
                   {subCategory?.subCategory?.name}
                 </span>
               ))}
@@ -301,7 +301,7 @@ const ChildSubCategoriesTable = () => {
           return (
             <>
               {row.original.branch.map((branch) => (
-                <span className="badge badge-secondary me-1">
+                <span key={branch._id} className="badge badge-secondary me-1">
                   {branch.branch.name}
                 </span>
               ))}

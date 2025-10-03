@@ -82,7 +82,6 @@ const ArchivedCategoriesProvider: FC<WithChildren> = ({ children }) => {
       if (query.match(/search=([^&]*)/)) {
         setQuery(query.replace(/search=/, 'keyword='));
       }
-      console.log('archivedQuery', decodeURIComponent(query));
       setQuery(decodeURIComponent(updatedQuery));
     }
   }, [updatedQuery]);
@@ -159,7 +158,6 @@ const useArchivedCategories = () => useContext(ArchivedCategoriesContext);
 
 const useArchivedCategoriesData = () => {
   const { response } = useArchivedCategories();
-  console.log('archived response', response);
   if (!response) {
     return [];
   }

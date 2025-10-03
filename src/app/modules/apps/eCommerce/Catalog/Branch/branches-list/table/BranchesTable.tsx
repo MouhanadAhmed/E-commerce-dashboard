@@ -79,7 +79,6 @@ const BranchesTable = () => {
   });
   //UPDATE branch
   const handleSaveBranch = async (originalRow) => {
-    console.log(originalRow.row.original);
     editBranchSchema
       .validate(originalRow.row.original)
       .catch((err) => setValidationErrors(err.message));
@@ -154,7 +153,6 @@ const BranchesTable = () => {
     state: { draggingRow },
   };
   useEffect(() => {
-    console.log("branche", active);
     setActiveBranches(active);
     setArchivedBranches(archived);
   }, [active, archived, trigger]);
@@ -298,7 +296,6 @@ const BranchesTable = () => {
     muiRowDragHandleProps: {
       onDragEnd: async () => {
         if (hoveredTable === "table-1") {
-          console.log("getRowId", draggingRow?.original._id);
           await updateBranchAvailable.mutateAsync({
             id: draggingRow?.original._id,
             update: { deleted: false },
