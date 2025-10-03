@@ -1,4 +1,7 @@
 import { Response } from "../../../../../../../../_metronic/helpers";
+import { Branch } from "../../../Branch/branches-list/core/_models";
+import { Categories } from "../../../Category/categories-list/core/_models";
+import { SubCategories } from "../../../SubCategory/Subcategories-list/core/_models";
 
 export type ChildSubCategories = {
   imgCover?: string;
@@ -10,7 +13,7 @@ export type ChildSubCategories = {
   branch?: [
     {
       _id?: string;
-      branch: string;
+      branch: Branch;
       available: boolean;
       order: number;
     },
@@ -23,14 +26,14 @@ export type ChildSubCategories = {
   __v?: number;
   category?: [
     {
-      category?: string;
+      category?: Categories;
       available: boolean;
       order: number;
     },
   ];
   subCategory?: [
     {
-      subCategory?: string;
+      subCategory?: SubCategories;
       available: boolean;
       order: number;
     },
@@ -47,24 +50,9 @@ export const initialCategory: ChildSubCategories = {
   slug: "اول-قسم",
   description: "وصف اول قسم",
   order: 1,
-  branch: [
-    {
-      branch: "6559c51ad057da4061a73efc",
-      available: true,
-      order: 1,
-      _id: "66464d997a132b21c121e912",
-    },
-  ],
   available: true,
   deleted: false,
   createdAt: "2024-05-16T18:16:57.462Z",
   updatedAt: "2024-05-16T18:16:57.462Z",
   __v: 0,
-  category: [
-    {
-      category: "6560a826d746be4e85f35055",
-      available: true,
-      order: 1,
-    },
-  ],
 };

@@ -1,7 +1,14 @@
 /* eslint-disable react-refresh/only-export-components */
 /* eslint-disable react-hooks/exhaustive-deps */
-import { FC, useContext, useState, useEffect, useMemo } from "react";
-import { useQuery } from "react-query";
+import {
+  FC,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+  createContext,
+} from 'react';
+import { useQuery } from 'react-query';
 import {
   createResponseContext,
   initialQueryResponse,
@@ -10,110 +17,125 @@ import {
   QUERIES,
   stringifyRequestQuery,
   WithChildren,
-} from "../../../../../../../../_metronic/helpers";
-import { useQueryRequest } from "./QueryRequestProvider";
-import { getArchivedExtras, getExtras } from "./_requests";
-import { Extras } from "./_models";
+} from '../../../../../../../../_metronic/helpers';
+import { useQueryRequest } from './QueryRequestProvider';
+import { getArchivedExtras, getExtras } from './_requests';
+import { Extras } from './_models';
 
-const QueryResponseContext =
+// Create separate contexts for active and archived extras
+const ActiveExtrasContext = createResponseContext<Extras>(initialQueryResponse);
+const ArchivedExtrasContext =
   createResponseContext<Extras>(initialQueryResponse);
-const QueryResponseProvider: FC<WithChildren> = ({ children }) => {
+
+// Active Extras Provider
+const ActiveExtrasProvider: FC<WithChildren> = ({ children }) => {
   const { state } = useQueryRequest();
   const [query, setQuery] = useState<string>(stringifyRequestQuery(state));
-  // const [searchQuery, setSearchQuery] = useState<string|null>()
   const updatedQuery = useMemo(() => stringifyRequestQuery(state), [state]);
-  const [archivedQuery, setArchivedQuery] = useState<string>(
-    stringifyRequestQuery(state),
-  );
-  const updatedArchivedQuery = useMemo(
-    () => stringifyRequestQuery(state),
-    [state],
-  );
 
   useEffect(() => {
     if (query !== updatedQuery) {
       if (query.match(/search=([^&]*)/)) {
-        setQuery(query.replace(/search=/, "keyword="));
+        setQuery(query.replace(/search=/, 'keyword='));
       }
-      // console.log('query',decodeURIComponent(query))
-
-      // .replace(/search=/, 'keyword=')
       setQuery(decodeURIComponent(updatedQuery));
     }
   }, [updatedQuery]);
-  useEffect(() => {
-    if (archivedQuery !== updatedArchivedQuery) {
-      if (archivedQuery.match(/search=([^&]*)/)) {
-        setArchivedQuery(archivedQuery.replace(/search=/, "keyword="));
-      }
-      // console.log('archivedQuery', decodeURIComponent(archivedQuery))
-      setArchivedQuery(decodeURIComponent(updatedArchivedQuery));
-    }
-  }, [updatedArchivedQuery]);
-  const {
-    isFetching: isFetchingCategories,
-    refetch: refetchCategories,
-    data: responseCategories,
-  } = useQuery(
-    `${QUERIES.EXTRAS_LIST}-${query}`,
-    () => {
-      return getExtras(query);
-    },
-    { cacheTime: 0, keepPreviousData: true, refetchOnWindowFocus: false },
-  );
 
   const {
-    isFetching: isFetchingArchived,
-    refetch: refetchArchived,
-    data: responseArchived,
-  } = useQuery(
-    `${QUERIES.ARCHIVED_EXTRAS_LIST}-${archivedQuery}`,
-    () => getArchivedExtras(archivedQuery),
-    { cacheTime: 0, keepPreviousData: true, refetchOnWindowFocus: false },
-  );
+    isFetching,
+    refetch,
+    data: response,
+  } = useQuery(`${QUERIES.EXTRAS_LIST}-${query}`, () => getExtras(query), {
+    cacheTime: 0,
+    keepPreviousData: true,
+    refetchOnWindowFocus: false,
+  });
 
   return (
-    <QueryResponseContext.Provider
+    <ActiveExtrasContext.Provider
       value={{
-        isLoading: isFetchingCategories || isFetchingArchived,
-        refetch: () => {
-          refetchCategories();
-          refetchArchived();
-        },
-        response: { active: responseCategories, archived: responseArchived },
+        isLoading: isFetching,
+        refetch,
+        response,
         query,
       }}
     >
       {children}
-    </QueryResponseContext.Provider>
+    </ActiveExtrasContext.Provider>
   );
 };
 
-const useQueryResponse = () => useContext(QueryResponseContext);
+// Archived Extras Provider
+const ArchivedExtrasProvider: FC<WithChildren> = ({ children }) => {
+  const { state } = useQueryRequest();
+  const [query, setQuery] = useState<string>(stringifyRequestQuery(state));
+  const updatedQuery = useMemo(() => stringifyRequestQuery(state), [state]);
 
-const useQueryResponseData = () => {
-  const { response } = useQueryResponse();
+  useEffect(() => {
+    if (query !== updatedQuery) {
+      if (query.match(/search=([^&]*)/)) {
+        setQuery(query.replace(/search=/, 'keyword='));
+      }
+      setQuery(decodeURIComponent(updatedQuery));
+    }
+  }, [updatedQuery]);
+
+  const {
+    isFetching,
+    refetch,
+    data: response,
+  } = useQuery(
+    `${QUERIES.ARCHIVED_EXTRAS_LIST}-${query}`,
+    () => getArchivedExtras(query),
+    {
+      cacheTime: 0,
+      keepPreviousData: true,
+      refetchOnWindowFocus: false,
+    }
+  );
+
+  return (
+    <ArchivedExtrasContext.Provider
+      value={{
+        isLoading: isFetching,
+        refetch,
+        response,
+        query,
+      }}
+    >
+      {children}
+    </ArchivedExtrasContext.Provider>
+  );
+};
+
+// Main Query Response Provider (combines both)
+const QueryResponseProvider: FC<WithChildren> = ({ children }) => {
+  return (
+    <ActiveExtrasProvider>
+      <ArchivedExtrasProvider>{children}</ArchivedExtrasProvider>
+    </ActiveExtrasProvider>
+  );
+};
+
+// Active Extras Hooks
+const useActiveExtras = () => useContext(ActiveExtrasContext);
+
+const useActiveExtrasData = () => {
+  const { response } = useActiveExtras();
   if (!response) {
-    return { active: [], archived: [] };
+    return [];
   }
-  return {
-    active: response?.active?.data || [],
-    archived: response?.archived?.data || [],
-  };
+  return response?.data || [];
 };
 
-const useQueryRefetch = () => {
-  const { refetch } = useQueryResponse();
-  return refetch;
-};
-
-const useQueryResponsePagination = () => {
+const useActiveExtrasPagination = () => {
   const defaultPaginationState: PaginationState = {
     links: [],
     ...initialQueryState,
   };
 
-  const { response } = useQueryResponse();
+  const { response } = useActiveExtras();
   if (!response || !response.payload || !response.payload.pagination) {
     return defaultPaginationState;
   }
@@ -121,16 +143,108 @@ const useQueryResponsePagination = () => {
   return response.payload.pagination;
 };
 
-const useQueryResponseLoading = (): boolean => {
-  const { isLoading } = useQueryResponse();
+const useActiveExtrasLoading = (): boolean => {
+  const { isLoading } = useActiveExtras();
   return isLoading;
 };
 
+// Archived Extras Hooks
+const useArchivedExtras = () => useContext(ArchivedExtrasContext);
+
+const useArchivedExtrasData = () => {
+  const { response } = useArchivedExtras();
+  if (!response) {
+    return [];
+  }
+  return response?.data || [];
+};
+
+const useArchivedExtrasPagination = () => {
+  const defaultPaginationState: PaginationState = {
+    links: [],
+    ...initialQueryState,
+  };
+
+  const { response } = useArchivedExtras();
+  if (!response || !response.payload || !response.payload.pagination) {
+    return defaultPaginationState;
+  }
+
+  return response.payload.pagination;
+};
+
+const useArchivedExtrasLoading = (): boolean => {
+  const { isLoading } = useArchivedExtras();
+  return isLoading;
+};
+
+// Legacy hooks for backward compatibility
+const useQueryResponse = () => {
+  const active = useActiveExtras();
+  const archived = useArchivedExtras();
+
+  return {
+    isLoading: active.isLoading || archived.isLoading,
+    refetch: () => {
+      active.refetch();
+      archived.refetch();
+    },
+    response: {
+      active: active.response,
+      archived: archived.response,
+    },
+    activeResponse: active.response,
+    query: active.query,
+  };
+};
+
+const useQueryResponseData = () => {
+  const activeData = useActiveExtrasData();
+  const archivedData = useArchivedExtrasData();
+
+  return {
+    active: activeData,
+    archived: archivedData,
+  };
+};
+
+const useQueryActiveResponseData = () => {
+  const activeData = useActiveExtrasData();
+  return {
+    active: activeData,
+  };
+};
+
+const useQueryResponsePagination = () => {
+  return useActiveExtrasPagination();
+};
+
+const useQueryResponseLoading = (): boolean => {
+  const activeLoading = useActiveExtrasLoading();
+  const archivedLoading = useArchivedExtrasLoading();
+  return activeLoading || archivedLoading;
+};
+
+const useQueryRefetch = () => {
+  const { refetch } = useQueryResponse();
+  return refetch;
+};
+
 export {
-  useQueryRefetch,
   QueryResponseProvider,
   useQueryResponse,
   useQueryResponseData,
   useQueryResponsePagination,
   useQueryResponseLoading,
+  useQueryRefetch,
+  useQueryActiveResponseData,
+  // New separate hooks
+  useActiveExtras,
+  useActiveExtrasData,
+  useActiveExtrasPagination,
+  useActiveExtrasLoading,
+  useArchivedExtras,
+  useArchivedExtrasData,
+  useArchivedExtrasPagination,
+  useArchivedExtrasLoading,
 };

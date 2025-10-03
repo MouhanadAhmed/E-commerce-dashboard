@@ -3,138 +3,68 @@ import { useEffect, useMemo, useState } from "react";
 import {
   useQueryResponseData,
   useQueryRefetch,
+  useActiveChildSubCategoriesLoading,
+  useArchivedChildSubCategoriesLoading,
 } from "../core/QueryResponseProvider";
-import { useQueryResponseData as branchesData } from "../../../Branch/branches-list/core/QueryResponseProvider";
-import { useQueryResponseData as categoriesData } from "../../../Category/categories-list/core/QueryResponseProvider";
-import { useQueryResponseData as subcategoriesData } from "../../../SubCategory/Subcategories-list/core/QueryResponseProvider";
+import { useActiveBranchesData as branchesData } from "../../../Branch/branches-list/core/QueryResponseProvider";
+import { useActiveCategoriesData as categoriesData } from "../../../Category/categories-list/core/QueryResponseProvider";
+import { useActiveSubCategoriesData as subcategoriesData } from "../../../SubCategory/Subcategories-list/core/QueryResponseProvider";
 import { ChildSubCategories } from "../core/_models";
 import {
   type MRT_TableOptions,
   type MRT_ColumnDef,
-  type MRT_Row,
   MaterialReactTable,
   useMaterialReactTable,
-  MRT_TableContainer,
-  // MRT_ActionMenuItem,
-  // MRT_ToggleDensePaddingButton,
 } from "material-react-table";
-// import { Divider } from '@mui/material';
 import Select from "react-select";
-import { Box, Typography, Button, IconButton, Tooltip } from "@mui/material";
+import { Box, Button, IconButton, Tooltip } from "@mui/material";
 import {
   deleteChildSubCategory,
   deleteSelectedChildSubCategories,
-  getAllProductsInChildSubCategory,
   updateChildSubCategory,
 } from "../core/_requests";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 import { QUERIES } from "../../../../../../../../_metronic/helpers";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import * as Yup from "yup";
 import { Modal } from "react-bootstrap";
 import { useListView } from "../core/ListViewProvider";
-// import { TablesWidget12 } from '../../../../../../../../_metronic/partials/widgets';
-import {
-  getArchivedBranches,
-  getBranches,
-} from "../../../Branch/branches-list/core/_requests";
 import { ChildSubCategoryProductsTable } from "../../products-list/ChildSubCategoryProductsTable";
-// import { SubCategoryChildsTable } from '../../childSubCategories-list/subCategoryChildsTable';
-import {
-  getArchivedCategories,
-  getCategories,
-} from "../../../Category/categories-list/core/_requests";
-import {
-  getArchivedSubCategories,
-  getSubCategories,
-} from "../../../SubCategory/Subcategories-list/core/_requests";
-// import { CategorySubsTable } from '../../ChildSubCategories-list/categorySubsTable';
 
 const ChildSubCategoriesTable = () => {
-  const { selected, clearSelected } = useListView();
+  const { clearSelected } = useListView();
   const queryClient = useQueryClient();
   const { setItemIdForUpdate } = useListView();
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string | undefined>
   >({});
   const { active, archived } = useQueryResponseData();
-  const { active: activeBranches, archived: archivedBranches } = branchesData();
-  const { active: activeCategories, archived: archivedCategories } =
+  const branches = branchesData();
+  const categories =
     categoriesData();
-  const { active: activeSubCategories, archived: archivedSubCategories } =
-    subcategoriesData();
-  // console.log("activeBranches",[...activeBranches,...archivedBranches])
+  const subcategories = subcategoriesData();
   const refetch = useQueryRefetch();
   const [trigger, setTrigger] = useState(false);
-  // const isLoading = useQueryResponseLoading()
   const [activeCategorieses, setActiveCategorieses] =
     useState<ChildSubCategories[]>(active);
   const [archivedCategorieses, setArchivedCategorieses] = useState<
     ChildSubCategories[]
   >(() => archived);
-  const [draggingRow, setDraggingRow] =
-    useState<MRT_Row<ChildSubCategories> | null>(null);
   const [hoveredTable, setHoveredTable] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [showProductsModal, setShowProductsModal] = useState(false);
-  const [showSubCategoriesModal, setShowSubCategoriesModal] = useState(false);
   const [CategoriesDelete, setCategoriesDelete] = useState();
-  const [branches, setBranches] = useState([
-    ...activeBranches,
-    ...archivedBranches,
-  ]);
-  const [categories, setCategories] = useState([
-    ...activeCategories,
-    ...archivedCategories,
-  ]);
-  const [subcategories, setSubCategories] = useState([
-    ...activeSubCategories,
-    ...archivedSubCategories,
-  ]);
-  const [loading, setLoading] = useState(true);
+
+  const isActiveLoading = useActiveChildSubCategoriesLoading();
+  const isArchivedLoading = useArchivedChildSubCategoriesLoading()
   const [editBranch, setEditBranch] = useState();
   const [editCategory, setEditCategory] = useState();
   const [editSubCategory, setEditSubCategory] = useState();
-  let enableQuery = CategoriesDelete?._id !== undefined ? true : false;
-  // setBranches([...activeBranches,...archivedBranches]);
-  // console.log('branches',branches)
-  // Fetch branches data
-  useEffect(() => {
-    const fetchBranches = async () => {
-      try {
-        const resActive = await getBranches();
-        const resArchived = await getArchivedBranches();
-        setBranches([...resActive.data, ...resArchived.data]);
-      } catch (error) {
-        console.error("Error fetching branches:", error);
-      }
-    };
-    fetchBranches();
-    const fetchCategories = async () => {
-      try {
-        const resActive = await getCategories();
-        const resArchived = await getArchivedCategories();
-        setCategories([...resActive.data, ...resArchived.data]);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-      }
-    };
-    fetchCategories();
-    const fetchSubCategories = async () => {
-      try {
-        const resActive = await getSubCategories();
-        const resArchived = await getArchivedSubCategories();
-        setSubCategories([...resActive.data, ...resArchived.data]);
-      } catch (error) {
-        console.error("Error fetching subcategories:", error);
-      }
-    };
-    fetchSubCategories();
-  }, []);
+
   const memoizedBranches = useMemo(
     () => branches.map((branch) => ({ value: branch._id, label: branch.name })),
-    [branches],
+    [branches]
   );
   const memoizedCategories = useMemo(
     () =>
@@ -142,7 +72,7 @@ const ChildSubCategoriesTable = () => {
         value: category._id,
         label: category.name,
       })),
-    [categories],
+    [categories]
   );
   const memoizedSubCategories = useMemo(
     () =>
@@ -150,7 +80,7 @@ const ChildSubCategoriesTable = () => {
         value: subCategory._id,
         label: subCategory.name,
       })),
-    [subcategories],
+    [subcategories]
   );
 
   const columns = useMemo<MRT_ColumnDef<ChildSubCategories>[]>(
@@ -198,7 +128,6 @@ const ChildSubCategoriesTable = () => {
           align: "left",
         },
         Cell: ({ cell }) => (
-          // <span className={`badge ${cell.getValue<boolean>() == true?'badge-success':'badge-danger'}`}>{cell.getValue<number>().toLocaleString()}</span>
           <div className="form-check form-switch form-check-custom form-check-solid">
             <input
               className="form-check-input cursor-pointer"
@@ -212,7 +141,6 @@ const ChildSubCategoriesTable = () => {
               }
               id={cell.row.original._id}
             />
-            {/* {console.log('cell',cell.row.original)} */}
           </div>
         ),
       },
@@ -231,7 +159,6 @@ const ChildSubCategoriesTable = () => {
         Edit: ({ cell, row, table }) => {
           const categories =
             cell.getValue<{ category: { name: string; _id: string } }[]>();
-          // console.log("categories from sub",categories)
           let defV = [];
           categories.map((category) => {
             defV.push({
@@ -239,12 +166,8 @@ const ChildSubCategoriesTable = () => {
               label: category?.category?.name,
             });
           });
-          console.log("edit", defV);
 
           return (
-            // loading ? (
-            //   <div>Loading...</div>
-            // ) : (
             <Select
               className="react-select-styled"
               classNamePrefix="react-select"
@@ -259,17 +182,14 @@ const ChildSubCategoriesTable = () => {
                 const updatedBranches = selected
                   ? selected.map((option) => option.value)
                   : [];
-                //  console.log('updatedBranches',updatedBranches)
-                setEditCategory(updatedBranches);
-                // table.setEditingCell(row.id, 'branch', updatedBranches);
+                setEditCategory(updatedBranches as any);
               }}
             />
             // )
           );
         },
-        Cell: ({ cell }) => {
-          const categoriess = cell.getValue<{ category: { name: string } }[]>();
-          // console.log('categoriess',categoriess)
+        Cell: ({ row }) => {
+          const categoriess = row.original.category;
           return (
             <>
               {categoriess?.map((category) => (
@@ -278,9 +198,6 @@ const ChildSubCategoriesTable = () => {
                 </span>
               ))}
             </>
-            // <span className="badge badge-secondary">
-            //   {branch.branch.name}
-            // </span>
           );
         },
       },
@@ -299,7 +216,6 @@ const ChildSubCategoriesTable = () => {
         Edit: ({ cell, row, table }) => {
           const subcategories =
             cell.getValue<{ subCategory: { name: string; _id: string } }[]>();
-          console.log("subcategories from child", subcategories);
           let defV = [];
           subcategories.map((subCategory) => {
             defV.push({
@@ -307,12 +223,7 @@ const ChildSubCategoriesTable = () => {
               label: subCategory?.subCategory?.name,
             });
           });
-          console.log("edit", defV);
-
           return (
-            // loading ? (
-            //   <div>Loading...</div>
-            // ) : (
             <Select
               className="react-select-styled"
               classNamePrefix="react-select"
@@ -327,18 +238,14 @@ const ChildSubCategoriesTable = () => {
                 const updatedBranches = selected
                   ? selected.map((option) => option.value)
                   : [];
-                //  console.log('updatedBranches',updatedBranches)
-                setEditSubCategory(updatedBranches);
-                // table.setEditingCell(row.id, 'branch', updatedBranches);
+                setEditSubCategory(updatedBranches as any);
               }}
             />
-            // )
           );
         },
-        Cell: ({ cell }) => {
+        Cell: ({ row }) => {
           const categoriess =
-            cell.getValue<{ subCategory: { name: string } }[]>();
-          // console.log('categoriess',categoriess)
+            row.original.subCategory;
           return (
             <>
               {categoriess?.map((subCategory) => (
@@ -347,9 +254,6 @@ const ChildSubCategoriesTable = () => {
                 </span>
               ))}
             </>
-            // <span className="badge badge-secondary">
-            //   {branch.branch.name}
-            // </span>
           );
         },
       },
@@ -368,17 +272,12 @@ const ChildSubCategoriesTable = () => {
         Edit: ({ cell, row, table }) => {
           const branchs =
             cell.getValue<{ branch: { name: string; _id: string } }[]>();
-          console.log("branchs from sub", memoizedBranches);
           let defV = [];
           branchs.map((branch) => {
             defV.push({ value: branch.branch._id, label: branch.branch.name });
           });
-          // console.log('edit',defV)
 
           return (
-            // loading ? (
-            //   <div>Loading...</div>
-            // ) : (
             <Select
               className="react-select-styled"
               classNamePrefix="react-select"
@@ -393,39 +292,29 @@ const ChildSubCategoriesTable = () => {
                 const updatedBranches = selected
                   ? selected.map((option) => option.value)
                   : [];
-                //  console.log('updatedBranches',updatedBranches)
-                setEditBranch(updatedBranches);
-                // table.setEditingCell(row.id, 'branch', updatedBranches);
+                setEditBranch(updatedBranches as any);
               }}
             />
-            // )
           );
         },
-        Cell: ({ cell }) => {
-          const branchs = cell.getValue<{ branch: { name: string } }[]>();
-          // console.log('branchs',branchs)
+        Cell: ({ row }) => {
           return (
             <>
-              {branchs.map((branch) => (
+              {row.original.branch.map((branch) => (
                 <span className="badge badge-secondary me-1">
                   {branch.branch.name}
                 </span>
               ))}
             </>
-            // <span className="badge badge-secondary">
-            //   {branch.branch.name}
-            // </span>
           );
         },
       },
     ],
     [
       memoizedBranches,
-      activeBranches,
-      archivedBranches,
       branches,
       validationErrors,
-    ],
+    ]
   );
 
   const editSubCategoriesSchema = Yup.object().shape({
@@ -443,24 +332,29 @@ const ChildSubCategoriesTable = () => {
   });
   //UPDATE ChildSubCategories
   const handleSaveCategories = async (originalRow) => {
-    // console.log(originalRow)
-    editSubCategoriesSchema
-      .validate(originalRow.row.original)
-      .catch((err) => setValidationErrors(err.message));
-    setValidationErrors({});
-    const updatedRowValues = {
-      ...originalRow.values,
-      branch: editBranch?.map((str) => ({ branch: str })), // assuming branch is an array of objects with value and label
-      category: editCategory?.map((str) => ({ category: str })), // assuming branch is an array of objects with value and label
-      subCategory: editSubCategory?.map((str) => ({ subCategory: str })), // assuming branch is an array of objects with value and label
-    };
-    // console.log(editCategory)
+    try {
+      await editSubCategoriesSchema.validate(originalRow.row.original);
+      setValidationErrors({});
 
-    await updateCategoryAvailable.mutateAsync({
-      id: originalRow.row.original._id,
-      update: updatedRowValues,
-    });
-    table1.setEditingRow(null); //exit editing mode
+      const updatedRowValues = {
+        ...originalRow.values,
+        branch: editBranch ? (editBranch as any).map((str) => ({ branch: str })) : [],
+        category: editCategory
+          ? (editCategory as any).map((str) => ({ category: str }))
+          : [],
+        subCategory: editSubCategory
+          ? (editSubCategory as any).map((str) => ({ subCategory: str }))
+          : [],
+      };
+
+      await updateCategoryAvailable.mutateAsync({
+        id: originalRow.row.original._id,
+        update: updatedRowValues,
+      });
+      table1.setEditingRow(null);
+    } catch (err: any) {
+      setValidationErrors({ [err.path]: err.message });
+    }
   };
 
   //Arrange products action
@@ -498,7 +392,7 @@ const ChildSubCategoriesTable = () => {
         queryClient.refetchQueries([`${QUERIES.ARCHIVED_CATEGORIES_LIST}`]);
         setTrigger(true);
       },
-    },
+    }
   );
 
   const deleteSelectedItems = useMutation(
@@ -514,41 +408,17 @@ const ChildSubCategoriesTable = () => {
         setTrigger(true);
         clearSelected();
       },
-    },
+    }
   );
 
-  // const {
-  //   isLoading,
-  //   data: productsData,
-  //   error,
-  // } = useQuery(
-  //   `${QUERIES.CATEGORIES_LIST}-products-${CategoriesDelete?._id}`,
-  //   () => {
-  //     return getAllProductsInChildSubCategory(CategoriesDelete?._id)
-  //   },
-  //   {
-  //     cacheTime: 0,
-  //     enabled: enableQuery,
-  //     onError: (err) => {
-  //       // setItemIdForUpdate(undefined)
-  //       console.error(err)
-  //     },
-  //   }
-  // )
   const updateCategoryAvailable = useMutation(
-    ({ id, update }) => updateChildSubCategory(id, update),
+    ({ id, update }: { id: string; update: Partial<ChildSubCategories> }) => updateChildSubCategory(id, update),
     {
-      // 💡 response of the mutation is passed to onSuccess
       onSuccess: () => {
-        // ✅ update detail view directly
-        // queryClient.invalidateQueries([`${QUERIES.CATEGORIES_LIST}`]);
-        // queryClient.invalidateQueries([`${QUERIES.ARCHIVED_CATEGORIES_LIST}`]);
-        // queryClient.refetchQueries([`${QUERIES.CATEGORIES_LIST}`])
-        // queryClient.refetchQueries([`${QUERIES.ARCHIVED_CATEGORIES_LIST}`])
         refetch();
         setTrigger(true);
       },
-    },
+    }
   );
 
   const commonTableProps: Partial<MRT_TableOptions<ChildSubCategories>> & {
@@ -562,95 +432,61 @@ const ChildSubCategoriesTable = () => {
         minHeight: "320px",
       },
     },
-    // onDraggingRowChange: setDraggingRow,
-    // state: { draggingRow },
   };
   useEffect(() => {
-    // console.log("Categoriese",active)
     setActiveCategorieses(active);
     setArchivedCategorieses(archived);
-    // console.log('brnaches',activeBranches)
-    setBranches([...activeBranches, ...archivedBranches]);
-  }, [active, archived, trigger, activeBranches, archivedBranches]);
-  // useEffect(() => {
-  //   const getAvBranches = async () => {
-  //     try {
-  //       const res = await getBranches();
-  //       const res2 = await getArchivedBranches();
-  //       setBranches([...res.data, ...res2.data]);
-  //       setLoading(false);
-  //     } catch (error) {
-  //       console.error("Error fetching branches:", error);
-  //       setLoading(false);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //   getAvBranches();
-  // }, []);
-  // console.log('brenacj',branches.map(branch => ({ value: branch._id, label: branch.name })))
+  }, [active, archived, trigger]);
+
   const table1 = useMaterialReactTable({
     ...commonTableProps,
     enableRowSelection: true,
     enableStickyHeader: true,
     enableCellActions: true,
-    enableClickToCopy: "context-menu",
+    enableClickToCopy: 'context-menu',
     enableEditing: true,
-    editDisplayMode: "row",
-    createDisplayMode: "row",
-    rowPinningDisplayMode: "select-sticky",
-    positionToolbarAlertBanner: "bottom",
-    positionActionsColumn: "last",
+    editDisplayMode: 'row',
+    createDisplayMode: 'row',
+    rowPinningDisplayMode: 'select-sticky',
+    positionToolbarAlertBanner: 'bottom',
+    positionActionsColumn: 'last',
     enableRowOrdering: true,
     enableSorting: true,
     enableExpandAll: true,
     state: {
       columnOrder: [
-        "mrt-row-select", //move the built-in selection column to the end of the table
-        "mrt-row-drag",
-        "name",
-        "description",
-        "order",
-        "mrt-row-expand",
-        "branch",
-        "category",
-        "subCategory",
-        "available",
+        'mrt-row-select', //move the built-in selection column to the end of the table
+        'mrt-row-drag',
+        'name',
+        'description',
+        'order',
+        'mrt-row-expand',
+        'branch',
+        'category',
+        'subCategory',
+        'available',
       ],
+      isLoading: isActiveLoading,
     },
     muiDetailPanelProps: () => ({
       sx: (theme) => ({
         backgroundColor:
-          theme.palette.mode === "dark"
-            ? "rgba(255,210,244,0.1)"
-            : "rgba(0,0,0,0.1)",
+          theme.palette.mode === 'dark'
+            ? 'rgba(255,210,244,0.1)'
+            : 'rgba(0,0,0,0.1)',
       }),
     }),
     //custom expand button rotation
     muiExpandButtonProps: ({ row, table }) => ({
       onClick: () => table.setExpanded({ [row.id]: !row.getIsExpanded() }), //only 1 detail panel open at a time
       sx: {
-        transform: row.getIsExpanded() ? "rotate(180deg)" : "rotate(-90deg)",
-        transition: "transform 0.2s",
+        transform: row.getIsExpanded() ? 'rotate(180deg)' : 'rotate(-90deg)',
+        transition: 'transform 0.2s',
       },
     }),
     //conditionally render detail panel
     renderDetailPanel: ({ row }) =>
       row.original.branch ? (
-        // <Box
-        //   sx={{
-        //     display: 'grid',
-        //     margin: 'auto',
-        //     gridTemplateColumns: '1fr 1fr',
-        //     width: '100%',
-        //   }}
-        // >
-
-        //   {/* <Typography>Address: {row.original.name}</Typography> */}
-        //   {/* <Typography>City: {row.original.description}</Typography> */}
-        //   {/* <Typography>State: {row.original.state}</Typography>
-        //   <Typography>Country: {row.original.country}</Typography> */}
-        // </Box>
         <div className="d-flex justify-content-evenly">
           <div>
             Branches :
@@ -681,11 +517,7 @@ const ChildSubCategoriesTable = () => {
     muiRowDragHandleProps: ({ table }) => ({
       onDragEnd: async () => {
         const { draggingRow, hoveredRow } = table.getState();
-        // console.log('hoveredTable',hoveredTable)
-        // console.log('draggingRow',draggingRow)
-        // console.log('hoveredRow',hoveredRow)
-        if (hoveredTable === "table-2") {
-          console.log("table-2");
+        if (hoveredTable === 'table-2') {
 
           await updateCategoryAvailable.mutateAsync({
             id: draggingRow?.original._id,
@@ -697,29 +529,19 @@ const ChildSubCategoriesTable = () => {
             draggingRow!.original,
           ]);
           setActiveCategorieses((activeCategorieses) =>
-            activeCategorieses.filter((d) => d !== draggingRow!.original),
+            activeCategorieses.filter((d) => d !== draggingRow!.original)
           );
           setHoveredTable(null);
-        } else if (hoveredTable === "table-1") {
+        } else if (hoveredTable === 'table-1') {
           setHoveredTable(null);
 
-          console.log("draggingRow?.original._id", draggingRow);
           await updateCategoryAvailable.mutateAsync({
             id: draggingRow?.original._id,
             update: { order: hoveredRow?.original.order },
           });
-          // setTrigger(true)
-          // data.splice(
-          // (hoveredRow as MRT_Row<Person>).index,
-          // 0,
-          // data.splice(draggingRow.index, 1)[0],
-          // );
-          // setData([...data]);
         }
       },
     }),
-    // pinnedColumn:'selection',
-    // positionSelectionColumn:'first',
     renderTopToolbarCustomActions: ({ table }) => (
       <>
         <div className="card-header ribbon ribbon-start">
@@ -729,15 +551,12 @@ const ChildSubCategoriesTable = () => {
         </div>
         <Box
           sx={{
-            display: "flex",
-            gap: "1rem",
-            p: "4px",
-            justifyContent: "right",
+            display: 'flex',
+            gap: '1rem',
+            p: '4px',
+            justifyContent: 'right',
           }}
         >
-          {/* <Typography color="success.main" component="span" variant="h4">
-        Active List
-      </Typography> */}
           <Button
             color="info"
             onClick={openAddCategoryModal}
@@ -747,20 +566,13 @@ const ChildSubCategoriesTable = () => {
           </Button>
           <Button
             color="warning"
-            // disabled={!table.getIsSomeRowsSelected()}
             onClick={async () => {
-              // let selcetedIDs =[];
               table.getSelectedRowModel().rows.map(async (item) => {
                 await updateCategoryAvailable.mutateAsync({
                   id: item.original._id,
                   update: { available: !item.original.available },
                 });
-                // selcetedIDs.push(item.original._id)
               });
-              // console.log(selcetedIDs);
-              // console.log(table.getState().rowSelection);
-              // selected = selcetedIDs;
-              //  await updateSelectedItems.mutateAsync(selcetedIDs);
               table.toggleAllRowsSelected(false);
             }}
             variant="contained"
@@ -769,15 +581,11 @@ const ChildSubCategoriesTable = () => {
           </Button>
           <Button
             color="error"
-            // disabled={!table.getIsSomeRowsSelected()}
             onClick={async () => {
               let selcetedIDs = [];
               table
                 .getSelectedRowModel()
                 .rows.map((item) => selcetedIDs.push(item.original._id));
-              // console.log(selcetedIDs);
-              // console.log(table.getState().rowSelection);
-              // selected = selcetedIDs;
               await deleteSelectedItems.mutateAsync(selcetedIDs);
               table.toggleAllRowsSelected(false);
             }}
@@ -792,33 +600,21 @@ const ChildSubCategoriesTable = () => {
     onEditingRowCancel: () => setValidationErrors({}),
     onEditingRowSave: (originalRow) => handleSaveCategories(originalRow),
     getRowId: (originalRow) => `table-1-${originalRow.name}`,
-    // muiRowDragHandleProps: {
-    //   onDragEnd: async() => {
-    //     if (hoveredTable === 'table-2') {
-    //       await updateCategoryAvailable.mutateAsync({id:draggingRow?.original._id,update:{deleted:true}})
-
-    //       setArchivedCategorieses((archivedCategorieses) => [...archivedCategorieses, draggingRow!.original]);
-    //       setActiveCategorieses((activeCategorieses) => activeCategorieses.filter((d) => d !== draggingRow!.original));
-    //     }
-    //     setHoveredTable(null);
-    //   },
-    // },
     muiTablePaperProps: {
-      onDragEnter: () => setHoveredTable("table-1"),
+      onDragEnter: () => setHoveredTable('table-1'),
       sx: {
-        outline: hoveredTable === "table-1" ? "2px dashed green" : undefined,
+        outline: hoveredTable === 'table-1' ? '2px dashed green' : undefined,
       },
     },
     displayColumnDefOptions: {
-      "mrt-row-actions": {
-        // size: 350, //set custom width
+      'mrt-row-actions': {
         muiTableHeadCellProps: {
-          align: "center", //change head cell props
+          align: 'center', //change head cell props
         },
       },
     },
     renderRowActions: ({ row, table }) => (
-      <Box sx={{ display: "flex", gap: "1rem" }}>
+      <Box sx={{ display: 'flex', gap: '1rem' }}>
         <Tooltip title="Edit">
           <IconButton onClick={() => table.setEditingRow(row)}>
             <EditIcon />
@@ -828,7 +624,7 @@ const ChildSubCategoriesTable = () => {
           <IconButton
             color="error"
             onClick={() => {
-              setCategoriesDelete(row.original._id);
+              setCategoriesDelete(row.original._id as any);
               handleDeleteClick();
               // table.toggleAllRowsSelected(false)
             }}
@@ -840,9 +636,8 @@ const ChildSubCategoriesTable = () => {
           <IconButton
             color="success"
             onClick={() => {
-              setCategoriesDelete(row.original);
+              setCategoriesDelete(row.original as any);
               handleArrangeProductsClick();
-              // table.toggleAllRowsSelected(false)
             }}
           >
             <i className="fa-brands fa-2xl text-primary fa-product-hunt"></i>
@@ -881,6 +676,7 @@ const ChildSubCategoriesTable = () => {
         "subCategory",
         "available",
       ],
+      isLoading: isArchivedLoading,
     },
     muiDetailPanelProps: () => ({
       sx: (theme) => ({
@@ -898,29 +694,14 @@ const ChildSubCategoriesTable = () => {
         transition: "transform 0.2s",
       },
     }),
-    //conditionally render detail panel
     renderDetailPanel: ({ row }) =>
       row.original.branch ? (
-        // <Box
-        //   sx={{
-        //     display: 'grid',
-        //     margin: 'auto',
-        //     gridTemplateColumns: '1fr 1fr',
-        //     width: '100%',
-        //   }}
-        // >
-
-        //   {/* <Typography>Address: {row.original.name}</Typography> */}
-        //   {/* <Typography>City: {row.original.description}</Typography> */}
-        //   {/* <Typography>State: {row.original.state}</Typography>
-        //   <Typography>Country: {row.original.country}</Typography> */}
-        // </Box>
         <div className="d-flex justify-content-evenly">
           <div>
             Branches :
             {row.original.branch.map((branch, index) => (
               <span key={index} className="badge badge-secondary me-1">
-                {branch.branch.name}
+                {branch.branch?.name}
               </span>
             ))}
           </div>
@@ -942,19 +723,10 @@ const ChildSubCategoriesTable = () => {
           </div>
         </div>
       ) : null,
-
-    // defaultColumn: {
-    //   size: 100,
-    // },
-    // getRowId: (originalRow) => `table-2-${originalRow.name}`,
     muiRowDragHandleProps: ({ table }) => ({
       onDragEnd: async () => {
         const { draggingRow, hoveredRow } = table.getState();
-        // console.log('hoveredTable',hoveredTable)
-        // console.log('draggingRow',draggingRow)
-        // console.log('hoveredRow',hoveredRow)
         if (hoveredTable === "table-1") {
-          console.log("table-1");
 
           await updateCategoryAvailable.mutateAsync({
             id: draggingRow?.original._id,
@@ -966,24 +738,16 @@ const ChildSubCategoriesTable = () => {
             draggingRow!.original,
           ]);
           setActiveCategorieses((activeCategorieses) =>
-            activeCategorieses.filter((d) => d !== draggingRow!.original),
+            activeCategorieses.filter((d) => d !== draggingRow!.original)
           );
           setHoveredTable(null);
         } else if (hoveredTable === "table-2") {
           setHoveredTable(null);
 
-          console.log("draggingRow?.original._id", draggingRow);
           await updateCategoryAvailable.mutateAsync({
             id: draggingRow?.original._id,
             update: { order: hoveredRow?.original.order },
           });
-          // setTrigger(true)
-          // data.splice(
-          // (hoveredRow as MRT_Row<Person>).index,
-          // 0,
-          // data.splice(draggingRow.index, 1)[0],
-          // );
-          // setData([...data]);
         }
       },
     }),
@@ -1002,32 +766,15 @@ const ChildSubCategoriesTable = () => {
             justifyContent: "right",
           }}
         >
-          {/* <Typography color="success.main" component="span" variant="h4">
-        Active List
-      </Typography> */}
-          {/* <Button
-          color="info"
-          onClick={openAddCategoryModal}
-          variant="contained"
-        >
-          Add ChildSubCategory
-        </Button> */}
           <Button
             color="warning"
-            // disabled={!table.getIsSomeRowsSelected()}
             onClick={async () => {
-              // let selcetedIDs =[];
               table.getSelectedRowModel().rows.map(async (item) => {
                 await updateCategoryAvailable.mutateAsync({
                   id: item.original._id,
                   update: { available: !item.original.available },
                 });
-                // selcetedIDs.push(item.original._id)
               });
-              // console.log(selcetedIDs);
-              // console.log(table.getState().rowSelection);
-              // selected = selcetedIDs;
-              //  await updateSelectedItems.mutateAsync(selcetedIDs);
               table.toggleAllRowsSelected(false);
             }}
             variant="contained"
@@ -1036,15 +783,11 @@ const ChildSubCategoriesTable = () => {
           </Button>
           <Button
             color="error"
-            // disabled={!table.getIsSomeRowsSelected()}
             onClick={async () => {
               let selcetedIDs = [];
               table
                 .getSelectedRowModel()
                 .rows.map((item) => selcetedIDs.push(item.original._id));
-              // console.log(selcetedIDs);
-              // console.log(table.getState().rowSelection);
-              // selected = selcetedIDs;
               await deleteSelectedItems.mutateAsync(selcetedIDs);
               table.toggleAllRowsSelected(false);
             }}
@@ -1067,7 +810,6 @@ const ChildSubCategoriesTable = () => {
     },
     displayColumnDefOptions: {
       "mrt-row-actions": {
-        // size: 350, //set custom width
         muiTableHeadCellProps: {
           align: "center", //change head cell props
         },
@@ -1084,9 +826,8 @@ const ChildSubCategoriesTable = () => {
           <IconButton
             color="error"
             onClick={() => {
-              setCategoriesDelete(row.original._id);
+              setCategoriesDelete(row.original._id as any);
               handleDeleteClick();
-              // table.toggleAllRowsSelected(false)
             }}
           >
             <DeleteIcon />
@@ -1096,9 +837,8 @@ const ChildSubCategoriesTable = () => {
           <IconButton
             color="success"
             onClick={() => {
-              setCategoriesDelete(row.original);
+              setCategoriesDelete(row.original as any);
               handleArrangeProductsClick();
-              // table.toggleAllRowsSelected(false)
             }}
           >
             <i className="fa-brands fa-2xl text-primary fa-product-hunt"></i>
@@ -1113,7 +853,6 @@ const ChildSubCategoriesTable = () => {
       <Box
         sx={{
           display: "grid",
-          // gridTemplateColumns: { xs: 'auto', lg: '1fr 1fr' },
           gap: "1rem",
           overflow: "auto",
           p: "4px",
@@ -1124,7 +863,6 @@ const ChildSubCategoriesTable = () => {
       <Box
         sx={{
           display: "grid",
-          // gridTemplateColumns: { xs: 'auto', lg: '1fr 1fr' },
           gap: "1rem",
           overflow: "auto",
           p: "4px",
@@ -1158,11 +896,11 @@ const ChildSubCategoriesTable = () => {
       <Modal show={showProductsModal} onHide={handleCloseProductsModal}>
         <Modal.Header closeButton>
           <Modal.Title>
-            Arrange Procusts Order in {CategoriesDelete?.name} SubCategory
+            Arrange Procusts Order in {(CategoriesDelete as any)?.name} SubCategory
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <ChildSubCategoryProductsTable id={CategoriesDelete?._id as string} />
+          <ChildSubCategoryProductsTable id={(CategoriesDelete as any)?._id as string} />
         </Modal.Body>
         <Modal.Footer>
           <Box sx={{ display: "flex", gap: "1rem", p: "4px" }}>
@@ -1176,8 +914,6 @@ const ChildSubCategoriesTable = () => {
           </Box>
         </Modal.Footer>
       </Modal>
-
-      {/* Arrange ChildSubCategories Modal */}
     </>
   );
 };

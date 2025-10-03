@@ -2,7 +2,7 @@ import { useQueryClient, useMutation } from "react-query";
 import { useListView } from "../../core/ListViewProvider";
 import { useQueryResponse } from "../../core/QueryResponseProvider";
 import { QUERIES } from "../../../../../../../../../_metronic/helpers";
-import { deleteSelectedSubCategories } from "../../core/_requests";
+import { deleteSelectedChildSubCategories } from "../../core/_requests";
 
 const UsersListGrouping = () => {
   const { selected, clearSelected } = useListView();
@@ -10,7 +10,7 @@ const UsersListGrouping = () => {
   const { query } = useQueryResponse();
 
   const deleteSelectedItems = useMutation(
-    () => deleteSelectedSubCategories(selected),
+    () => deleteSelectedChildSubCategories(selected),
     {
       // 💡 response of the mutation is passed to onSuccess
       onSuccess: () => {
@@ -20,7 +20,7 @@ const UsersListGrouping = () => {
         ]);
         clearSelected();
       },
-    },
+    }
   );
 
   return (
