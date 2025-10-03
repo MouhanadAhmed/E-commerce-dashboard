@@ -9,12 +9,15 @@ import { Content } from "../../../../../../../_metronic/layout/components/conten
 import { CategoriesTable } from "./table/CategoriesTable";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
+import { CategoryEditModal } from "./category-edit-modal/CategoryEditModal";
 const CategoriesList = () => {
+  const { itemIdForUpdate } = useListView();
   return (
     <>
       <KTCard>
         <CategoriesTable />
       </KTCard>
+      {itemIdForUpdate !== undefined && <CategoryEditModal />}
     </>
   );
 };

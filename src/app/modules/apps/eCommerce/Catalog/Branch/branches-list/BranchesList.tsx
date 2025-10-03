@@ -7,12 +7,15 @@ import { Content } from "../../../../../../../_metronic/layout/components/conten
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { BranchesTable } from "./table/BranchesTable";
+import { BranchEditModal } from "./branch-edit-modal/BranchEditModal";
 const BranchesList = () => {
+  const { itemIdForUpdate } = useListView();
   return (
     <>
       <KTCard>
         <BranchesTable />
       </KTCard>
+      {itemIdForUpdate !== undefined && <BranchEditModal />}
     </>
   );
 };
