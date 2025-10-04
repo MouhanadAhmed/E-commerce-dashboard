@@ -1,65 +1,52 @@
-import { Response } from "../../../../../../../../_metronic/helpers";
+import { Branch } from "../../../Branch/branches-list/core/_models";
+import { Categories } from "../../../Category/categories-list/core/_models";
+import { ChildSubCategories } from "../../../ChildSubCategory/ChildSubcategories-list/core/_models";
+import { Extras } from "../../../Extra/extra-list/core/_models";
+import { GroupOfOptions } from "../../../GroupOfOptions/groupOfOptions-list/core/_models";
+import { SubCategories } from "../../../SubCategory/Subcategories-list/core/_models";
+import { Types } from "../../../Type/categories-list/core/_models";
 
 export type Product = {
-  imgCover?: [string];
+  imgCover?: { _id?: string; url: string }[];
   _id?: string;
   name?: string;
   slug?: string;
   description?: string;
   shortDesc?: string;
-  metaTags?: [string] | [];
-  category?: [category] | [];
-  subCategory?: [subCategory] | [];
-  childSubCategory?: [childSubCategory] | [];
-  types?: string[] | [];
+  metaTags?: string[];
+  category?: category[];
+  subCategory?: subCategory[];
+  childSubCategory?: childSubCategory[];
+  types?: Types[];
   stock?: string;
   price?: string;
   order?: string;
-  branch?:
-    | {
-        _id?: string;
-        branch: string;
-        available?: boolean;
-        order?: string;
-        price?: string;
-        stock?: string;
-        priceAfterDiscount?: string;
-        sold?: string;
-        id?: string;
-        name?: string;
-      }[]
-    | [];
+  branch?: BranchOfProduct[];
   priceAfterDiscount?: string;
-  extras?:
-    | {
-        _id?: string;
-        id?: string;
-        extra?: string;
-        order?: string;
-      }[]
-    | [];
+  extras?: {
+    _id?: string;
+    id?: string;
+    extra?: Extras;
+    order?: string;
+  }[];
   descTableName?: string;
-  descTable?:
-    | {
-        _id?: string;
-        id?: string;
-        name?: string;
-        value?: string;
-        order?: string;
-      }[]
-    | [];
-  images?: string[] | [];
+  descTable?: {
+    _id?: string;
+    id?: string;
+    name?: string;
+    value?: string;
+    order?: string;
+  }[];
+  images?: string[];
   weight?: string;
   showWeight?: boolean;
   book?: string;
-  groupOfOptions?:
-    | {
-        _id?: string;
-        id?: string;
-        order?: string;
-        optionGroup?: string;
-      }[]
-    | [];
+  groupOfOptions?: {
+    _id?: string;
+    id?: string;
+    order?: string;
+    optionGroup?: GroupOfOptions;
+  }[];
   minQty?: string;
   quantity?: string;
   dimensions?: string;
@@ -87,22 +74,35 @@ export type Products = {
 };
 
 type category = {
-  category?: string;
+  category?: Categories;
   order?: string;
   _id?: string;
   id?: string;
 };
 type subCategory = {
-  subCategory?: string;
+  subCategory?: SubCategories;
   order?: string;
   _id?: string;
   id?: string;
 };
 type childSubCategory = {
-  childSubCategory?: string;
+  childSubCategory?: ChildSubCategories;
   order?: string;
   _id?: string;
   id?: string;
+};
+
+export type BranchOfProduct = {
+  branch: string;
+  price?: string;
+  available?: boolean;
+  stock?: string;
+  priceAfterDiscount?: string;
+  priceAfterExpiresAt?: string;
+  order?: string;
+  sold?: string;
+  _id?: string;
+  name?: string;
 };
 
 export type ProductsQueryResponse = {
@@ -112,6 +112,38 @@ export type ProductsQueryResponse = {
   pageSize: number;
   totalPages: number;
 };
+
+
+export interface ProductFormValues {
+  _id?: string;
+  name: string;
+  slug?: string;
+  description?: string;
+  shortDesc?: string;
+  imgCover?: string; // Different from Product type
+  metaTags?: string[];
+  price?: string;
+  showWeight?: boolean;
+  weight?: string;
+  dimensions?: string;
+  quantity?: string;
+  minQty?: string;
+  stock?: string;
+  sold?: string;
+  book?: string;
+  extras?: any[]; // Select values before transformation
+  types?: any[]; // Select values before transformation
+  descTableName?: string;
+  available?: boolean;
+  deleted?: boolean;
+  order?: string;
+  category?: any[]; // Select values before transformation
+  subCategory?: any[]; // Select values before transformation
+  childSubCategory?: any[]; // Select values before transformation
+  branch?: any[];
+  images?: string[];
+  descTable?: any[];
+}
 
 export const initialProduct: Product = {
   name: "",
@@ -143,3 +175,4 @@ export const initialProduct: Product = {
   parentAvailable: true,
   // "id": "",
 };
+

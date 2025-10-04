@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useQueryResponseData } from "../core/QueryResponseProvider";
+import { useActiveGroupsLoading, useArchivedGroupsLoading, useQueryResponseData } from "../core/QueryResponseProvider";
 import { GroupOfOptions } from "../core/_models";
 import {
   type MRT_TableOptions,
@@ -28,6 +28,7 @@ import { useMutation, useQueryClient } from "react-query";
 import { QUERIES } from "../../../../../../../../_metronic/helpers";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import RestoreFromTrashIcon from "@mui/icons-material/RestoreFromTrash";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import SaveIcon from "@mui/icons-material/Save";
@@ -97,6 +98,8 @@ const GroupTable = () => {
   const [isEditingOptions, setIsEditingOptions] = useState(false);
   const [dummyOptions, setDummyOptions] = useState(initialDummyOptions);
   const [draggingOption, setDraggingOption] = useState<string | null>(null);
+  const isActiveLoading = useActiveGroupsLoading()
+  const isArchivedLoading = useArchivedGroupsLoading()
 
   const columns = useMemo<MRT_ColumnDef<GroupOfOptions>[]>(
     () => [
@@ -381,23 +384,24 @@ const GroupTable = () => {
     enableRowSelection: true,
     enableStickyHeader: true,
     enableCellActions: true,
-    enableClickToCopy: "context-menu",
+    enableClickToCopy: 'context-menu',
     enableEditing: true,
-    editDisplayMode: "row",
-    createDisplayMode: "row",
-    rowPinningDisplayMode: "select-sticky",
-    positionToolbarAlertBanner: "bottom",
-    positionActionsColumn: "last",
+    editDisplayMode: 'row',
+    createDisplayMode: 'row',
+    rowPinningDisplayMode: 'select-sticky',
+    positionToolbarAlertBanner: 'bottom',
+    positionActionsColumn: 'last',
 
     state: {
       columnOrder: [
-        "mrt-row-select",
-        "mrt-row-drag",
-        "name",
-        "min",
-        "order",
-        "available",
+        'mrt-row-select',
+        'mrt-row-drag',
+        'name',
+        'min',
+        'order',
+        'available',
       ],
+      isLoading: isActiveLoading,
     },
 
     renderTopToolbarCustomActions: ({ table }) => (
@@ -409,10 +413,10 @@ const GroupTable = () => {
         </div>
         <Box
           sx={{
-            display: "flex",
-            gap: "1rem",
-            p: "4px",
-            justifyContent: "right",
+            display: 'flex',
+            gap: '1rem',
+            p: '4px',
+            justifyContent: 'right',
           }}
         >
           <Button
@@ -421,6 +425,22 @@ const GroupTable = () => {
             variant="contained"
           >
             Add Group
+          </Button>
+          <Button
+            color="secondary"
+            disabled={!table.getIsSomeRowsSelected()}
+            onClick={async () => {
+              table.getSelectedRowModel().rows.map(async (item) => {
+                await updateGroupAvailable.mutateAsync({
+                  id: item.original._id,
+                  update: { deleted: false },
+                });
+              });
+              table.toggleAllRowsSelected(false);
+            }}
+            variant="contained"
+          >
+            Toggle Available
           </Button>
           <Button
             color="error"
@@ -447,7 +467,7 @@ const GroupTable = () => {
     getRowId: (originalRow) => `table-1-${originalRow._id || originalRow.name}`,
     muiRowDragHandleProps: {
       onDragEnd: async () => {
-        if (hoveredTable === "table-2" && draggingRow) {
+        if (hoveredTable === 'table-2' && draggingRow) {
           await updateGroupAvailable.mutateAsync({
             id: draggingRow.original._id,
             update: { deleted: true },
@@ -457,20 +477,20 @@ const GroupTable = () => {
             draggingRow.original,
           ]);
           setActiveGroup((activeGroup) =>
-            activeGroup.filter((d) => d._id !== draggingRow.original._id),
+            activeGroup.filter((d) => d._id !== draggingRow.original._id)
           );
         }
         setHoveredTable(null);
       },
     },
     muiTablePaperProps: {
-      onDragEnter: () => setHoveredTable("table-1"),
+      onDragEnter: () => setHoveredTable('table-1'),
       sx: {
-        outline: hoveredTable === "table-1" ? "2px dashed green" : undefined,
+        outline: hoveredTable === 'table-1' ? '2px dashed green' : undefined,
       },
     },
     renderRowActions: ({ row, table }) => (
-      <Box sx={{ display: "flex", gap: "0.5rem" }}>
+      <Box sx={{ display: 'flex', gap: '0.5rem' }}>
         <Tooltip title="View Options">
           <IconButton
             color="primary"
@@ -504,23 +524,32 @@ const GroupTable = () => {
   const table2 = useMaterialReactTable({
     ...commonTableProps,
     data: archivedGroup,
-    defaultColumn: {
-      size: 100,
-    },
+    enableRowSelection: true,
+    enableStickyHeader: true,
+    enableCellActions: true,
+    enableClickToCopy: 'context-menu',
+    enableEditing: true,
+    editDisplayMode: 'row',
+    createDisplayMode: 'row',
+    rowPinningDisplayMode: 'select-sticky',
+    positionToolbarAlertBanner: 'bottom',
+    positionActionsColumn: 'last',
+
     state: {
       columnOrder: [
-        "mrt-row-select",
-        "mrt-row-drag",
-        "name",
-        "min",
-        "order",
-        "available",
+        'mrt-row-select',
+        'mrt-row-drag',
+        'name',
+        'min',
+        'order',
+        'available',
       ],
+      isLoading: isArchivedLoading,
     },
     getRowId: (originalRow) => `table-2-${originalRow._id || originalRow.name}`,
     muiRowDragHandleProps: {
       onDragEnd: async () => {
-        if (hoveredTable === "table-1" && draggingRow) {
+        if (hoveredTable === 'table-1' && draggingRow) {
           await updateGroupAvailable.mutateAsync({
             id: draggingRow.original._id,
             update: { deleted: false },
@@ -530,54 +559,74 @@ const GroupTable = () => {
             draggingRow.original,
           ]);
           setArchivedGroup((archivedGroup) =>
-            archivedGroup.filter((d) => d._id !== draggingRow.original._id),
+            archivedGroup.filter((d) => d._id !== draggingRow.original._id)
           );
         }
         setHoveredTable(null);
       },
     },
     muiTablePaperProps: {
-      onDragEnter: () => setHoveredTable("table-2"),
+      onDragEnter: () => setHoveredTable('table-2'),
       sx: {
-        outline: hoveredTable === "table-2" ? "2px dashed pink" : undefined,
+        outline: hoveredTable === 'table-2' ? '2px dashed pink' : undefined,
       },
     },
     renderRowActions: ({ row, table }) => (
-      <Box sx={{ display: "flex", gap: "0.5rem" }}>
-        <Tooltip title="View Options">
-          <IconButton
-            color="primary"
-            onClick={() => handleExpandClick(row.original)}
-            size="small"
-          >
-            <ExpandMoreIcon />
-          </IconButton>
-        </Tooltip>
+      <Box sx={{ display: 'flex', gap: '0.5rem' }}>
         <Tooltip title="Edit">
           <IconButton onClick={() => table.setEditingRow(row)} size="small">
             <EditIcon />
           </IconButton>
         </Tooltip>
-        <Tooltip title="Delete">
+        <Tooltip title="Restore">
           <IconButton
             color="error"
-            onClick={() => {
-              setGroupDelete(row.original._id as any);
-              handleDeleteClick();
+            onClick={async () => {
+              await updateGroupAvailable.mutateAsync({
+                id: row.original._id,
+                update: { deleted: false },
+              });
             }}
             size="small"
           >
-            <DeleteIcon />
+            <RestoreFromTrashIcon />
           </IconButton>
         </Tooltip>
       </Box>
     ),
-    renderTopToolbarCustomActions: () => (
-      <div className="card-header ribbon ribbon-start">
-        <div className="ribbon-label ribbon ribbon-start bg-danger">
-          Archive
+    renderTopToolbarCustomActions: ({ table }) => (
+      <>
+        <div className="card-header ribbon ribbon-start">
+          <div className="ribbon-label ribbon ribbon-start bg-danger">
+            Archive
+          </div>
         </div>
-      </div>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: '1rem',
+            p: '4px',
+            justifyContent: 'right',
+          }}
+        >
+          <Button
+            color="error"
+            disabled={!table.getIsSomeRowsSelected()}
+            onClick={async () => {
+              table.getSelectedRowModel().rows.map(async (item) => {
+                await updateGroupAvailable.mutateAsync({
+                  id: item.original._id,
+                  update: { deleted: false },
+                });
+              });
+              table.toggleAllRowsSelected(false);
+            }}
+            variant="contained"
+          >
+            Restore Selected
+          </Button>
+        </Box>
+      </>
     ),
   });
 

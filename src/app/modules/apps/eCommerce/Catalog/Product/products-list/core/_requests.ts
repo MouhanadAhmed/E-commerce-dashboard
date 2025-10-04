@@ -4,7 +4,7 @@ import {
   Response,
   initialQueryRequest,
 } from "../../../../../../../../_metronic/helpers";
-import { ProductsQueryResponse, Product } from "./_models";
+import { ProductsQueryResponse, Product, ProductFormValues } from "./_models";
 
 // const {state} = useQueryRequest()
 const API_URL = import.meta.env.VITE_APP_THEME_API_URL;
@@ -65,7 +65,9 @@ const getProductById = async (id: ID) => {
   return response_1.Product;
 };
 
-const createProduct = (Category: Product): Promise<Product | undefined> => {
+const createProduct = (
+  Category: ProductFormValues
+): Promise<Product | undefined> => {
   return axios
     .post(PRODUCT_URL, Category)
     .then((response: AxiosResponse<Response<Product>>) => response.data)

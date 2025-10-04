@@ -10,8 +10,6 @@ import {
   createGroup,
   updateGroup,
   createOption,
-  updateOption,
-  deleteOption,
 } from "../core/_requests";
 import { isNotEmpty } from "../../../../../../../../_metronic/helpers";
 
@@ -88,8 +86,6 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
   };
 
   const generateOptions = () => {
-    console.log("=== GENERATING OPTIONS ===");
-    console.log("Option count:", optionCount);
 
     if (optionCount > 0) {
       const newOptions: OptionField[] = Array.from(
@@ -102,12 +98,9 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
         }),
       );
 
-      console.log("Generated options:", newOptions);
       setOptions(newOptions);
       formik.setFieldValue("options", newOptions);
-      console.log("Options set in form and state");
     } else {
-      console.log("Option count is 0 or less, not generating options");
     }
   };
 
@@ -116,8 +109,6 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
     field: keyof OptionField,
     value: any,
   ) => {
-    console.log(`=== UPDATING OPTION ${index} ===`);
-    console.log(`Field: ${field}, Value:`, value);
 
     const updatedOptions = [...options];
 
@@ -130,10 +121,8 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
       updatedOptions[index] = { ...updatedOptions[index], [field]: value };
     }
 
-    console.log("Updated options:", updatedOptions);
     setOptions(updatedOptions);
     formik.setFieldValue("options", updatedOptions);
-    console.log("Options updated in form and state");
   };
 
   // Helper function to create options in parallel using Promise.all
@@ -141,10 +130,6 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
     optionsData: any[],
     groupId: string,
   ) => {
-    console.log(
-      `Starting to create ${optionsData.length} options in parallel for group ID: ${groupId}`,
-    );
-
     // Create all option promises
     const optionPromises = optionsData.map((option, index) => {
       const optionWithGroupId = {
@@ -155,17 +140,8 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
         groupId: groupId,
       };
 
-      console.log(
-        `Preparing option ${index + 1}/${optionsData.length}:`,
-        optionWithGroupId,
-      );
-
       return createOption(optionWithGroupId)
         .then((createdOption) => {
-          console.log(
-            `Option ${index + 1} created successfully:`,
-            createdOption,
-          );
           return { success: true, option: createdOption, index };
         })
         .catch((optionError) => {
@@ -174,13 +150,8 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
         });
     });
 
-    // Execute all promises in parallel
-    console.log(
-      `Executing ${optionPromises.length} option creation requests in parallel...`,
-    );
     const results = await Promise.all(optionPromises);
 
-    console.log("All options processed in parallel. Results:", results);
     return results;
   };
 
@@ -190,50 +161,23 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
     onSubmit: async (values, { setSubmitting }) => {
       setSubmitting(true);
 
-      // Debug: Log all form values
-      console.log("=== FORM SUBMISSION START ===");
-      console.log("Complete form values:", values);
-      console.log("Options from state:", options);
-      console.log("Options count:", optionCount);
-
       try {
         // Separate group data from options
         const { options: optionsData, ...groupData } = values as any;
-
-        console.log("Separated group data:", groupData);
-        console.log("Separated options data:", optionsData);
-        console.log("Options data length:", optionsData?.length || 0);
-        console.log("Group data keys:", Object.keys(groupData));
-        console.log("Group data _id:", groupData._id);
-        console.log("isNotEmpty check:", isNotEmpty(groupData._id));
 
         let groupId: string;
 
         // First, create or update the group
         if (isNotEmpty(groupData._id)) {
-          console.log("Updating existing group:", groupData._id);
           const updatedGroup = await updateGroup(groupData._id, groupData);
-          console.log("Update group response:", updatedGroup);
           groupId = updatedGroup?._id || groupData._id;
-          console.log("Group updated successfully, final ID:", groupId);
         } else {
-          console.log("Creating new group:", groupData);
           const createdGroup = await createGroup(groupData);
-          console.log("Create group response:", createdGroup);
           groupId = createdGroup?._id || "";
-          console.log("Group created successfully, final ID:", groupId);
         }
-
-        console.log("=== GROUP ID VALIDATION ===");
-        console.log("Group ID value:", groupId);
-        console.log("Group ID type:", typeof groupId);
-        console.log("Group ID truthy:", !!groupId);
-        console.log("Group ID length:", groupId?.length || 0);
 
         // Validate that we have a valid group ID before proceeding
         if (!groupId || groupId === "") {
-          console.error("=== GROUP ID VALIDATION FAILED ===");
-          console.error("Expected a valid group ID but got:", groupId);
           throw new Error(
             `Failed to get group ID after creating/updating group. Received: ${groupId}`,
           );
@@ -241,33 +185,8 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
 
         // Then, create each option separately with the group ID - in parallel
         if (optionsData && optionsData.length > 0 && groupId) {
-          console.log("=== STARTING OPTIONS CREATION IN PARALLEL ===");
-          console.log("Options to create:", optionsData);
-          console.log("Group ID to use:", groupId);
-
-          const results = await createOptionsInParallel(optionsData, groupId);
-
-          // Check if any options failed and log summary
-          const successCount = results.filter((r) => r.success).length;
-          const failureCount = results.filter((r) => !r.success).length;
-
-          console.log(
-            `Options creation summary: ${successCount} succeeded, ${failureCount} failed`,
-          );
-
-          if (failureCount > 0) {
-            console.warn("Some options failed to create, but continuing...");
-          }
-        } else {
-          console.log("=== NO OPTIONS TO CREATE ===");
-          console.log("Conditions check:");
-          console.log("- optionsData exists:", !!optionsData);
-          console.log("- optionsData length:", optionsData?.length || 0);
-          console.log("- groupId exists:", !!groupId);
-          console.log("- groupId value:", groupId);
+          await createOptionsInParallel(optionsData, groupId);
         }
-
-        console.log("Form submission completed successfully");
       } catch (ex) {
         console.error(ex);
       } finally {

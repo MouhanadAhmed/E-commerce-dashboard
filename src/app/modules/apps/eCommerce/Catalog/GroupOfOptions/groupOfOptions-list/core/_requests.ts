@@ -6,13 +6,11 @@ import {
 } from "../../../../../../../../_metronic/helpers";
 import { GroupsQueryResponse, GroupOfOptions, Option } from "./_models";
 
-// const {state} = useQueryRequest()
 const API_URL = import.meta.env.VITE_APP_THEME_API_URL;
 const GROUP_URL = `${API_URL}/groupOfOptions`;
 const GET_GROUPS_URL = `${API_URL}/groupOfOptions?deleted=false`;
 const GET_ARCHIVED_GROUPS_URL = `${API_URL}/groupOfOptions?deleted=true`;
 let baseUrl = "";
-// console.log("initialQueryRequest.state",initialQueryRequest.state)
 if (
   initialQueryRequest.state &&
   typeof initialQueryRequest.state === "object"

@@ -4,7 +4,7 @@ import * as Yup from "yup";
 import { useFormik } from "formik";
 import clsx from "clsx";
 import { UsersListLoading } from "../components/loading/UsersListLoading";
-import { Product, initialProduct } from "../core/_models";
+import { BranchOfProduct, Product, ProductFormValues, initialProduct } from "../core/_models";
 import {
   createProduct,
   getProductById,
@@ -51,59 +51,8 @@ import { uploadToCloudinary } from "../../../../../../../../_metronic/helpers/cl
 import Swal from "sweetalert2";
 
 type Props = {
-  // isProductLoading: boolean
   product?: Product;
 };
-
-const CustomToolbar = () => (
-  <div id="toolbar">
-    <select className="ql-header" defaultValue="" onChange={(e) => e.persist()}>
-      <option value="1"></option>
-      <option value="2"></option>
-      <option value="3"></option>
-      <option value="4"></option>
-      <option value="5"></option>
-      <option value="6"></option>
-      <option value=""></option>
-    </select>
-    <select className="ql-font" defaultValue="" onChange={(e) => e.persist()}>
-      <option value="serif"></option>
-      <option value="monospace"></option>
-      <option value=""></option>
-    </select>
-    <select className="ql-list" defaultValue="" onChange={(e) => e.persist()}>
-      <option value="ordered"></option>
-      <option value="bullet"></option>
-    </select>
-    <button className="ql-bold"></button>
-    <button className="ql-italic"></button>
-    <button className="ql-underline"></button>
-    <select className="ql-color">
-      <option value="#e60000" selected></option>
-      <option value="#000000"></option>
-      <option value="#e60000"></option>
-      <option value="#ff9900"></option>
-      <option value="#ffff00"></option>
-      <option value="#008a00"></option>
-      <option value="#0066cc"></option>
-      <option value="#9933ff"></option>
-      <option value="#ffffff"></option>
-    </select>
-    <select className="ql-background" onChange={(e) => e.persist()}>
-      <option value="#000000"></option>
-      <option value="#e60000"></option>
-      <option value="#ff9900"></option>
-      <option value="#ffff00"></option>
-      <option value="#008a00"></option>
-      <option value="#0066cc"></option>
-      <option value="#9933ff"></option>
-      <option value="#ffffff"></option>
-    </select>
-    <button className="ql-link"></button>
-    <button className="ql-image"></button>
-    <button className="ql-clean"></button>
-  </div>
-);
 
 const customColors = [
   "#e60000",
@@ -195,12 +144,7 @@ const extras = Yup.object().shape({
   order: Yup.number().min(1).optional(),
 });
 
-const types = Yup.object().shape({
-  type: Yup.string()
-    .matches(/^[0-9a-fA-F]{24}$/, "Must be a valid hex string of length 24")
-    .optional(),
-  order: Yup.number().min(1).optional(),
-});
+const types = Yup.string();
 
 const groupOfOptions = Yup.object().shape({
   groupOfOptions: Yup.string()
@@ -293,15 +237,10 @@ const editProductSchema = Yup.object().shape({
   quantity: Yup.number().min(0).optional(),
   _id: Yup.string().optional(),
   images: Yup.array().of(Yup.string()).max(10).optional(),
-  // ratingAverage: Yup.number().min(1).optional(),
-  // ratingCount: Yup.number().min(0).optional(),
 });
 
 const ProductForm: FC<Props> = ({ product }) => {
   const { id } = useParams();
-  const descTableRef = useRef();
-  const [content, setContent] = useState("");
-  const quillRef = useRef(null);
   const { active: activeBranches, archived: archivedBranches } = branchesData();
   const { active: activeCategories, archived: archivedCategories } =
     categoriesData();
@@ -340,8 +279,7 @@ const ProductForm: FC<Props> = ({ product }) => {
   const [existingGalleryUrls, setExistingGalleryUrls] = useState<string[]>([]);
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
-  const [updatedBranches, setUpdatedBranches] = useState();
-  // const [numberOfItems,setNumberOfItmes] =useState(0);
+  const [updatedBranches, setUpdatedBranches] = useState<BranchOfProduct[]>();
   const [activeTab, setActiveTab] = useState("general");
   const [items, setItems] = useState([]);
 
@@ -355,21 +293,18 @@ const ProductForm: FC<Props> = ({ product }) => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        console.log("id", id);
         const data = await getProductById(id);
         setProductForEdit(data);
         data.imgCover &&
           data.imgCover[0] &&
           setPreviewUrl(data?.imgCover[0].url);
         formik.setValues(data);
-        // console.log(formik.initialValues)
       } catch (error) {
         console.error("Error fetching product", error);
       }
     };
     if (id !== "new") {
       fetchProduct();
-      console.log("product", productForEdit);
     } else {
       setProductForEdit(initialProduct);
     }
@@ -438,10 +373,6 @@ const ProductForm: FC<Props> = ({ product }) => {
     fetchTypes();
   }, []);
 
-  const memoizedBranches = useMemo(
-    () => branches.map((branch) => ({ value: branch._id, label: branch.name })),
-    [branches],
-  );
   const memoizedCategories = useMemo(
     () =>
       categories.map((category) => ({
@@ -475,10 +406,10 @@ const ProductForm: FC<Props> = ({ product }) => {
     [types],
   );
 
-  const initialBranches = memoizedBranches.map((branch, index) => {
+  const initialBranches = branches.map((branch, index) => {
     return {
       key: index,
-      branch: branch.value,
+      branch: branch._id,
       price: "",
       available: false,
       stock: "",
@@ -487,7 +418,7 @@ const ProductForm: FC<Props> = ({ product }) => {
       order: "",
       sold: "",
       _id: index.toLocaleString(),
-      name: branch.label,
+      name: branch.name,
     };
   });
   initialProduct.branch = initialBranches;
@@ -530,8 +461,7 @@ const ProductForm: FC<Props> = ({ product }) => {
     setGalleryFiles((prev) => prev.filter((_, i) => i !== index));
     setGalleryPreviews((prev) => prev.filter((_, i) => i !== index));
   };
-  //   setProductForEdit()
-  // const [updatedBranchees,setUpdatedBranchees] = useState(...initialBranches)
+
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: {
@@ -636,30 +566,25 @@ const ProductForm: FC<Props> = ({ product }) => {
               (option) => ({
                 value: option.childSubCategory._id,
                 label: option.childSubCategory.name,
-              }),
+              })
             ),
           }
         : []),
     },
     validationSchema: editProductSchema,
-    onSubmit: async (values, { setSubmitting }) => {
-      // console.log('values',values)
-      // e.stopPropagation();
-      // e.preventDefault();
+    onSubmit: async (values: ProductFormValues, { setSubmitting }) => {
       setIsUploading(true);
       setSubmitting(true);
       setError(null);
       try {
-        if (updatedBranches !== undefined) {
+        if (updatedBranches) {
           const newArray = updatedBranches
-            .filter((obj) => obj.available !== false) // Filter out unavailable branches
+            ?.filter((obj) => obj.available !== false) // Filter out unavailable branches
             .map((obj) => {
               const newObj = { ...obj };
               keysToRemove.forEach((key) => delete newObj[key]);
               return newObj;
             });
-          console.log(updatedBranches.filter((obj) => obj.available !== false));
-          console.log(updatedBranches);
           values.branch = newArray;
         } else {
           const newArray = initialBranches
@@ -669,22 +594,21 @@ const ProductForm: FC<Props> = ({ product }) => {
               keysToRemove.forEach((key) => delete newObj[key]);
               return newObj;
             });
-          console.log(initialBranches.filter((obj) => obj.available !== false));
           values.branch = newArray;
         }
         if (imageFile) {
-          values.imgCover = { url: await uploadToCloudinary(imageFile) };
+          values.imgCover = (await uploadToCloudinary(imageFile)) as any;
         }
         // Upload gallery images
         if (galleryFiles.length > 0) {
           const galleryUrls = await Promise.all(
-            galleryFiles.map((file) => uploadToCloudinary(file)),
+            galleryFiles.map((file) => uploadToCloudinary(file))
           );
           values.images = [...existingGalleryUrls, ...galleryUrls];
         } else if (existingGalleryUrls.length > 0) {
           values.images = existingGalleryUrls;
         }
-        items.length != 0 ? (values.descTable = items) : "";
+        items.length != 0 ? (values.descTable = items) : '';
         values.types = values?.types?.map((type) => type.value);
         values.extras = values?.extras?.map((extra) => ({
           extra: extra.value,
@@ -696,16 +620,16 @@ const ProductForm: FC<Props> = ({ product }) => {
           subCategory: subCategory.value,
         }));
         values.childSubCategory = values?.childSubCategory?.map(
-          (childSubCategory) => ({ childSubCategory: childSubCategory.value }),
+          (childSubCategory) => ({ childSubCategory: childSubCategory._id })
         );
 
         if (isNotEmpty(values._id)) {
           await updateProduct(values?._id, values);
           // Show success alert for update
           Swal.fire({
-            icon: "success",
-            title: "Success!",
-            text: "Product updated successfully",
+            icon: 'success',
+            title: 'Success!',
+            text: 'Product updated successfully',
             timer: 2000,
             showConfirmButton: false,
           });
@@ -713,9 +637,9 @@ const ProductForm: FC<Props> = ({ product }) => {
           await createProduct(values);
           // Show success alert for creation
           Swal.fire({
-            icon: "success",
-            title: "Success!",
-            text: "Product created successfully",
+            icon: 'success',
+            title: 'Success!',
+            text: 'Product created successfully',
             timer: 2000,
             showConfirmButton: false,
           });
@@ -724,8 +648,8 @@ const ProductForm: FC<Props> = ({ product }) => {
         console.error(ex);
         // Show error alert
         Swal.fire({
-          icon: "error",
-          title: "Error!",
+          icon: 'error',
+          title: 'Error!',
           text: ex.response.data.error,
           timer: 3000,
           showConfirmButton: false,
@@ -736,6 +660,9 @@ const ProductForm: FC<Props> = ({ product }) => {
       }
     },
   });
+
+  console.log(formik.errors)
+  console.log(formik.values.types)
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -809,7 +736,7 @@ const ProductForm: FC<Props> = ({ product }) => {
                 <span className="indicator-label">Submit</span>
                 {formik.isSubmitting && (
                   <span className="indicator-progress">
-                    Please wait...{" "}
+                    Please wait...{' '}
                     <span className="spinner-border spinner-border-sm align-middle ms-2"></span>
                   </span>
                 )}
@@ -833,7 +760,9 @@ const ProductForm: FC<Props> = ({ product }) => {
                   <div
                     className="image-input-wrapper ms-2"
                     style={{
-                      backgroundImage: `url('${previewUrl || productForEdit?.imgCover || blankImage}')`,
+                      backgroundImage: `url('${
+                        previewUrl || productForEdit?.imgCover || blankImage
+                      }')`,
                     }}
                   ></div>
 
@@ -861,9 +790,9 @@ const ProductForm: FC<Props> = ({ product }) => {
                     title="Cancel imgCover"
                     onClick={() => {
                       setImageFile(null);
-                      setPreviewUrl(productForEdit?.imgCover || "");
+                      setPreviewUrl(productForEdit?.imgCover[0].url || '');
                       if (fileInputRef.current) {
-                        fileInputRef.current.value = "";
+                        fileInputRef.current.value = '';
                       }
                     }}
                   >
@@ -901,18 +830,17 @@ const ProductForm: FC<Props> = ({ product }) => {
 
                   {/* begin::Input */}
                   <input
-                    {...formik.getFieldProps("available")}
-                    // value={formik.initialValues?.available}
+                    {...formik.getFieldProps('available')}
                     className={clsx(
-                      " form-check-input mb-3 mb-lg-0 ms-2 border border-2",
+                      ' form-check-input mb-3 mb-lg-0 ms-2 border border-2',
                       {
-                        "is-invalid":
+                        'is-invalid':
                           formik.touched.available && formik.errors.available,
                       },
                       {
-                        "is-valid":
+                        'is-valid':
                           formik.touched.available && !formik.errors.available,
-                      },
+                      }
                     )}
                     name="available"
                     autoComplete="off"
@@ -938,17 +866,17 @@ const ProductForm: FC<Props> = ({ product }) => {
 
                   {/* begin::Input */}
                   <input
-                    {...formik.getFieldProps("deleted")}
+                    {...formik.getFieldProps('deleted')}
                     className={clsx(
-                      " form-check-input mb-3 mb-lg-0 ms-2 border border-2",
+                      ' form-check-input mb-3 mb-lg-0 ms-2 border border-2',
                       {
-                        "is-invalid":
+                        'is-invalid':
                           formik.touched.deleted && formik.errors.deleted,
                       },
                       {
-                        "is-valid":
+                        'is-valid':
                           formik.touched.deleted && !formik.errors.deleted,
-                      },
+                      }
                     )}
                     name="deleted"
                     autoComplete="off"
@@ -958,9 +886,6 @@ const ProductForm: FC<Props> = ({ product }) => {
                         ? productForEdit.deleted
                         : false
                     }
-                    //   disabled={formik.isSubmitting || isProductLoading}
-                    // {/* <option value="true">Yes</option>
-                    // <option value="false">No</option> */}
                   />
                   {/* end::Input */}
                   {formik.touched.deleted && formik.errors.deleted && (
@@ -986,23 +911,22 @@ const ProductForm: FC<Props> = ({ product }) => {
                   {/* begin::Input */}
                   <input
                     placeholder="order"
-                    {...formik.getFieldProps("order")}
+                    {...formik.getFieldProps('order')}
                     className={clsx(
-                      "form-control form-control-solid mb-3 mb-lg-0 ms-2 border border-2",
+                      'form-control form-control-solid mb-3 mb-lg-0 ms-2 border border-2',
                       {
-                        "is-invalid":
+                        'is-invalid':
                           formik.touched.order && formik.errors.order,
                       },
                       {
-                        "is-valid":
+                        'is-valid':
                           formik.touched.order && !formik.errors.order,
-                      },
+                      }
                     )}
                     type="text"
                     name="order"
                     autoComplete="off"
                     disabled={formik.isSubmitting}
-                    // defaultValue={productForEdit !== undefined? productForEdit.order:""}
                   />
                   {/* end::Input */}
                   {formik.touched.order && formik.errors.order && (
@@ -1024,23 +948,25 @@ const ProductForm: FC<Props> = ({ product }) => {
                     options={memoizedCategories}
                     placeholder="Category"
                     className={clsx(
-                      "form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2",
+                      'form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2',
                       {
-                        "is-invalid":
-                          formik.touched.category && formik.errors.category,
+                        'is-invalid':
+                          (formik.touched as any).category &&
+                          (formik.errors as any).category,
                       },
                       {
-                        "is-valid":
-                          formik.touched.category && !formik.errors.category,
-                      },
+                        'is-valid':
+                          (formik.touched as any).category &&
+                          !(formik.errors as any).category,
+                      }
                     )}
                     name="category"
-                    value={formik.values.category} // Connect to Formik value
+                    value={(formik.values as any).category} // Connect to Formik value
                     onChange={(selected) => {
                       // Update Formik state directly
                       formik.setFieldValue(
-                        "category",
-                        selected ? selected : [],
+                        'category',
+                        selected ? selected : []
                       );
                     }}
                     onBlur={formik.handleBlur} // Handle blur for validation
@@ -1054,11 +980,14 @@ const ProductForm: FC<Props> = ({ product }) => {
                     }
                   />
 
-                  {formik.touched.category && formik.errors.category && (
-                    <div className="fv-plugins-message-container">
-                      <span role="alert">{formik.errors.category}</span>
-                    </div>
-                  )}
+                  {(formik.touched as any).category &&
+                    (formik.errors as any).category && (
+                      <div className="fv-plugins-message-container">
+                        <span role="alert">
+                          {(formik.errors as any).category}
+                        </span>
+                      </div>
+                    )}
                 </div>
               </div>
               {/* end:: Category Input group */}
@@ -1074,21 +1003,18 @@ const ProductForm: FC<Props> = ({ product }) => {
 
                   {/* begin::Input */}
                   <Select
-                    // className='react-select-styled'
-                    // classNamePrefix='react-select'
                     isMulti
                     options={memoizedSubCategories}
                     placeholder="SubCategory"
-                    // {...formik.getFieldProps('subCategory')}
                     className={clsx(
-                      "form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2",
+                      'form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2'
                     )}
                     name="subCategory"
                     onChange={(selected) => {
                       // Update Formik state directly
                       formik.setFieldValue(
-                        "subCategory",
-                        selected ? selected : [],
+                        'subCategory',
+                        selected ? selected : []
                       );
                     }}
                     defaultValue={
@@ -1097,15 +1023,18 @@ const ProductForm: FC<Props> = ({ product }) => {
                             value: option.subCategory._id,
                             label: option.subCategory.name,
                           }))
-                        : ""
+                        : []
                     }
                   />
                   {/* end::Input */}
-                  {formik.touched.subCategory && formik.errors.subCategory && (
-                    <div className="fv-plugins-message-container">
-                      <span role="alert">{formik.errors.subCategory}</span>
-                    </div>
-                  )}
+                  {(formik.touched as any).subCategory &&
+                    (formik.errors as any).subCategory && (
+                      <div className="fv-plugins-message-container">
+                        <span role="alert">
+                          {(formik.errors as any).subCategory}
+                        </span>
+                      </div>
+                    )}
                 </div>
               </div>
               {/* end:: SubCategory Input group */}
@@ -1121,21 +1050,18 @@ const ProductForm: FC<Props> = ({ product }) => {
 
                   {/* begin::Input */}
                   <Select
-                    // className='react-select-styled'
-                    // classNamePrefix='react-select'
                     isMulti
                     options={memoizedChildSubCategories}
                     placeholder="ChildSubCategory"
-                    // {...formik.getFieldProps('childSubCategory')}
                     className={clsx(
-                      "form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2",
+                      'form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2'
                     )}
                     name="childSubCategory"
                     onChange={(selected) => {
                       // Update Formik state directly
                       formik.setFieldValue(
-                        "childSubCategory",
-                        selected ? selected : [],
+                        'childSubCategory',
+                        selected ? selected : []
                       );
                     }}
                     defaultValue={
@@ -1144,15 +1070,15 @@ const ProductForm: FC<Props> = ({ product }) => {
                             value: option.childSubCategory._id,
                             label: option.childSubCategory.name,
                           }))
-                        : ""
+                        : []
                     }
                   />
                   {/* end::Input */}
-                  {formik.touched.childSubCategory &&
-                    formik.errors.childSubCategory && (
+                  {(formik.touched as any).childSubCategory &&
+                    (formik.errors as any).childSubCategory && (
                       <div className="fv-plugins-message-container">
                         <span role="alert">
-                          {formik.errors.childSubCategory}
+                          {(formik.errors as any).childSubCategory}
                         </span>
                       </div>
                     )}
@@ -1161,28 +1087,15 @@ const ProductForm: FC<Props> = ({ product }) => {
               {/* end:: ChildSubCategory Input group */}
             </div>
             <div className="col-md-9">
-              {/* <ul className         = "nav nav-underline mb-3">
-                <li className     = "nav-item ">
-                    <a className  = "nav-link active" aria-current="page" href="#">General</a>
-                </li>
-                <li className     = "nav-item">
-                    <a className  = "nav-link text-muted" href="#">Advanced</a>
-                </li>
-            </ul> */}
-
-              {/* <p className="d-inline-flex gap-1">
-            <button className="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target=".multi-collapse" aria-expanded="false" aria-controls="multiCollapseGeneral multiCollapseAdvanced">General</button>
-            <button className="btn btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target=".multi-collapse" aria-expanded="false" aria-controls="multiCollapseGeneral multiCollapseAdvanced">Advanced</button>
-            <button className="btn btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target=".multi-collapse" aria-expanded="false" aria-controls="multiCollapseGeneral multiCollapseAdvanced">Branches</button>
-            <button className="btn btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target=".multi-collapse" aria-expanded="false" aria-controls="multiCollapseGeneral multiCollapseAdvanced">Description Table</button>
-            </p> */}
               {/* begin:: Tabs group */}
               <ul className="nav nav-tabs" id="myTab" role="tablist">
                 <li className="nav-item" role="presentation">
                   <button
                     type="button"
-                    className={`nav-link ${activeTab === "general" ? "active" : ""}`}
-                    onClick={() => handleTabClick("general")}
+                    className={`nav-link ${
+                      activeTab === 'general' ? 'active' : ''
+                    }`}
+                    onClick={() => handleTabClick('general')}
                   >
                     General
                   </button>
@@ -1190,8 +1103,10 @@ const ProductForm: FC<Props> = ({ product }) => {
                 <li className="nav-item" role="presentation">
                   <button
                     type="button"
-                    className={`nav-link ${activeTab === "advanced" ? "active" : ""}`}
-                    onClick={() => handleTabClick("advanced")}
+                    className={`nav-link ${
+                      activeTab === 'advanced' ? 'active' : ''
+                    }`}
+                    onClick={() => handleTabClick('advanced')}
                   >
                     Advanced
                   </button>
@@ -1199,8 +1114,10 @@ const ProductForm: FC<Props> = ({ product }) => {
                 <li className="nav-item" role="presentation">
                   <button
                     type="button"
-                    className={`nav-link ${activeTab === "media" ? "active" : ""}`}
-                    onClick={() => handleTabClick("media")}
+                    className={`nav-link ${
+                      activeTab === 'media' ? 'active' : ''
+                    }`}
+                    onClick={() => handleTabClick('media')}
                   >
                     Media
                   </button>
@@ -1208,8 +1125,10 @@ const ProductForm: FC<Props> = ({ product }) => {
                 <li className="nav-item" role="presentation">
                   <button
                     type="button"
-                    className={`nav-link ${activeTab === "branches" ? "active" : ""}`}
-                    onClick={() => handleTabClick("branches")}
+                    className={`nav-link ${
+                      activeTab === 'branches' ? 'active' : ''
+                    }`}
+                    onClick={() => handleTabClick('branches')}
                   >
                     Branches
                   </button>
@@ -1217,8 +1136,10 @@ const ProductForm: FC<Props> = ({ product }) => {
                 <li className="nav-item" role="presentation">
                   <button
                     type="button"
-                    className={`nav-link ${activeTab === "descTable" ? "active" : ""}`}
-                    onClick={() => handleTabClick("descTable")}
+                    className={`nav-link ${
+                      activeTab === 'descTable' ? 'active' : ''
+                    }`}
+                    onClick={() => handleTabClick('descTable')}
                   >
                     Description Table
                   </button>
@@ -1228,7 +1149,9 @@ const ProductForm: FC<Props> = ({ product }) => {
 
               {/* begin:: General group */}
               <div
-                className={`collapse ${activeTab === "general" ? "active show" : ""}`}
+                className={`collapse ${
+                  activeTab === 'general' ? 'active show' : ''
+                }`}
                 id="general"
               >
                 {/* begin:: General group */}
@@ -1247,24 +1170,23 @@ const ProductForm: FC<Props> = ({ product }) => {
                     {/* begin::Input */}
                     <input
                       placeholder="Product Name"
-                      {...formik.getFieldProps("name")}
+                      {...formik.getFieldProps('name')}
                       // value={formik.values?.name}
                       type="text"
                       name="name"
                       className={clsx(
-                        "form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2",
+                        'form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2',
                         {
-                          "is-invalid":
+                          'is-invalid':
                             formik.touched.name && formik.errors.name,
                         },
                         {
-                          "is-valid":
+                          'is-valid':
                             formik.touched.name && !formik.errors.name,
-                        },
+                        }
                       )}
                       autoComplete="off"
                       disabled={formik.isSubmitting}
-                      // defaultValue={productForEdit !== undefined?productForEdit.name: initialProduct.name }
                     />
                     {formik.touched.name && formik.errors.name && (
                       <div className="fv-plugins-message-container">
@@ -1293,24 +1215,24 @@ const ProductForm: FC<Props> = ({ product }) => {
                       theme="snow"
                       modules={modules}
                       placeholder="Description"
-                      value={formik.values.description || ""}
+                      value={formik.values.description || ''}
                       onChange={(value) => {
-                        formik.setFieldValue("description", value);
-                        formik.setFieldTouched("description", true, false);
+                        formik.setFieldValue('description', value);
+                        formik.setFieldTouched('description', true, false);
                       }}
                       onBlur={() =>
-                        formik.setFieldTouched("description", true, true)
+                        formik.setFieldTouched('description', true, true)
                       }
                       className={clsx(
-                        "mb-3 ms-2 mb-lg-0 border border-2 rounded",
+                        'mb-3 ms-2 mb-lg-0 border border-2 rounded',
                         {
-                          "border-danger":
+                          'border-danger':
                             formik.touched.description &&
                             formik.errors.description,
-                          "border-success":
+                          'border-success':
                             formik.touched.description &&
                             !formik.errors.description,
-                        },
+                        }
                       )}
                     />
                     {/* end::ReactQuill */}
@@ -1342,34 +1264,36 @@ const ProductForm: FC<Props> = ({ product }) => {
                     {/* begin::Input */}
                     <input
                       placeholder="Short Description"
-                      {...formik.getFieldProps("shortDesc")}
+                      {...formik.getFieldProps('shortDesc')}
                       type="text"
                       name="shortDesc"
                       className={clsx(
-                        "form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2",
+                        'form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2',
                         {
-                          "is-invalid":
-                            formik.touched.shortDesc && formik.errors.shortDesc,
+                          'is-invalid':
+                            (formik.touched as any).shortDesc &&
+                            (formik.errors as any).shortDesc,
                         },
                         {
-                          "is-valid":
-                            formik.touched.shortDesc &&
-                            !formik.errors.shortDesc,
-                        },
+                          'is-valid':
+                            (formik.touched as any).shortDesc &&
+                            !(formik.errors as any).shortDesc,
+                        }
                       )}
                       autoComplete="off"
                       disabled={formik.isSubmitting}
-                      // defaultValue={productForEdit !== undefined?productForEdit.shortDesc: initialProduct.shortDesc }
                     />
-                    {formik.touched.shortDesc && formik.errors.shortDesc && (
-                      <div className="fv-plugins-message-container">
-                        <div className="fv-help-block">
-                          <span role="alert">{formik.errors.shortDesc}</span>
+                    {(formik.touched as any).shortDesc &&
+                      (formik.errors as any).shortDesc && (
+                        <div className="fv-plugins-message-container">
+                          <div className="fv-help-block">
+                            <span role="alert">
+                              {(formik.errors as any).shortDesc}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
                     {/* end::Input */}
-                    {/* <div className="form-text px-4">A product name is required and recommended to be unique.</div> */}
                   </div>
                   {/* end:: shortDesc Input group */}
                 </div>
@@ -1390,23 +1314,22 @@ const ProductForm: FC<Props> = ({ product }) => {
                     {/* begin::Input */}
                     <input
                       placeholder="Product price"
-                      {...formik.getFieldProps("price")}
+                      {...formik.getFieldProps('price')}
                       className={clsx(
-                        "form-control form-control-solid mb-3 mb-lg-0 ms-2 border border-2",
+                        'form-control form-control-solid mb-3 mb-lg-0 ms-2 border border-2',
                         {
-                          "is-invalid":
+                          'is-invalid':
                             formik.touched.price && formik.errors.price,
                         },
                         {
-                          "is-valid":
+                          'is-valid':
                             formik.touched.price && !formik.errors.price,
-                        },
+                        }
                       )}
                       type="text"
                       name="price"
                       autoComplete="off"
                       disabled={formik.isSubmitting}
-                      // defaultValue={productForEdit !== undefined?productForEdit.price: initialProduct.price }
                     />
                     {/* end::Input */}
                     {formik.touched.price && formik.errors.price && (
@@ -1431,19 +1354,19 @@ const ProductForm: FC<Props> = ({ product }) => {
 
                     {/* begin::Input */}
                     <input
-                      {...formik.getFieldProps("showWeight")}
+                      {...formik.getFieldProps('showWeight')}
                       className={clsx(
-                        " form-check-input mb-3 mb-lg-0 ms-2 border border-2",
+                        ' form-check-input mb-3 mb-lg-0 ms-2 border border-2',
                         {
-                          "is-invalid":
+                          'is-invalid':
                             formik.touched.showWeight &&
                             formik.errors.showWeight,
                         },
                         {
-                          "is-valid":
+                          'is-valid':
                             formik.touched.showWeight &&
                             !formik.errors.showWeight,
-                        },
+                        }
                       )}
                       name="showWeight"
                       autoComplete="off"
@@ -1473,23 +1396,22 @@ const ProductForm: FC<Props> = ({ product }) => {
                     {/* begin::Input */}
                     <input
                       placeholder="Weight"
-                      {...formik.getFieldProps("weight")}
+                      {...formik.getFieldProps('weight')}
                       className={clsx(
-                        "form-control form-control-solid mb-3 mb-lg-0 ms-2 border border-2",
+                        'form-control form-control-solid mb-3 mb-lg-0 ms-2 border border-2',
                         {
-                          "is-invalid":
+                          'is-invalid':
                             formik.touched.weight && formik.errors.weight,
                         },
                         {
-                          "is-valid":
+                          'is-valid':
                             formik.touched.weight && !formik.errors.weight,
-                        },
+                        }
                       )}
                       type="text"
                       name="weight"
                       autoComplete="off"
                       disabled={formik.isSubmitting}
-                      // defaultValue={productForEdit !== undefined?productForEdit.weight: initialProduct.weight }
                     />
                     {/* end::Input */}
                     {formik.touched.weight && formik.errors.weight && (
@@ -1497,7 +1419,6 @@ const ProductForm: FC<Props> = ({ product }) => {
                         <span role="alert">{formik.errors.weight}</span>
                       </div>
                     )}
-                    {/* <div className="form-text px-4">Set the product price.</div> */}
                   </div>
                   {/* end:: weight Input group */}
 
@@ -1512,25 +1433,24 @@ const ProductForm: FC<Props> = ({ product }) => {
                     {/* begin::Input */}
                     <input
                       placeholder="Dimensions"
-                      {...formik.getFieldProps("dimensions")}
+                      {...formik.getFieldProps('dimensions')}
                       className={clsx(
-                        "form-control form-control-solid mb-3 mb-lg-0 ms-2 border border-2",
+                        'form-control form-control-solid mb-3 mb-lg-0 ms-2 border border-2',
                         {
-                          "is-invalid":
+                          'is-invalid':
                             formik.touched.dimensions &&
                             formik.errors.dimensions,
                         },
                         {
-                          "is-valid":
+                          'is-valid':
                             formik.touched.dimensions &&
                             !formik.errors.dimensions,
-                        },
+                        }
                       )}
                       type="text"
                       name="dimensions"
                       autoComplete="off"
                       disabled={formik.isSubmitting}
-                      // defaultValue={productForEdit !== undefined?productForEdit.dimensions: initialProduct.dimensions }
                     />
                     {/* end::Input */}
                     {formik.touched.dimensions && formik.errors.dimensions && (
@@ -1548,7 +1468,9 @@ const ProductForm: FC<Props> = ({ product }) => {
 
               {/* begin:: Advanced group */}
               <div
-                className={`collapse ${activeTab === "advanced" ? "active show" : ""}`}
+                className={`collapse ${
+                  activeTab === 'advanced' ? 'active show' : ''
+                }`}
                 id="advanced"
               >
                 {/* begin:: Inventory group */}
@@ -1567,23 +1489,22 @@ const ProductForm: FC<Props> = ({ product }) => {
                     {/* begin::Input */}
                     <input
                       placeholder="Quantity"
-                      {...formik.getFieldProps("quantity")}
+                      {...formik.getFieldProps('quantity')}
                       type="text"
                       name="quantity"
                       className={clsx(
-                        "form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2",
+                        'form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2',
                         {
-                          "is-invalid":
+                          'is-invalid':
                             formik.touched.quantity && formik.errors.quantity,
                         },
                         {
-                          "is-valid":
+                          'is-valid':
                             formik.touched.quantity && !formik.errors.quantity,
-                        },
+                        }
                       )}
                       autoComplete="off"
                       disabled={formik.isSubmitting}
-                      // defaultValue={productForEdit !== undefined?productForEdit.quantity: initialProduct.quantity }
                     />
                     {formik.touched.quantity && formik.errors.quantity && (
                       <div className="fv-plugins-message-container">
@@ -1593,7 +1514,6 @@ const ProductForm: FC<Props> = ({ product }) => {
                       </div>
                     )}
                     {/* end::Input */}
-                    {/* <div className="form-text px-4">A product name is required and recommended to be unique.</div> */}
                   </div>
                   {/* end:: quantity Input group */}
 
@@ -1608,23 +1528,22 @@ const ProductForm: FC<Props> = ({ product }) => {
                     {/* begin::Input */}
                     <input
                       placeholder="Minimum Qty for order"
-                      {...formik.getFieldProps("minQty")}
+                      {...formik.getFieldProps('minQty')}
                       type="text"
                       name="minQty"
                       className={clsx(
-                        "form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2",
+                        'form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2',
                         {
-                          "is-invalid":
+                          'is-invalid':
                             formik.touched.minQty && formik.errors.minQty,
                         },
                         {
-                          "is-valid":
+                          'is-valid':
                             formik.touched.minQty && !formik.errors.minQty,
-                        },
+                        }
                       )}
                       autoComplete="off"
                       disabled={formik.isSubmitting}
-                      // defaultValue={productForEdit !== undefined?productForEdit.minQty: initialProduct.minQty }
                     />
                     {formik.touched.minQty && formik.errors.minQty && (
                       <div className="fv-plugins-message-container">
@@ -1634,7 +1553,6 @@ const ProductForm: FC<Props> = ({ product }) => {
                       </div>
                     )}
                     {/* end::Input */}
-                    {/* <div className="form-text px-4">A product name is required and recommended to be unique.</div> */}
                   </div>
                   {/* end:: minQty Input group */}
 
@@ -1649,18 +1567,18 @@ const ProductForm: FC<Props> = ({ product }) => {
                     {/* begin::Input */}
                     <input
                       placeholder="Stock"
-                      checked={formik.values.stock === "0"}
+                      checked={formik.values.stock === '0'}
                       onChange={(e) => {
                         if (e.target.checked) {
-                          formik.setFieldValue("stock", "0");
+                          formik.setFieldValue('stock', '0');
                         } else {
-                          formik.setFieldValue("stock", "");
+                          formik.setFieldValue('stock', '');
                         }
                       }}
                       type="checkbox"
                       name="outOfStock"
                       className={clsx(
-                        "form-check-input mb-3 ms-2 mb-lg-0 border border-2",
+                        'form-check-input mb-3 ms-2 mb-lg-0 border border-2'
                       )}
                       autoComplete="off"
                       disabled={formik.isSubmitting}
@@ -1670,7 +1588,7 @@ const ProductForm: FC<Props> = ({ product }) => {
                   {/* end:: stock switch group */}
 
                   {/* begin:: stock Input group - Only show if not out of stock */}
-                  {formik.values.stock !== "0" && (
+                  {formik.values.stock !== '0' && (
                     <div className="fv-row mb-7">
                       {/* begin::Label */}
                       <label className=" fw-semibold fs-7 ps-4 mb-2">
@@ -1681,19 +1599,19 @@ const ProductForm: FC<Props> = ({ product }) => {
                       {/* begin::Input */}
                       <input
                         placeholder="Stock"
-                        {...formik.getFieldProps("stock")}
+                        {...formik.getFieldProps('stock')}
                         type="text"
                         name="stock"
                         className={clsx(
-                          "form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2",
+                          'form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2',
                           {
-                            "is-invalid":
+                            'is-invalid':
                               formik.touched.stock && formik.errors.stock,
                           },
                           {
-                            "is-valid":
+                            'is-valid':
                               formik.touched.stock && !formik.errors.stock,
-                          },
+                          }
                         )}
                         autoComplete="off"
                         disabled={formik.isSubmitting}
@@ -1719,24 +1637,23 @@ const ProductForm: FC<Props> = ({ product }) => {
                     {/* begin::Input */}
                     <input
                       placeholder="Sold"
-                      {...formik.getFieldProps("sold")}
+                      {...formik.getFieldProps('sold')}
                       type="text"
                       name="sold"
                       className={clsx(
-                        "form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2",
+                        'form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2',
                         {
-                          "is-invalid":
+                          'is-invalid':
                             formik.touched.sold && formik.errors.sold,
                         },
                         {
-                          "is-valid":
+                          'is-valid':
                             formik.touched.sold && !formik.errors.sold,
-                        },
+                        }
                       )}
                       autoComplete="off"
                       readOnly
                       disabled={formik.isSubmitting}
-                      // defaultValue={productForEdit !== undefined?productForEdit.sold: initialProduct.sold }
                     />
                     {formik.touched.sold && formik.errors.sold && (
                       <div className="fv-plugins-message-container">
@@ -1746,7 +1663,6 @@ const ProductForm: FC<Props> = ({ product }) => {
                       </div>
                     )}
                     {/* end::Input */}
-                    {/* <div className="form-text px-4">A product name is required and recommended to be unique.</div> */}
                   </div>
                   {/* end:: sold Input group */}
                 </div>
@@ -1765,24 +1681,21 @@ const ProductForm: FC<Props> = ({ product }) => {
 
                     {/* begin::Input */}
                     <select
-                      //   placeholder='Book'
-                      {...formik.getFieldProps("book")}
-                      //   type='selct'
+                      {...formik.getFieldProps('book')}
                       name="book"
                       className={clsx(
-                        "form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2",
+                        'form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2',
                         {
-                          "is-invalid":
+                          'is-invalid':
                             formik.touched.book && formik.errors.book,
                         },
                         {
-                          "is-valid":
+                          'is-valid':
                             formik.touched.book && !formik.errors.book,
-                        },
+                        }
                       )}
                       autoComplete="off"
                       disabled={formik.isSubmitting}
-                      // defaultValue={productForEdit !== undefined?productForEdit.book: initialProduct.book }
                     >
                       <option defaultChecked value="regular">
                         Regular
@@ -1798,7 +1711,6 @@ const ProductForm: FC<Props> = ({ product }) => {
                       </div>
                     )}
                     {/* end::Input */}
-                    {/* <div className="form-text px-4">A product name is required and recommended to be unique.</div> */}
                   </div>
                   {/* end:: book Input group */}
                 </div>
@@ -1815,21 +1727,18 @@ const ProductForm: FC<Props> = ({ product }) => {
 
                     {/* begin::Input */}
                     <Select
-                      // className='react-select-styled'
-                      // classNamePrefix='react-select'
                       isMulti
                       options={memoizedExtras}
                       placeholder="Extras"
-                      // {...formik.getFieldProps('extras')}
                       className={clsx(
-                        "form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2",
+                        'form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2'
                       )}
                       name="extras"
                       onChange={(selected) => {
                         // Update Formik state directly
                         formik.setFieldValue(
-                          "extras",
-                          selected ? selected : [],
+                          'extras',
+                          selected ? selected : []
                         );
                       }}
                       defaultValue={
@@ -1838,15 +1747,18 @@ const ProductForm: FC<Props> = ({ product }) => {
                               value: option.extra._id,
                               label: option.extra.name,
                             }))
-                          : ""
+                          : []
                       }
                     />
                     {/* end::Input */}
-                    {formik.touched.extras && formik.errors.extras && (
-                      <div className="fv-plugins-message-container">
-                        <span role="alert">{formik.errors.extras}</span>
-                      </div>
-                    )}
+                    {(formik.touched as any).extras &&
+                      (formik.errors as any).extras && (
+                        <div className="fv-plugins-message-container">
+                          <span role="alert">
+                            {(formik.errors as any).extras}
+                          </span>
+                        </div>
+                      )}
                   </div>
                 </div>
                 {/* end:: Extras Input group */}
@@ -1857,7 +1769,6 @@ const ProductForm: FC<Props> = ({ product }) => {
                     {/* begin::Label */}
                     <label className=" fw-bolder fs-4   ms-3 mb-2">Types</label>
                     {/* end::Label */}
-
                     {/* begin::Input */}
                     <Select
                       // className='react-select-styled'
@@ -1867,12 +1778,12 @@ const ProductForm: FC<Props> = ({ product }) => {
                       placeholder="Types"
                       // {...formik.getFieldProps('types')}
                       className={clsx(
-                        "form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2",
+                        'form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2'
                       )}
                       name="types"
                       onChange={(selected) => {
                         // Update Formik state directly
-                        formik.setFieldValue("types", selected ? selected : []);
+                        formik.setFieldValue('types', selected ? selected : []);
                       }}
                       defaultValue={
                         productForEdit !== undefined
@@ -1880,15 +1791,18 @@ const ProductForm: FC<Props> = ({ product }) => {
                               value: option._id,
                               label: option.name,
                             }))
-                          : ""
+                          : []
                       }
                     />
                     {/* end::Input */}
-                    {formik.touched.types && formik.errors.types && (
-                      <div className="fv-plugins-message-container">
-                        <span role="alert">{formik.errors.types}</span>
-                      </div>
-                    )}
+                    {(formik.touched as any).types &&
+                      (formik.errors as any).types && (
+                        <div className="fv-plugins-message-container">
+                          <span role="alert">
+                            {(formik.errors as any).types}
+                          </span>
+                        </div>
+                      )}
                   </div>
                 </div>
                 {/* end:: Types Input group */}
@@ -1905,23 +1819,22 @@ const ProductForm: FC<Props> = ({ product }) => {
                     {/* begin::Input */}
                     <input
                       placeholder="MetaTags"
-                      {...formik.getFieldProps("metaTags")}
+                      {...formik.getFieldProps('metaTags')}
                       className={clsx(
-                        "form-control form-control-solid mb-3 mb-lg-0 ms-2 border border-2",
+                        'form-control form-control-solid mb-3 mb-lg-0 ms-2 border border-2',
                         {
-                          "is-invalid":
+                          'is-invalid':
                             formik.touched.metaTags && formik.errors.metaTags,
                         },
                         {
-                          "is-valid":
+                          'is-valid':
                             formik.touched.metaTags && !formik.errors.metaTags,
-                        },
+                        }
                       )}
                       type="text"
                       name="metaTags"
                       autoComplete="off"
                       disabled={formik.isSubmitting}
-                      // defaultValue={productForEdit !== undefined?productForEdit.metaTags:initialProduct.metTags}
                     />
                     {/* end::Input */}
                     {formik.touched.metaTags && formik.errors.metaTags && (
@@ -1942,7 +1855,9 @@ const ProductForm: FC<Props> = ({ product }) => {
 
               {/* begin:: Media group */}
               <div
-                className={`collapse ${activeTab === "media" ? "active show" : ""}`}
+                className={`collapse ${
+                  activeTab === 'media' ? 'active show' : ''
+                }`}
                 id="media"
               >
                 <div className="shadow-sm rounded-end rounded p-6 mb-8">
@@ -1963,17 +1878,17 @@ const ProductForm: FC<Props> = ({ product }) => {
                             alt={`Gallery ${index + 1}`}
                             className="rounded shadow-sm"
                             style={{
-                              width: "100px",
-                              height: "100px",
-                              objectFit: "cover",
+                              width: '100px',
+                              height: '100px',
+                              objectFit: 'cover',
                             }}
                           />
                           <button
                             type="button"
                             className="btn btn-sm btn-danger position-absolute top-0 end-0 rounded-circle"
                             style={{
-                              width: "24px",
-                              height: "24px",
+                              width: '24px',
+                              height: '24px',
                               padding: 0,
                             }}
                             onClick={() => handleRemoveGalleryImage(index)}
@@ -2013,7 +1928,7 @@ const ProductForm: FC<Props> = ({ product }) => {
                       multiple
                       accept=".png, .jpg, .jpeg"
                       onChange={handleGalleryChange}
-                      style={{ display: "none" }}
+                      style={{ display: 'none' }}
                     />
 
                     <div className="form-text mt-2">
@@ -2027,7 +1942,9 @@ const ProductForm: FC<Props> = ({ product }) => {
 
               {/* begin:: branches group */}
               <div
-                className={`collapse ${activeTab === "branches" ? "active show" : ""}`}
+                className={`collapse ${
+                  activeTab === 'branches' ? 'active show' : ''
+                }`}
                 id="branches"
               >
                 {/* begin:: Branch Input group */}
@@ -2043,11 +1960,11 @@ const ProductForm: FC<Props> = ({ product }) => {
                       setUpdatedBranches={setUpdatedBranches}
                       formik={formik}
                       branchees={
-                        updatedBranches == undefined
+                        updatedBranches === undefined
                           ? productForEdit !== undefined
                             ? productForEdit.branch
-                            : initialBranches
-                          : updatedBranches
+                            : (initialBranches as BranchOfProduct[])
+                          : (updatedBranches as BranchOfProduct[])
                       }
                     />
                   </div>
@@ -2058,7 +1975,9 @@ const ProductForm: FC<Props> = ({ product }) => {
 
               {/* begin:: descTable group */}
               <div
-                className={`collapse ${activeTab === "descTable" ? "active show" : ""}`}
+                className={`collapse ${
+                  activeTab === 'descTable' ? 'active show' : ''
+                }`}
                 id="descTable"
               >
                 {/* begin:: Branch Input group */}
@@ -2082,28 +2001,27 @@ const ProductForm: FC<Props> = ({ product }) => {
                       {/* begin::Input */}
                       <input
                         placeholder="Description Table Name"
-                        // {...formik.getFieldProps('descTableName')}
                         type="text"
                         name="descTableName"
                         className={clsx(
-                          "form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2",
+                          'form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2',
                           {
-                            "is-invalid":
+                            'is-invalid':
                               formik.touched.descTableName &&
                               formik.errors.descTableName,
                           },
                           {
-                            "is-valid":
+                            'is-valid':
                               formik.touched.descTableName &&
                               !formik.errors.descTableName,
-                          },
+                          }
                         )}
                         autoComplete="off"
                         disabled={formik.isSubmitting}
                         defaultValue={
                           productForEdit !== undefined
                             ? productForEdit.descTableName
-                            : ""
+                            : ''
                         }
                       />
                       {formik.touched.descTableName &&
@@ -2117,7 +2035,6 @@ const ProductForm: FC<Props> = ({ product }) => {
                           </div>
                         )}
                       {/* end::Input */}
-                      {/* <div className="form-text px-4">A product name is required and recommended to be unique.</div> */}
                     </div>
 
                     <DescTableForm
@@ -2129,7 +2046,6 @@ const ProductForm: FC<Props> = ({ product }) => {
                       setItems={setItems}
                     />
                     {/* end:: Name Input group */}
-                    {/* <BranchesForm setUpdatedBranches={setUpdatedBranches} branchees={updatedBranches == undefined ?initialBranches:updatedBranches}/> */}
                   </div>
                 </div>
                 {/* end:: Branch Input group */}

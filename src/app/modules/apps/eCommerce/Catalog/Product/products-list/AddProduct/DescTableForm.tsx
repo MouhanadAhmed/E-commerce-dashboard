@@ -24,13 +24,14 @@ const DescTableForm = ({ items, setItems }) => {
   };
 
   const handleAddItems = () => {
+    if (!descTableRef.current) return;
     const newItems = Array.from(
-      { length: Number(descTableRef.current.value) },
+      { length: Number((descTableRef.current as any).value) },
       (_, index) => ({
-        name: "",
-        value: "",
+        name: '',
+        value: '',
         order: descItems.length + index + 1,
-      }),
+      })
     );
     setDescItems([...descItems, ...newItems]);
     setItems([...descItems, ...newItems]);

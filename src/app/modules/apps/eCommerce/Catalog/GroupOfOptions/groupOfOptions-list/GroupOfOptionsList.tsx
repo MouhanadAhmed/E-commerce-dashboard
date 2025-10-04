@@ -7,7 +7,6 @@ import { ToolbarWrapper } from "../../../../../../../_metronic/layout/components
 import { Content } from "../../../../../../../_metronic/layout/components/content";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-// import { GroupsOfOptionsListHeader } from './components/header/GroupsOfOptionsListHeader'
 import { GroupTable } from "./table/GroupOfOptionsTable";
 const GroupsOfOptionsList = () => {
   const { itemIdForUpdate } = useListView();

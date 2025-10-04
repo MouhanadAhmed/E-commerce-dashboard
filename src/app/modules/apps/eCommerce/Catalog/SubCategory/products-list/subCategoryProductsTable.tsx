@@ -47,7 +47,7 @@ const SubCategoryProductsTable = (id: string) => {
       },
     },
   );
-
+  
   useEffect(() => {
     console.log("id", id.id);
     const fetchProducts = async () => {
