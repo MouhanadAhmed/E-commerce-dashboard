@@ -6,13 +6,11 @@ import {
 } from "../../../../../../../../_metronic/helpers";
 import { CategoriesQueryResponse, Categories } from "./_models";
 
-// const {state} = useQueryRequest()
 const API_URL = import.meta.env.VITE_APP_THEME_API_URL;
 const CATEGORY_URL = `${API_URL}/category`;
 const GET_CATEGORIES_URL = `${API_URL}/category?deleted=false`;
 const GET_ARCHIVED_CATEGORIES_URL = `${API_URL}/category?deleted=true`;
 let baseUrl = "";
-// console.log("initialQueryRequest.state",initialQueryRequest.state)
 if (
   initialQueryRequest.state &&
   typeof initialQueryRequest.state === "object"
@@ -26,24 +24,20 @@ if (
   baseUrl = GET_CATEGORIES_URL + "&" + queryString;
 }
 const getCategories = (query?: string): Promise<CategoriesQueryResponse> => {
-  // console.log(query);
   baseUrl = GET_CATEGORIES_URL + "&" + query;
   return axios
     .get(`${query != undefined ? baseUrl : GET_CATEGORIES_URL}`)
     .then((response) => {
-      // console.log("_requests => categories",response.data.data)
       return response.data;
     });
 };
 const getArchivedCategories = (
   query?: string,
 ): Promise<CategoriesQueryResponse> => {
-  // console.log(initialQueryRequest.state)
   baseUrl = GET_ARCHIVED_CATEGORIES_URL + "&" + query;
   return axios
     .get(`${query != undefined ? baseUrl : GET_ARCHIVED_CATEGORIES_URL}`)
     .then((response) => {
-      // console.log("_requests => categories",response.data.data)
       return response.data;
     });
 };
@@ -112,7 +106,6 @@ const getAllProductsInCategory = (categoryId: string): Promise<[]> => {
   return axios
     .get(`${API_URL}/product/category/${categoryId}?fields=name,category`)
     .then((response) => {
-      // console.log("_requests => categories",response.data.data)
       return response.data;
     });
 };
@@ -132,7 +125,6 @@ const getAllSubCategoriesInCategory = (categoryId: string): Promise<[]> => {
   return axios
     .get(`${API_URL}/subCategory/category/${categoryId}?fields=name,category`)
     .then((response) => {
-      // console.log("_requests => categories",response.data.data)
       return response.data;
     });
 };

@@ -1,16 +1,16 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 
-import { useEffect, useState } from "react";
-import { useQueryRequest } from "../../core/QueryRequestProvider";
+import { useEffect, useState } from 'react';
+import { useQueryRequest } from '../../../types-list/core/QueryRequestProvider';
 import {
   useDebounce,
   initialQueryState,
   KTIcon,
-} from "../../../../../../../../../_metronic/helpers";
+} from '../../../../../../../../../_metronic/helpers';
 
 const CategoriesListSearchComponent = () => {
   const { updateState } = useQueryRequest();
-  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState<string>('');
   // Debounce search term so that it only gives us latest value ...
   // ... if searchTerm has not been updated within last 500ms.
   // The goal is to only have the API call fire when user stops typing ...
@@ -23,7 +23,7 @@ const CategoriesListSearchComponent = () => {
         updateState({ keyword: debouncedSearchTerm, ...initialQueryState });
       }
     },
-    [debouncedSearchTerm], // Only call effect if debounced search term changes
+    [debouncedSearchTerm] // Only call effect if debounced search term changes
     // More details about useDebounce: https://usehooks.com/useDebounce/
   );
 
@@ -39,7 +39,6 @@ const CategoriesListSearchComponent = () => {
           placeholder="Search Category"
           value={searchTerm}
           onChange={(e) => {
-            console.log(e.target.value);
             setSearchTerm(decodeURIComponent(e.target.value));
           }}
         />

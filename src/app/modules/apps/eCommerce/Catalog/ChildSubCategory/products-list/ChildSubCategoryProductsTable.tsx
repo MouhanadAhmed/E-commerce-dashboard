@@ -41,7 +41,7 @@ const ChildSubCategoryProductsTable = ({id}: {id: string}) => {
   useEffect(() => {
     const fetchProducts = async () => {
       await getAllProductsInChildSubCategory(id)
-        .catch((err) => console.log(err))
+        .catch((err) => console.error(err))
         .then((res: any) => setData(res?.products));
     };
     fetchProducts();
@@ -57,7 +57,6 @@ const ChildSubCategoryProductsTable = ({id}: {id: string}) => {
       onDragEnd: async() => {
         const { draggingRow, hoveredRow } = table.getState();
         if (hoveredRow && draggingRow) {
-          console.log('hoveredRow',hoveredRow.original?.childSubCategory[0].order,'draggingRow',draggingRow.original._id)
             await updateProductOrder.mutateAsync({productId:draggingRow.original._id,order:hoveredRow.original?.childSubCategory[0].order})
         }
       },

@@ -1,26 +1,27 @@
 // export {TypesTable}
-import { useEffect, useMemo, useState } from "react";
-import { useQueryResponseData } from "../core/QueryResponseProvider";
-import { Types } from "../core/_models";
+import { useEffect, useMemo, useState } from 'react';
+import { useQueryResponseData } from '../../types-list/core/QueryResponseProvider';
+import { Types } from '../../types-list/core/_models';
 import {
   type MRT_TableOptions,
   type MRT_ColumnDef,
   type MRT_Row,
   MaterialReactTable,
   useMaterialReactTable,
-  // MRT_ActionMenuItem,
-  // MRT_ToggleDensePaddingButton,
-} from "material-react-table";
-// import { Divider } from '@mui/material';
-import { Box, Typography, Button, IconButton, Tooltip } from "@mui/material";
-import { deleteType, deleteSelectedTypes, updateType } from "../core/_requests";
-import { useMutation, useQueryClient } from "react-query";
-import { QUERIES } from "../../../../../../../../_metronic/helpers";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import * as Yup from "yup";
-import { Modal } from "react-bootstrap";
-import { useListView } from "../core/ListViewProvider";
+} from 'material-react-table';
+import { Box, Typography, Button, IconButton, Tooltip } from '@mui/material';
+import {
+  deleteType,
+  deleteSelectedTypes,
+  updateType,
+} from '../../types-list/core/_requests';
+import { useMutation, useQueryClient } from 'react-query';
+import { QUERIES } from '../../../../../../../../_metronic/helpers';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import * as Yup from 'yup';
+import { Modal } from 'react-bootstrap';
+import { useListView } from '../../types-list/core/ListViewProvider';
 
 const TypesTable = () => {
   const { selected, clearSelected } = useListView();
@@ -31,21 +32,20 @@ const TypesTable = () => {
   >({});
   const { active, archived } = useQueryResponseData();
   const [trigger, setTrigger] = useState(false);
-  // const isLoading = useQueryResponseLoading()
-  const [activeBranches, setActiveBranches] = useState<Types[]>(active);
-  const [archivedBranches, setArchivedBranches] = useState<Types[]>(
-    () => archived,
+  const [activetypes, setActivetypes] = useState<Types[]>(active);
+  const [archivedtypes, setArchivedtypes] = useState<Types[]>(
+    () => archived
   );
   const [draggingRow, setDraggingRow] = useState<MRT_Row<Types> | null>(null);
   const [hoveredTable, setHoveredTable] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [branchDelete, setBranchDelete] = useState();
+  const [typeDelete, settypeDelete] = useState();
   const columns = useMemo<MRT_ColumnDef<Types>[]>(
     //column definitions...
     () => [
       {
-        accessorKey: "name",
-        header: "Name",
+        accessorKey: 'name',
+        header: 'Name',
         muiEditTextFieldProps: {
           required: true,
           error: !!validationErrors?.name,
@@ -58,35 +58,19 @@ const TypesTable = () => {
         },
       },
     ],
-    [],
+    []
   );
 
-  const editBranchSchema = Yup.object().shape({
-    name: Yup.string().min(3, "Minimum 3 symbols").required("Name is required"),
-    // workingHours: Yup.string()
-    //   .min(3, 'Minimum 3 symbols')
-    //   .optional(),
-    // address: Yup.string()
-    //   .min(3, 'Minimum 3 symbols')
-    //   .optional(),
-    //   imgCover: Yup.string()
-    //   .min(3, 'Minimum 3 symbols')
-    //   .optional(),
-    //   phone: Yup.array().of(Yup.string())
-    //   .min(1, 'Minimum 3 symbols')
-    //   .optional(),
-    //   gmap: Yup.string()
-    //   .min(3, 'Minimum 3 symbols')
-    //   .optional(),
+  const edittypeSchema = Yup.object().shape({
+    name: Yup.string().min(3, 'Minimum 3 symbols').required('Name is required'),
   });
   //UPDATE Types
-  const handleSaveBranch = async (originalRow) => {
-    console.log(originalRow.row.original);
-    editBranchSchema
+  const handleSavetype = async (originalRow) => {
+    edittypeSchema
       .validate(originalRow.row.original)
       .catch((err) => setValidationErrors(err.message));
     setValidationErrors({});
-    await updateBranchAvailable.mutateAsync({
+    await updatetypeAvailable.mutateAsync({
       id: originalRow.row.original._id,
       update: originalRow.values,
     });
@@ -107,11 +91,11 @@ const TypesTable = () => {
   const handleClose = () => {
     setShowModal(false);
   };
-  const deleteItem = useMutation(() => deleteType(branchDelete as string), {
+  const deleteItem = useMutation(() => deleteType(typeDelete as string), {
     // 💡 response of the mutation is passed to onSuccess
     onSuccess: () => {
       // ✅ update detail view directly
-      queryClient.invalidateQueries([`${QUERIES.BRNACHES_LIST}`]);
+      queryClient.invalidateQueries([`${QUERIES.TYPES_LIST}`]);
       setTrigger(true);
     },
   });
@@ -122,22 +106,20 @@ const TypesTable = () => {
       // 💡 response of the mutation is passed to onSuccess
       onSuccess: () => {
         // ✅ update detail view directly
-        queryClient.invalidateQueries([`${QUERIES.BRNACHES_LIST}`]);
+        queryClient.invalidateQueries([`${QUERIES.TYPES_LIST}`]);
         setTrigger(true);
         clearSelected();
       },
-    },
+    }
   );
 
-  const updateBranchAvailable = useMutation(
-    ({ id, update }) => updateType(id, update),
+  const updatetypeAvailable = useMutation(
+    ({ id, update }: { id: string; update: Partial<Types> }) => updateType(id, update),
     {
-      // 💡 response of the mutation is passed to onSuccess
       onSuccess: () => {
-        // ✅ update detail view directly
-        queryClient.invalidateQueries([`${QUERIES.BRNACHES_LIST}`]);
+        queryClient.invalidateQueries([`${QUERIES.TYPES_LIST}`]);
       },
-    },
+    }
   );
 
   const commonTableProps: Partial<MRT_TableOptions<Types>> & {
@@ -148,46 +130,36 @@ const TypesTable = () => {
     enableFullScreenToggle: false,
     muiTableContainerProps: {
       sx: {
-        minHeight: "320px",
+        minHeight: '320px',
       },
     },
     onDraggingRowChange: setDraggingRow,
     state: { draggingRow },
   };
   useEffect(() => {
-    console.log("branche", active);
-    setActiveBranches(active);
-    setArchivedBranches(archived);
+    setActivetypes(active);
+    setArchivedtypes(archived);
   }, [active, archived, trigger]);
   const table1 = useMaterialReactTable({
     ...commonTableProps,
     enableRowSelection: true,
     enableStickyHeader: true,
     enableCellActions: true,
-    enableClickToCopy: "context-menu",
+    enableClickToCopy: 'context-menu',
     enableEditing: true,
-    editDisplayMode: "row",
-    createDisplayMode: "row",
-    rowPinningDisplayMode: "select-sticky",
-    positionToolbarAlertBanner: "bottom",
-    positionActionsColumn: "last",
+    editDisplayMode: 'row',
+    createDisplayMode: 'row',
+    rowPinningDisplayMode: 'select-sticky',
+    positionToolbarAlertBanner: 'bottom',
+    positionActionsColumn: 'last',
 
     state: {
       columnOrder: [
-        "mrt-row-select", //move the built-in selection column to the end of the table
-        "mrt-row-drag",
-        "name",
-        // 'workingHours',
-        // 'phone',
-        // 'mrt-row-expand',
-        // 'Types',
-        // 'category',
-        // 'subCategory',
-        // 'available'
+        'mrt-row-select', //move the built-in selection column to the end of the table
+        'mrt-row-drag',
+        'name',
       ],
     },
-    // pinnedColumn:'selection',
-    // positionSelectionColumn:'first',
     renderTopToolbarCustomActions: ({ table }) => (
       <>
         <div className="card-header ribbon ribbon-start">
@@ -197,15 +169,12 @@ const TypesTable = () => {
         </div>
         <Box
           sx={{
-            display: "flex",
-            gap: "1rem",
-            p: "4px",
-            justifyContent: "right",
+            display: 'flex',
+            gap: '1rem',
+            p: '4px',
+            justifyContent: 'right',
           }}
         >
-          {/* <Typography color="success.main" component="span" variant="h4">
-        Active List
-      </Typography> */}
           <Button
             color="info"
             onClick={openAddCategoryModal}
@@ -215,15 +184,11 @@ const TypesTable = () => {
           </Button>
           <Button
             color="error"
-            // disabled={!table.getIsSomeRowsSelected()}
             onClick={async () => {
               let selcetedIDs = [];
               table
                 .getSelectedRowModel()
                 .rows.map((item) => selcetedIDs.push(item.original._id));
-              console.log(selcetedIDs);
-              // console.log(table.getState().rowSelection);
-              // selected = selcetedIDs;
               await deleteSelectedItems.mutateAsync(selcetedIDs);
             }}
             variant="contained"
@@ -233,37 +198,37 @@ const TypesTable = () => {
         </Box>
       </>
     ),
-    data: activeBranches,
+    data: activetypes,
     onEditingRowCancel: () => setValidationErrors({}),
-    onEditingRowSave: (originalRow) => handleSaveBranch(originalRow),
+    onEditingRowSave: (originalRow) => handleSavetype(originalRow),
     getRowId: (originalRow) => `table-1-${originalRow.name}`,
     muiRowDragHandleProps: {
       onDragEnd: async () => {
-        if (hoveredTable === "table-2") {
-          await updateBranchAvailable.mutateAsync({
+        if (hoveredTable === 'table-2') {
+          await updatetypeAvailable.mutateAsync({
             id: draggingRow?.original._id,
             update: { deleted: true },
           });
 
-          setArchivedBranches((archivedBranches) => [
-            ...archivedBranches,
+          setArchivedtypes((archivedtypes) => [
+            ...archivedtypes,
             draggingRow!.original,
           ]);
-          setActiveBranches((activeBranches) =>
-            activeBranches.filter((d) => d !== draggingRow!.original),
+          setActivetypes((activetypes) =>
+            activetypes.filter((d) => d !== draggingRow!.original)
           );
         }
         setHoveredTable(null);
       },
     },
     muiTablePaperProps: {
-      onDragEnter: () => setHoveredTable("table-1"),
+      onDragEnter: () => setHoveredTable('table-1'),
       sx: {
-        outline: hoveredTable === "table-1" ? "2px dashed green" : undefined,
+        outline: hoveredTable === 'table-1' ? '2px dashed green' : undefined,
       },
     },
     renderRowActions: ({ row, table }) => (
-      <Box sx={{ display: "flex", gap: "1rem" }}>
+      <Box sx={{ display: 'flex', gap: '1rem' }}>
         <Tooltip title="Edit">
           <IconButton onClick={() => table.setEditingRow(row)}>
             <EditIcon />
@@ -273,7 +238,7 @@ const TypesTable = () => {
           <IconButton
             color="error"
             onClick={() => {
-              setBranchDelete(row.original._id);
+              settypeDelete(row.original._id as any);
               handleDeleteClick();
             }}
           >
@@ -286,48 +251,40 @@ const TypesTable = () => {
 
   const table2 = useMaterialReactTable({
     ...commonTableProps,
-    data: archivedBranches,
+    data: archivedtypes,
     defaultColumn: {
       size: 100,
     },
     state: {
       columnOrder: [
-        "mrt-row-select", //move the built-in selection column to the end of the table
-        "mrt-row-drag",
-        "name",
-        // 'workingHours',
-        // 'phone',
-        // 'mrt-row-expand',
-        // 'Types',
-        // 'category',
-        // 'subCategory',
-        // 'available'
+        'mrt-row-select', //move the built-in selection column to the end of the table
+        'mrt-row-drag',
+        'name',
       ],
     },
     getRowId: (originalRow) => `table-2-${originalRow.name}`,
     muiRowDragHandleProps: {
       onDragEnd: async () => {
-        if (hoveredTable === "table-1") {
-          console.log("getRowId", draggingRow?.original._id);
-          await updateBranchAvailable.mutateAsync({
+        if (hoveredTable === 'table-1') {
+          await updatetypeAvailable.mutateAsync({
             id: draggingRow?.original._id,
             update: { deleted: false },
           });
-          setActiveBranches((activeBranches) => [
-            ...activeBranches,
+          setActivetypes((activetypes) => [
+            ...activetypes,
             draggingRow!.original,
           ]);
-          setArchivedBranches((archivedBranches) =>
-            archivedBranches.filter((d) => d !== draggingRow!.original),
+          setArchivedtypes((archivedtypes) =>
+            archivedtypes.filter((d) => d !== draggingRow!.original)
           );
         }
         setHoveredTable(null);
       },
     },
     muiTablePaperProps: {
-      onDragEnter: () => setHoveredTable("table-2"),
+      onDragEnter: () => setHoveredTable('table-2'),
       sx: {
-        outline: hoveredTable === "table-2" ? "2px dashed pink" : undefined,
+        outline: hoveredTable === 'table-2' ? '2px dashed pink' : undefined,
       },
     },
     renderTopToolbarCustomActions: () => (
@@ -343,22 +300,20 @@ const TypesTable = () => {
     <>
       <Box
         sx={{
-          display: "grid",
-          // gridTemplateColumns: { xs: 'auto', lg: '1fr 1fr' },
-          gap: "1rem",
-          overflow: "auto",
-          p: "4px",
+          display: 'grid',
+          gap: '1rem',
+          overflow: 'auto',
+          p: '4px',
         }}
       >
         <MaterialReactTable table={table1} />
       </Box>
       <Box
         sx={{
-          display: "grid",
-          // gridTemplateColumns: { xs: 'auto', lg: '1fr 1fr' },
-          gap: "1rem",
-          overflow: "auto",
-          p: "4px",
+          display: 'grid',
+          gap: '1rem',
+          overflow: 'auto',
+          p: '4px',
         }}
       >
         <MaterialReactTable table={table2} />
@@ -370,7 +325,7 @@ const TypesTable = () => {
         </Modal.Header>
         <Modal.Body>Are you sure you want to delete this item?</Modal.Body>
         <Modal.Footer>
-          <Box sx={{ display: "flex", gap: "1rem", p: "4px" }}>
+          <Box sx={{ display: 'flex', gap: '1rem', p: '4px' }}>
             <Button color="info" variant="contained" onClick={handleClose}>
               Cancel
             </Button>

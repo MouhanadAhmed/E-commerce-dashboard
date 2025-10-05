@@ -7,7 +7,6 @@ const ROLES_URL = `${API_URL}/role`;
 const GET_ROLES_URL = `${API_URL}/role`;
 let baseUrl = "";
 const getRoles = async (query?: string): Promise<RolesQueryResponse> => {
-  console.log("query", query, query?.length);
   baseUrl = GET_ROLES_URL + "?" + query;
   const d = await axios.get(`${query != undefined ? baseUrl : GET_ROLES_URL}`);
   return d.data;

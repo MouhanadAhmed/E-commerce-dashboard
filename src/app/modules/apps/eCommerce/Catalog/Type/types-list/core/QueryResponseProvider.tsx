@@ -7,8 +7,8 @@ import {
   useEffect,
   useMemo,
   createContext,
-} from "react";
-import { useQuery } from "react-query";
+} from 'react';
+import { useQuery } from 'react-query';
 import {
   createResponseContext,
   initialQueryResponse,
@@ -17,43 +17,42 @@ import {
   QUERIES,
   stringifyRequestQuery,
   WithChildren,
-} from "../../../../../../../../_metronic/helpers";
-import { useQueryRequest } from "./QueryRequestProvider";
-import { getBranches, getArchivedBranches } from "./_requests";
-import { Branch } from "./_models";
+} from '../../../../../../../../_metronic/helpers';
+import { useQueryRequest } from './QueryRequestProvider';
+import { getArchivedTypes, getTypes } from './_requests';
+import { Types } from './_models';
 
-// Create separate contexts for active and archived branches
-const ActiveBranchesContext =
-  createResponseContext<Branch>(initialQueryResponse);
-const ArchivedBranchesContext =
-  createResponseContext<Branch>(initialQueryResponse);
+// Create separate contexts for active and archived types
+const ActiveTypesContext = createResponseContext<Types>(initialQueryResponse);
+const ArchivedTypesContext = createResponseContext<Types>(initialQueryResponse);
 
-// Active Branches Provider
-const ActiveBranchesProvider: FC<WithChildren> = ({ children }) => {
+// Active Types Provider
+const ActiveTypesProvider: FC<WithChildren> = ({ children }) => {
   const { state } = useQueryRequest();
   const [query, setQuery] = useState<string>(stringifyRequestQuery(state));
   const updatedQuery = useMemo(() => stringifyRequestQuery(state), [state]);
+
   useEffect(() => {
     if (query !== updatedQuery) {
       if (query.match(/search=([^&]*)/)) {
-        setQuery(query.replace(/search=/, "keyword="));
+        setQuery(query.replace(/search=/, 'keyword='));
       }
       setQuery(decodeURIComponent(updatedQuery));
     }
   }, [updatedQuery]);
-  
+
   const {
     isFetching,
     refetch,
     data: response,
-  } = useQuery(`${QUERIES.BRNACHES_LIST}-${query}`, () => getBranches(query), {
+  } = useQuery(`${QUERIES.TYPES_LIST}-${query}`, () => getTypes(query), {
     cacheTime: 0,
     keepPreviousData: true,
     refetchOnWindowFocus: false,
   });
 
   return (
-    <ActiveBranchesContext.Provider
+    <ActiveTypesContext.Provider
       value={{
         isLoading: isFetching,
         refetch,
@@ -62,12 +61,12 @@ const ActiveBranchesProvider: FC<WithChildren> = ({ children }) => {
       }}
     >
       {children}
-    </ActiveBranchesContext.Provider>
+    </ActiveTypesContext.Provider>
   );
 };
 
-// Archived Branches Provider
-const ArchivedBranchesProvider: FC<WithChildren> = ({ children }) => {
+// Archived Types Provider
+const ArchivedTypesProvider: FC<WithChildren> = ({ children }) => {
   const { state } = useQueryRequest();
   const [query, setQuery] = useState<string>(stringifyRequestQuery(state));
   const updatedQuery = useMemo(() => stringifyRequestQuery(state), [state]);
@@ -75,7 +74,7 @@ const ArchivedBranchesProvider: FC<WithChildren> = ({ children }) => {
   useEffect(() => {
     if (query !== updatedQuery) {
       if (query.match(/search=([^&]*)/)) {
-        setQuery(query.replace(/search=/, "keyword="));
+        setQuery(query.replace(/search=/, 'keyword='));
       }
       setQuery(decodeURIComponent(updatedQuery));
     }
@@ -86,17 +85,17 @@ const ArchivedBranchesProvider: FC<WithChildren> = ({ children }) => {
     refetch,
     data: response,
   } = useQuery(
-    `${QUERIES.ARCHIVED_BRNACHES_LIST}-${query}`,
-    () => getArchivedBranches(query),
+    `${QUERIES.ARCHIVED_TYPES_LIST}-${query}`,
+    () => getArchivedTypes(),
     {
       cacheTime: 0,
       keepPreviousData: true,
       refetchOnWindowFocus: false,
-    },
+    }
   );
 
   return (
-    <ArchivedBranchesContext.Provider
+    <ArchivedTypesContext.Provider
       value={{
         isLoading: isFetching,
         refetch,
@@ -105,37 +104,37 @@ const ArchivedBranchesProvider: FC<WithChildren> = ({ children }) => {
       }}
     >
       {children}
-    </ArchivedBranchesContext.Provider>
+    </ArchivedTypesContext.Provider>
   );
 };
 
 // Main Query Response Provider (combines both)
 const QueryResponseProvider: FC<WithChildren> = ({ children }) => {
   return (
-    <ActiveBranchesProvider>
-      <ArchivedBranchesProvider>{children}</ArchivedBranchesProvider>
-    </ActiveBranchesProvider>
+    <ActiveTypesProvider>
+      <ArchivedTypesProvider>{children}</ArchivedTypesProvider>
+    </ActiveTypesProvider>
   );
 };
 
-// Active Branches Hooks
-const useActiveBranches = () => useContext(ActiveBranchesContext);
+// Active Types Hooks
+const useActiveTypes = () => useContext(ActiveTypesContext);
 
-const useActiveBranchesData = () => {
-  const { response } = useActiveBranches();
+const useActiveTypesData = () => {
+  const { response } = useActiveTypes();
   if (!response) {
     return [];
   }
   return response?.data || [];
 };
 
-const useActiveBranchesPagination = () => {
+const useActiveTypesPagination = () => {
   const defaultPaginationState: PaginationState = {
     links: [],
     ...initialQueryState,
   };
 
-  const { response } = useActiveBranches();
+  const { response } = useActiveTypes();
   if (!response || !response.payload || !response.payload.pagination) {
     return defaultPaginationState;
   }
@@ -143,29 +142,29 @@ const useActiveBranchesPagination = () => {
   return response.payload.pagination;
 };
 
-const useActiveBranchesLoading = (): boolean => {
-  const { isLoading } = useActiveBranches();
+const useActiveTypesLoading = (): boolean => {
+  const { isLoading } = useActiveTypes();
   return isLoading;
 };
 
-// Archived Branches Hooks
-const useArchivedBranches = () => useContext(ArchivedBranchesContext);
+// Archived Types Hooks
+const useArchivedTypes = () => useContext(ArchivedTypesContext);
 
-const useArchivedBranchesData = () => {
-  const { response } = useArchivedBranches();
+const useArchivedTypesData = () => {
+  const { response } = useArchivedTypes();
   if (!response) {
     return [];
   }
   return response?.data || [];
 };
 
-const useArchivedBranchesPagination = () => {
+const useArchivedTypesPagination = () => {
   const defaultPaginationState: PaginationState = {
     links: [],
     ...initialQueryState,
   };
 
-  const { response } = useArchivedBranches();
+  const { response } = useArchivedTypes();
   if (!response || !response.payload || !response.payload.pagination) {
     return defaultPaginationState;
   }
@@ -173,15 +172,15 @@ const useArchivedBranchesPagination = () => {
   return response.payload.pagination;
 };
 
-const useArchivedBranchesLoading = (): boolean => {
-  const { isLoading } = useArchivedBranches();
+const useArchivedTypesLoading = (): boolean => {
+  const { isLoading } = useArchivedTypes();
   return isLoading;
 };
 
 // Legacy hooks for backward compatibility
 const useQueryResponse = () => {
-  const active = useActiveBranches();
-  const archived = useArchivedBranches();
+  const active = useActiveTypes();
+  const archived = useArchivedTypes();
 
   return {
     isLoading: active.isLoading || archived.isLoading,
@@ -199,8 +198,8 @@ const useQueryResponse = () => {
 };
 
 const useQueryResponseData = () => {
-  const activeData = useActiveBranchesData();
-  const archivedData = useArchivedBranchesData();
+  const activeData = useActiveTypesData();
+  const archivedData = useArchivedTypesData();
 
   return {
     active: activeData,
@@ -209,20 +208,25 @@ const useQueryResponseData = () => {
 };
 
 const useQueryActiveResponseData = () => {
-  const activeData = useActiveBranchesData();
+  const activeData = useActiveTypesData();
   return {
     active: activeData,
   };
 };
 
 const useQueryResponsePagination = () => {
-  return useActiveBranchesPagination();
+  return useActiveTypesPagination();
 };
 
 const useQueryResponseLoading = (): boolean => {
-  const activeLoading = useActiveBranchesLoading();
-  const archivedLoading = useArchivedBranchesLoading();
+  const activeLoading = useActiveTypesLoading();
+  const archivedLoading = useArchivedTypesLoading();
   return activeLoading || archivedLoading;
+};
+
+const useQueryRefetch = () => {
+  const { refetch } = useQueryResponse();
+  return refetch;
 };
 
 export {
@@ -231,14 +235,15 @@ export {
   useQueryResponseData,
   useQueryResponsePagination,
   useQueryResponseLoading,
+  useQueryRefetch,
   useQueryActiveResponseData,
   // New separate hooks
-  useActiveBranches,
-  useActiveBranchesData,
-  useActiveBranchesPagination,
-  useActiveBranchesLoading,
-  useArchivedBranches,
-  useArchivedBranchesData,
-  useArchivedBranchesPagination,
-  useArchivedBranchesLoading,
+  useActiveTypes,
+  useActiveTypesData,
+  useActiveTypesPagination,
+  useActiveTypesLoading,
+  useArchivedTypes,
+  useArchivedTypesData,
+  useArchivedTypesPagination,
+  useArchivedTypesLoading,
 };

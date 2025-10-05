@@ -1,17 +1,17 @@
-import { Route, Routes, Outlet, Navigate } from "react-router-dom";
-import { PageLink, PageTitle } from "../../../../../../_metronic/layout/core";
-import { TypesListWrapper } from "./categories-list/TypesList";
+import { Route, Routes, Outlet, Navigate } from 'react-router-dom';
+import { PageLink, PageTitle } from '../../../../../../_metronic/layout/core';
+import { TypesListWrapper } from './types-list/TypesList';
 
 const typesBreadcrumbs: Array<PageLink> = [
   {
-    title: "Types Management",
-    path: "/apps/eCommerce/types",
+    title: 'Types Management',
+    path: '/apps/eCommerce/types',
     isSeparator: false,
     isActive: false,
   },
   {
-    title: "",
-    path: "",
+    title: '',
+    path: '',
     isSeparator: true,
     isActive: false,
   },

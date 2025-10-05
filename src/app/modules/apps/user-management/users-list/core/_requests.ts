@@ -7,7 +7,6 @@ const USER_URL = `${API_URL}/user`;
 const GET_USERS_URL = `${API_URL}/user`;
 
 const getUsers = async (query?: string): Promise<UsersQueryResponse> => {
-  // console.log('query',query,query?.length)
   const d = await axios.get(`${GET_USERS_URL}?${query}`);
   return d.data;
 };

@@ -12,7 +12,7 @@ import {
   updateProductOrderInSubCategory,
 } from "../Subcategories-list/core/_requests";
 
-const SubCategoryProductsTable = (id: string) => {
+const SubCategoryProductsTable = ({id}: {id: string}) => {
   const [data, setData] = useState([]);
   const [triger, setTriger] = useState(false);
   const columns = useMemo<MRT_ColumnDef<Products>[]>(
@@ -32,33 +32,25 @@ const SubCategoryProductsTable = (id: string) => {
   );
 
   const updateProductOrder = useMutation(
-    ({ productId, order }) =>
-      updateProductOrderInSubCategory(id.id, productId, order),
+    ({ productId, order }: { productId: string; order: number }) =>
+      updateProductOrderInSubCategory(id, productId, order),
     {
       // 💡 response of the mutation is passed to onSuccess
       onSuccess: () => {
-        // ✅ update detail view directly
-        // queryClient.invalidateQueries([`${QUERIES.CATEGORIES_LIST}`]);
-        // queryClient.invalidateQueries([`${QUERIES.ARCHIVED_CATEGORIES_LIST}`]);
-        // queryClient.refetchQueries([`${QUERIES.CATEGORIES_LIST}`])
-        // queryClient.refetchQueries([`${QUERIES.ARCHIVED_CATEGORIES_LIST}`])
-        //   refetch();
         setTriger(true);
       },
     },
   );
   
   useEffect(() => {
-    console.log("id", id.id);
     const fetchProducts = async () => {
-      await getAllProductsInSubCategory(id?.id)
-        .catch((err) => console.log(err))
-        .then((res) => setData(res?.products));
-      // console.log(response.products)
-      // setData(response.products);
+      await getAllProductsInSubCategory(id)
+        .catch((err) => console.error(err))
+        .then((res: any) => setData(res?.products));
+
     };
     fetchProducts();
-  }, [id?.id, triger]);
+  }, [id, triger]);
 
   const table = useMaterialReactTable({
     autoResetPageIndex: false,
@@ -70,18 +62,12 @@ const SubCategoryProductsTable = (id: string) => {
       onDragEnd: async () => {
         const { draggingRow, hoveredRow } = table.getState();
         if (hoveredRow && draggingRow) {
-          console.log(
-            "hoveredRow",
-            hoveredRow.original?.subCategory[0].order,
-            "draggingRow",
-            draggingRow.original._id,
-          );
+
           await updateProductOrder.mutateAsync({
             productId: draggingRow.original._id,
             order: hoveredRow.original?.subCategory[0].order,
           });
         }
-        // if(product && productOrder) {await updateProductOrder.mutateAsync();}
       },
     }),
   });

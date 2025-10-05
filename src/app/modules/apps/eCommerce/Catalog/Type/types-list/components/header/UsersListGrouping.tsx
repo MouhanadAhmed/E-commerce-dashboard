@@ -1,8 +1,8 @@
-import { useQueryClient, useMutation } from "react-query";
-import { useListView } from "../../core/ListViewProvider";
-import { useQueryResponse } from "../../core/QueryResponseProvider";
-import { QUERIES } from "../../../../../../../../../_metronic/helpers";
-import { deleteSelectedCategories } from "../../core/_requests";
+import { useQueryClient, useMutation } from 'react-query';
+import { useListView } from '../../../types-list/core/ListViewProvider';
+import { useQueryResponse } from '../../../types-list/core/QueryResponseProvider';
+import { QUERIES } from '../../../../../../../../../_metronic/helpers';
+import { deleteSelectedCategories } from '../../../types-list/core/_requests';
 
 const UsersListGrouping = () => {
   const { selected, clearSelected } = useListView();
@@ -18,7 +18,7 @@ const UsersListGrouping = () => {
         queryClient.invalidateQueries([`${QUERIES.USERS_LIST}-${query}`]);
         clearSelected();
       },
-    },
+    }
   );
 
   return (

@@ -63,12 +63,6 @@ const CategoryProductsTable = ({ id }: any) => {
       onDragEnd: async () => {
         const { draggingRow, hoveredRow } = table.getState();
         if (hoveredRow && draggingRow) {
-          console.log(
-            "hoveredRow",
-            hoveredRow.original?.category[0].order,
-            "draggingRow",
-            draggingRow.original._id,
-          );
           await updateProductOrderMutation.mutateAsync({
             productId: draggingRow.original._id,
             order: hoveredRow.original?.category[0].order,

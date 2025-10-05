@@ -1,6 +1,6 @@
-import { KTIcon } from "../../../../../../../../../_metronic/helpers";
-import { useListView } from "../../core/ListViewProvider";
-import { UsersListFilter } from "./UsersListFilter";
+import { KTIcon } from '../../../../../../../../../_metronic/helpers';
+import { useListView } from '../../../types-list/core/ListViewProvider';
+import { UsersListFilter } from './UsersListFilter';
 
 const CategoriesListToolbar = () => {
   const { setItemIdForUpdate } = useListView();

@@ -1,7 +1,7 @@
-import { useListView } from "../../core/ListViewProvider";
-import { CategoriesListToolbar } from "./CategoriesListToolbar";
-import { UsersListGrouping } from "./UsersListGrouping";
-import { CategoriesListSearchComponent } from "./CategoriesListSearchComponent";
+import { useListView } from '../../../types-list/core/ListViewProvider';
+import { CategoriesListToolbar } from './CategoriesListToolbar';
+import { UsersListGrouping } from './UsersListGrouping';
+import { CategoriesListSearchComponent } from './CategoriesListSearchComponent';
 
 const CategoriesListHeader = () => {
   const { selected } = useListView();

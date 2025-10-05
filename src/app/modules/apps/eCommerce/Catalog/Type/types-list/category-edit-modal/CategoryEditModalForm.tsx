@@ -15,11 +15,7 @@ type Props = {
 };
 
 const editUserSchema = Yup.object().shape({
-  // order: Yup.number()
-  //   .min(0, 'Order can\'t be negative'),
   name: Yup.string().min(3, "Minimum 3 symbols").required("Name is required"),
-  // description: Yup.string()
-  // .min(3, 'Minimum 3 symbols')
 });
 
 const CategoryEditModalForm: FC<Props> = ({ category, isCategoryLoading }) => {
@@ -37,9 +33,6 @@ const CategoryEditModalForm: FC<Props> = ({ category, isCategoryLoading }) => {
     setItemIdForUpdate(undefined);
   };
 
-  // const blankImg = toAbsoluteUrl('media/svg/avatars/blank.svg')
-  // const userAvatarImg = toAbsoluteUrl(`media/${categoryForEdit.imgCover}`)
-
   const formik = useFormik({
     initialValues: categoryForEdit,
     validationSchema: editUserSchema,
@@ -49,8 +42,6 @@ const CategoryEditModalForm: FC<Props> = ({ category, isCategoryLoading }) => {
         if (isNotEmpty(values._id)) {
           await updateType(values?._id, values);
         } else {
-          console.log("values", values);
-          delete values.available;
           await createType(values);
         }
       } catch (ex) {

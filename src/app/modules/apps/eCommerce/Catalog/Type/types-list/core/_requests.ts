@@ -6,13 +6,11 @@ import {
 } from "../../../../../../../../_metronic/helpers";
 import { TypesQueryResponse, Types } from "./_models";
 
-// const {state} = useQueryRequest()
 const API_URL = import.meta.env.VITE_APP_THEME_API_URL;
 const TYPES_URL = `${API_URL}/type`;
 const GET_TYPES_URL = `${API_URL}/type?deleted=false`;
 const GET_ARCHIVED_TYPES_URL = `${API_URL}/type?deleted=true`;
 let baseUrl = "";
-// console.log("initialQueryRequest.state",initialQueryRequest.state)
 if (
   initialQueryRequest.state &&
   typeof initialQueryRequest.state === "object"
@@ -20,27 +18,23 @@ if (
   const queryString = Object.entries(initialQueryRequest.state)
     .map(
       ([key, value]) =>
-        `${encodeURIComponent(key)}=${encodeURIComponent(value)}`,
+        `${encodeURIComponent(key)}=${encodeURIComponent(value as string)}`,
     )
     .join("&");
   baseUrl = GET_TYPES_URL + "&" + queryString;
 }
 const getTypes = (query?: string): Promise<TypesQueryResponse> => {
-  // console.log(query);
   baseUrl = GET_TYPES_URL + "&" + query;
   return axios
     .get(`${query != undefined ? baseUrl : GET_TYPES_URL}`)
     .then((response) => {
-      // console.log("_requests => Types",response.data.data)
       return response.data;
     });
 };
 const getArchivedTypes = (query?: string): Promise<TypesQueryResponse> => {
-  // console.log(initialQueryRequest.state)
   return axios
     .get(`${query != undefined ? baseUrl : GET_ARCHIVED_TYPES_URL}`)
     .then((response) => {
-      // console.log("_requests => archived Types",response.data.data)
       return response.data;
     });
 };

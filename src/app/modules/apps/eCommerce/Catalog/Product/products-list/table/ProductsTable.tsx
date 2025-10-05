@@ -1,16 +1,16 @@
 // export {CategoriesesTable}
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   useQueryResponseData,
   useQueryRefetch,
-} from "../core/QueryResponseProvider";
-import { useQueryResponseData as branchesData } from "../../../Branch/branches-list/core/QueryResponseProvider";
-import { useQueryResponseData as categoriesData } from "../../../Category/categories-list/core/QueryResponseProvider";
-import { useQueryResponseData as subcategoriesData } from "../../../SubCategory/Subcategories-list/core/QueryResponseProvider";
-import { useQueryResponseData as childSubCategoryData } from "../../../ChildSubCategory/ChildSubcategories-list/core/QueryResponseProvider";
-import { useQueryResponseData as typesData } from "../../../Type/categories-list/core/QueryResponseProvider";
-import { useQueryResponseData as extrasData } from "../../../Extra/extra-list/core/QueryResponseProvider";
-import { Product } from "../core/_models";
+} from '../core/QueryResponseProvider';
+import { useQueryResponseData as branchesData } from '../../../Branch/branches-list/core/QueryResponseProvider';
+import { useQueryResponseData as categoriesData } from '../../../Category/categories-list/core/QueryResponseProvider';
+import { useQueryResponseData as subcategoriesData } from '../../../SubCategory/Subcategories-list/core/QueryResponseProvider';
+import { useQueryResponseData as childSubCategoryData } from '../../../ChildSubCategory/ChildSubcategories-list/core/QueryResponseProvider';
+import { useQueryResponseData as typesData } from '../../../Type/types-list/core/QueryResponseProvider';
+import { useQueryResponseData as extrasData } from '../../../Extra/extra-list/core/QueryResponseProvider';
+import { Product } from '../core/_models';
 import {
   type MRT_TableOptions,
   type MRT_ColumnDef,
@@ -20,9 +20,9 @@ import {
   // MRT_TableContainer,
   // MRT_ActionMenuItem,
   // MRT_ToggleDensePaddingButton,
-} from "material-react-table";
+} from 'material-react-table';
 // import { Divider } from '@mui/material';
-import Select from "react-select";
+import Select from 'react-select';
 import {
   Box,
   Button,
@@ -30,53 +30,53 @@ import {
   Input,
   TextField,
   Tooltip,
-} from "@mui/material";
+} from '@mui/material';
 import {
   deleteProduct,
   deleteSelectedProducts,
   updateProduct,
   updateSelectedProducts,
   duplicateProduct,
-} from "../core/_requests";
-import { useMutation, useQuery, useQueryClient } from "react-query";
-import { QUERIES } from "../../../../../../../../_metronic/helpers";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import AddIcon from "@mui/icons-material/Add";
-import SettingsIcon from "@mui/icons-material/Settings";
-import * as Yup from "yup";
-import { Modal } from "react-bootstrap";
-import { useListView } from "../core/ListViewProvider";
+} from '../core/_requests';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { QUERIES } from '../../../../../../../../_metronic/helpers';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import SettingsIcon from '@mui/icons-material/Settings';
+import * as Yup from 'yup';
+import { Modal } from 'react-bootstrap';
+import { useListView } from '../core/ListViewProvider';
 // import { TablesWidget12 } from '../../../../../../../../_metronic/partials/widgets';
 import {
   getArchivedBranches,
   getBranches,
-} from "../../../Branch/branches-list/core/_requests";
+} from '../../../Branch/branches-list/core/_requests';
 // import { CategoryProductsTable } from '../../products-list/categoryProductsTable';
 // import { CategorySubsTable } from '../../subCategories-list/categorySubsTable';
 // import { ArchivedCategoriesTable } from './ArchivedCategoriesTable';
 import {
   getArchivedCategories,
   getCategories,
-} from "../../../Category/categories-list/core/_requests";
+} from '../../../Category/categories-list/core/_requests';
 import {
   getArchivedSubCategories,
   getSubCategories,
-} from "../../../SubCategory/Subcategories-list/core/_requests";
+} from '../../../SubCategory/Subcategories-list/core/_requests';
 import {
   getArchivedChildSubCategories,
   getChildSubCategories,
-} from "../../../ChildSubCategory/ChildSubcategories-list/core/_requests";
+} from '../../../ChildSubCategory/ChildSubcategories-list/core/_requests';
 import {
   getArchivedExtras,
   getExtras,
-} from "../../../Extra/extra-list/core/_requests";
+} from '../../../Extra/extra-list/core/_requests';
 import {
   getArchivedTypes,
   getTypes,
-} from "../../../Type/categories-list/core/_requests";
-import { Link } from "react-router-dom";
-import { useQueryRequest } from "../core/QueryRequestProvider";
+} from '../../../Type/types-list/core/_requests';
+import { Link } from 'react-router-dom';
+import { useQueryRequest } from '../core/QueryRequestProvider';
 
 const ProductsTable = () => {
   const duplicateRef = useRef<HTMLInputElement>(null);
@@ -99,15 +99,13 @@ const ProductsTable = () => {
   } = childSubCategoryData();
   const { active: activeExtras, archived: archivedExtras } = extrasData();
   const { active: activeTypes, archived: archivedTypes } = typesData();
-  // console.log("activeBranches",[...activeBranches,...archivedBranches])
   const refetch = useQueryRefetch();
   const [trigger, setTrigger] = useState(false);
-  // const isLoading = useQueryResponseLoading()
   const [activeProducts, setActiveProducts] = useState<Product[]>(
-    active.data || [],
+    active.data || []
   );
   const [archivedProducts, setArchivedProducts] = useState<Product[]>(
-    () => archived.data || [],
+    () => archived.data || []
   );
   const [draggingRow, setDraggingRow] = useState<MRT_Row<Product> | null>(null);
   const [hoveredTable, setHoveredTable] = useState<string | null>(null);
@@ -157,7 +155,7 @@ const ProductsTable = () => {
         const resArchived = await getArchivedBranches();
         setBranches([...resActive.data, ...resArchived.data]);
       } catch (error) {
-        console.error("Error fetching branches:", error);
+        console.error('Error fetching branches:', error);
       }
     };
     fetchBranches();
@@ -167,7 +165,7 @@ const ProductsTable = () => {
         const resArchived = await getArchivedCategories();
         setCategories([...resActive.data, ...resArchived.data]);
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        console.error('Error fetching categories:', error);
       }
     };
     fetchCategories();
@@ -177,7 +175,7 @@ const ProductsTable = () => {
         const resArchived = await getArchivedSubCategories();
         setSubCategories([...resActive.data, ...resArchived.data]);
       } catch (error) {
-        console.error("Error fetching subcategories:", error);
+        console.error('Error fetching subcategories:', error);
       }
     };
     fetchSubCategories();
@@ -187,7 +185,7 @@ const ProductsTable = () => {
         const resArchived = await getArchivedChildSubCategories();
         setChildSubCategories([...resActive.data, ...resArchived.data]);
       } catch (error) {
-        console.error("Error fetching childsubcategories:", error);
+        console.error('Error fetching childsubcategories:', error);
       }
     };
     fetchChildSubCategories();
@@ -197,7 +195,7 @@ const ProductsTable = () => {
         const resArchived = await getArchivedExtras();
         setExtras([...resActive.data, ...resArchived.data]);
       } catch (error) {
-        console.error("Error fetching extras:", error);
+        console.error('Error fetching extras:', error);
       }
     };
     fetchExtras();
@@ -207,7 +205,7 @@ const ProductsTable = () => {
         const resArchived = await getArchivedTypes();
         setTypes([...resActive.data, ...resArchived.data]);
       } catch (error) {
-        console.error("Error fetching types:", error);
+        console.error('Error fetching types:', error);
       }
     };
     fetchTypes();
@@ -215,7 +213,7 @@ const ProductsTable = () => {
 
   const memoizedBranches = useMemo(
     () => branches.map((branch) => ({ value: branch._id, label: branch.name })),
-    [branches],
+    [branches]
   );
   const memoizedCategories = useMemo(
     () =>
@@ -223,7 +221,7 @@ const ProductsTable = () => {
         value: category._id,
         label: category.name,
       })),
-    [categories],
+    [categories]
   );
   const memoizedSubCategories = useMemo(
     () =>
@@ -231,7 +229,7 @@ const ProductsTable = () => {
         value: subCategory._id,
         label: subCategory.name,
       })),
-    [subcategories],
+    [subcategories]
   );
   const memoizedChildSubCategories = useMemo(
     () =>
@@ -239,15 +237,15 @@ const ProductsTable = () => {
         value: childSubCategory._id,
         label: childSubCategory.name,
       })),
-    [childSubCategories],
+    [childSubCategories]
   );
   const memoizedExtras = useMemo(
     () => extras.map((extra) => ({ value: extra._id, label: extra.name })),
-    [extras],
+    [extras]
   );
   const memoizedTypes = useMemo(
     () => types.map((type) => ({ value: type._id, label: type.name })),
-    [types],
+    [types]
   );
 
   const parser = new DOMParser();
@@ -255,8 +253,8 @@ const ProductsTable = () => {
     //column definitions...
     () => [
       {
-        accessorKey: "name",
-        header: "Name",
+        accessorKey: 'name',
+        header: 'Name',
         size: 50,
         muiEditTextFieldProps: {
           required: true,
@@ -270,14 +268,14 @@ const ProductsTable = () => {
         },
       },
       {
-        accessorKey: "description",
-        header: "Short Description",
+        accessorKey: 'description',
+        header: 'Short Description',
         size: 200,
         Cell: ({ cell }) => {
           const cellValue = cell.getValue() as string;
           if (!cellValue) return <span>-</span>;
 
-          const tempElement = document.createElement("div");
+          const tempElement = document.createElement('div');
           tempElement.innerHTML = cellValue;
           const innerText = tempElement.textContent || tempElement.innerText;
           // console.log('doc',innerText.trim())
@@ -286,7 +284,7 @@ const ProductsTable = () => {
           return (
             <span>
               {shortText}
-              {innerText.length > 100 ? "..." : ""}
+              {innerText.length > 100 ? '...' : ''}
             </span>
           );
         },
@@ -296,36 +294,36 @@ const ProductsTable = () => {
         },
       },
       {
-        accessorKey: "order",
-        header: "Order",
+        accessorKey: 'order',
+        header: 'Order',
         size: 30,
         muiTableBodyCellProps: {
-          align: "center",
+          align: 'center',
         },
         muiTableHeadCellProps: {
-          align: "center",
+          align: 'center',
         },
       },
       {
-        accessorKey: "price",
-        header: "Price",
+        accessorKey: 'price',
+        header: 'Price',
         size: 30,
         muiTableBodyCellProps: {
-          align: "center",
+          align: 'center',
         },
         muiTableHeadCellProps: {
-          align: "center",
+          align: 'center',
         },
       },
       {
-        accessorKey: "available",
-        header: "Available",
+        accessorKey: 'available',
+        header: 'Available',
         size: 100,
         muiTableBodyCellProps: {
-          align: "right",
+          align: 'right',
         },
         muiTableHeadCellProps: {
-          align: "left",
+          align: 'left',
         },
         Cell: ({ cell }) => (
           // <span className={`badge ${cell.getValue<boolean>() == true?'badge-success':'badge-danger'}`}>{cell.getValue<number>().toLocaleString()}</span>
@@ -347,14 +345,14 @@ const ProductsTable = () => {
         ),
       },
       {
-        accessorKey: "showWeight",
-        header: "Show Weight",
+        accessorKey: 'showWeight',
+        header: 'Show Weight',
         size: 100,
         muiTableBodyCellProps: {
-          align: "right",
+          align: 'right',
         },
         muiTableHeadCellProps: {
-          align: "left",
+          align: 'left',
         },
         Cell: ({ cell }) => (
           // <span className={`badge ${cell.getValue<boolean>() == true?'badge-success':'badge-danger'}`}>{cell.getValue<number>().toLocaleString()}</span>
@@ -376,16 +374,16 @@ const ProductsTable = () => {
         ),
       },
       {
-        accessorKey: "branch",
-        header: "Branch",
-        editVariant: "select",
+        accessorKey: 'branch',
+        header: 'Branch',
+        editVariant: 'select',
         grow: true,
         size: 200,
         muiTableBodyCellProps: {
-          align: "center",
+          align: 'center',
         },
         muiTableHeadCellProps: {
-          align: "center",
+          align: 'center',
         },
         Edit: ({ cell, row, table }) => {
           const branchs =
@@ -442,16 +440,16 @@ const ProductsTable = () => {
         },
       },
       {
-        accessorKey: "category",
-        header: "Category",
-        editVariant: "select",
+        accessorKey: 'category',
+        header: 'Category',
+        editVariant: 'select',
         grow: true,
         size: 200,
         muiTableBodyCellProps: {
-          align: "center",
+          align: 'center',
         },
         muiTableHeadCellProps: {
-          align: "center",
+          align: 'center',
         },
         Edit: ({ cell, row, table }) => {
           const categories =
@@ -464,7 +462,7 @@ const ProductsTable = () => {
               label: category?.category?.name,
             });
           });
-          console.log("edit", defV);
+          console.log('edit', defV);
 
           return (
             // loading ? (
@@ -510,21 +508,21 @@ const ProductsTable = () => {
         },
       },
       {
-        accessorKey: "subCategory",
-        header: "SubCategory",
-        editVariant: "select",
+        accessorKey: 'subCategory',
+        header: 'SubCategory',
+        editVariant: 'select',
         grow: true,
         size: 200,
         muiTableBodyCellProps: {
-          align: "center",
+          align: 'center',
         },
         muiTableHeadCellProps: {
-          align: "center",
+          align: 'center',
         },
         Edit: ({ cell, row, table }) => {
           const subcategories =
             cell.getValue<{ subCategory: { name: string; _id: string } }[]>();
-          console.log("subcategories from child", subcategories);
+          console.log('subcategories from child', subcategories);
           let defV = [];
           subcategories.map((subCategory) => {
             defV.push({
@@ -579,16 +577,16 @@ const ProductsTable = () => {
         },
       },
       {
-        accessorKey: "childSubCategory",
-        header: "ChildSubCategory",
-        editVariant: "select",
+        accessorKey: 'childSubCategory',
+        header: 'ChildSubCategory',
+        editVariant: 'select',
         grow: true,
         size: 200,
         muiTableBodyCellProps: {
-          align: "center",
+          align: 'center',
         },
         muiTableHeadCellProps: {
-          align: "center",
+          align: 'center',
         },
         Edit: ({ cell, row, table }) => {
           const childsubcategories =
@@ -650,16 +648,16 @@ const ProductsTable = () => {
         },
       },
       {
-        accessorKey: "book",
-        header: "Book",
-        editVariant: "select",
+        accessorKey: 'book',
+        header: 'Book',
+        editVariant: 'select',
         grow: true,
         size: 200,
         muiTableBodyCellProps: {
-          align: "center",
+          align: 'center',
         },
         muiTableHeadCellProps: {
-          align: "center",
+          align: 'center',
         },
         Edit: ({ cell, row, table }) => {
           const childsubcategories = {
@@ -683,9 +681,9 @@ const ProductsTable = () => {
               classNamePrefix="react-select"
               // isMulti
               options={[
-                { value: "regular", label: "regular" },
-                { value: "book", label: "book" },
-                { value: "only book", label: "only book" },
+                { value: 'regular', label: 'regular' },
+                { value: 'book', label: 'book' },
+                { value: 'only book', label: 'only book' },
               ]}
               defaultValue={childsubcategories}
               menuPortalTarget={document.body}
@@ -847,15 +845,15 @@ const ProductsTable = () => {
       memoizedChildSubCategories,
       memoizedExtras,
       memoizedTypes,
-    ],
+    ]
   );
 
   const editCategoriesSchema = Yup.object().shape({
-    name: Yup.string().min(3, "Minimum 3 symbols").required("Name is required"),
-    description: Yup.string().min(3, "Minimum 3 symbols").optional(),
-    imgCover: Yup.string().min(3, "Minimum 3 symbols").optional(),
-    order: Yup.number().min(1, "Minimum order is 1").optional(),
-    branch: Yup.array().of(Yup.string()).min(1, "Minimum 3 symbols").optional(),
+    name: Yup.string().min(3, 'Minimum 3 symbols').required('Name is required'),
+    description: Yup.string().min(3, 'Minimum 3 symbols').optional(),
+    imgCover: Yup.string().min(3, 'Minimum 3 symbols').optional(),
+    order: Yup.number().min(1, 'Minimum order is 1').optional(),
+    branch: Yup.array().of(Yup.string()).min(1, 'Minimum 3 symbols').optional(),
     available: Yup.boolean().optional(),
     deleted: Yup.boolean().optional(),
   });
@@ -926,13 +924,13 @@ const ProductsTable = () => {
         queryClient.refetchQueries([`${QUERIES.ARCHIVED_CATEGORIES_LIST}`]);
         setTrigger(true);
       },
-    },
+    }
   );
   const duplicateItem = useMutation(
     () =>
       duplicateProduct(
         productToDuplicate?._id,
-        Number(duplicateRef?.current?.value),
+        Number(duplicateRef?.current?.value)
       ),
     {
       // 💡 response of the mutation is passed to onSuccess
@@ -944,7 +942,7 @@ const ProductsTable = () => {
         setTrigger(true);
         handleCloseSubCategoriesModal();
       },
-    },
+    }
   );
 
   const deleteSelectedItems = useMutation(
@@ -960,7 +958,7 @@ const ProductsTable = () => {
         setTrigger(true);
         clearSelected();
       },
-    },
+    }
   );
 
   // const {
@@ -995,7 +993,7 @@ const ProductsTable = () => {
         refetch();
         setTrigger(true);
       },
-    },
+    }
   );
 
   const commonTableProps: Partial<MRT_TableOptions<Product>> & {
@@ -1006,7 +1004,7 @@ const ProductsTable = () => {
     enableFullScreenToggle: false,
     muiTableContainerProps: {
       sx: {
-        minHeight: "320px",
+        minHeight: '320px',
       },
     },
     // onDraggingRowChange: setDraggingRow,
@@ -1040,13 +1038,13 @@ const ProductsTable = () => {
     enableRowSelection: true,
     enableStickyHeader: true,
     enableCellActions: true,
-    enableClickToCopy: "context-menu",
+    enableClickToCopy: 'context-menu',
     enableEditing: true,
-    editDisplayMode: "row",
-    createDisplayMode: "row",
-    rowPinningDisplayMode: "select-sticky",
-    positionToolbarAlertBanner: "bottom",
-    positionActionsColumn: "last",
+    editDisplayMode: 'row',
+    createDisplayMode: 'row',
+    rowPinningDisplayMode: 'select-sticky',
+    positionToolbarAlertBanner: 'bottom',
+    positionActionsColumn: 'last',
     enableRowOrdering: true,
     enableSorting: false,
     enableExpandAll: false,
@@ -1058,38 +1056,38 @@ const ProductsTable = () => {
     },
     state: {
       columnOrder: [
-        "mrt-row-select", //move the built-in selection column to the end of the table
-        "mrt-row-drag",
-        "order",
-        "name",
-        "description",
-        "price",
-        "mrt-row-expand",
-        "branch",
-        "category",
-        "subCategory",
-        "childSubCategory",
+        'mrt-row-select', //move the built-in selection column to the end of the table
+        'mrt-row-drag',
+        'order',
+        'name',
+        'description',
+        'price',
+        'mrt-row-expand',
+        'branch',
+        'category',
+        'subCategory',
+        'childSubCategory',
         // 'extras',
         // 'types',
-        "available",
-        "showWeight",
-        "book",
+        'available',
+        'showWeight',
+        'book',
       ],
     },
     muiDetailPanelProps: () => ({
       sx: (theme) => ({
         backgroundColor:
-          theme.palette.mode === "dark"
-            ? "rgba(255,210,244,0.1)"
-            : "rgba(0,0,0,0.1)",
+          theme.palette.mode === 'dark'
+            ? 'rgba(255,210,244,0.1)'
+            : 'rgba(0,0,0,0.1)',
       }),
     }),
     //custom expand button rotation
     muiExpandButtonProps: ({ row, table }) => ({
       onClick: () => table.setExpanded({ [row.id]: !row.getIsExpanded() }), //only 1 detail panel open at a time
       sx: {
-        transform: row.getIsExpanded() ? "rotate(180deg)" : "rotate(-90deg)",
-        transition: "transform 0.2s",
+        transform: row.getIsExpanded() ? 'rotate(180deg)' : 'rotate(-90deg)',
+        transition: 'transform 0.2s',
       },
     }),
     //conditionally render detail panel
@@ -1160,7 +1158,7 @@ const ProductsTable = () => {
       onDragEnd: async () => {
         const { draggingRow, hoveredRow } = table.getState();
         // console.log('hoveredRow',hoveredRow)
-        if (hoveredTable === "table-2") {
+        if (hoveredTable === 'table-2') {
           // console.log('draggingRow',draggingRow)
           setHoveredTable(null);
           await updateCategoryAvailable.mutateAsync({
@@ -1173,7 +1171,7 @@ const ProductsTable = () => {
             draggingRow!.original,
           ]);
           setActiveProducts((activeProducts) =>
-            activeProducts.filter((d) => d !== draggingRow!.original),
+            activeProducts.filter((d) => d !== draggingRow!.original)
           );
         } else if (hoveredRow && draggingRow) {
           // console.log('hoveredRow',hoveredRow)
@@ -1204,10 +1202,10 @@ const ProductsTable = () => {
         </div>
         <Box
           sx={{
-            display: "flex",
-            gap: "1rem",
-            p: "4px",
-            justifyContent: "right",
+            display: 'flex',
+            gap: '1rem',
+            p: '4px',
+            justifyContent: 'right',
           }}
         >
           {/* <Typography color="success.main" component="span" variant="h4">
@@ -1319,21 +1317,21 @@ const ProductsTable = () => {
     //   },
     // },
     muiTablePaperProps: {
-      onDragEnter: () => setHoveredTable("table-1"),
+      onDragEnter: () => setHoveredTable('table-1'),
       sx: {
-        outline: hoveredTable === "table-1" ? "2px dashed green" : undefined,
+        outline: hoveredTable === 'table-1' ? '2px dashed green' : undefined,
       },
     },
     displayColumnDefOptions: {
-      "mrt-row-actions": {
+      'mrt-row-actions': {
         // size: 50, //set custom width
         muiTableHeadCellProps: {
-          align: "center", //change head cell props
+          align: 'center', //change head cell props
         },
       },
     },
     renderRowActions: ({ row, table }) => (
-      <Box sx={{ display: "flex", gap: "1rem" }}>
+      <Box sx={{ display: 'flex', gap: '1rem' }}>
         <Tooltip title="Edit">
           <IconButton onClick={() => table.setEditingRow(row)}>
             <EditIcon />
@@ -1356,7 +1354,7 @@ const ProductsTable = () => {
             <IconButton
               color="info"
               onClick={() => {
-                console.log("row.original", row.original);
+                console.log('row.original', row.original);
 
                 // setCategoriesDelete(row.original);
                 // handleArrangeProductsClick();
@@ -1375,7 +1373,7 @@ const ProductsTable = () => {
               // setProductToDuplicate(row.original._id);
               // handleArrangeSubsClick();
               // table.toggleAllRowsSelected(false)
-              console.log("row.original._id", row.original._id);
+              console.log('row.original._id', row.original._id);
               setProductToDuplicate(row.original);
               handleArrangeSubsClick();
             }}
@@ -1393,10 +1391,10 @@ const ProductsTable = () => {
     enableRowSelection: true,
     enableStickyHeader: true,
     enableCellActions: true,
-    enableClickToCopy: "context-menu",
+    enableClickToCopy: 'context-menu',
     enableEditing: true,
-    editDisplayMode: "row",
-    createDisplayMode: "row",
+    editDisplayMode: 'row',
+    createDisplayMode: 'row',
     // Add pagination props:
     enablePagination: true,
     initialState: {
@@ -1404,45 +1402,45 @@ const ProductsTable = () => {
         pageSize: 10,
       },
     },
-    rowPinningDisplayMode: "select-sticky",
-    positionToolbarAlertBanner: "bottom",
-    positionActionsColumn: "last",
+    rowPinningDisplayMode: 'select-sticky',
+    positionToolbarAlertBanner: 'bottom',
+    positionActionsColumn: 'last',
     enableRowOrdering: true,
     enableSorting: false,
     enableExpandAll: false,
     state: {
       columnOrder: [
-        "mrt-row-select", //move the built-in selection column to the end of the table
-        "mrt-row-drag",
-        "order",
-        "name",
-        "description",
-        "price",
-        "mrt-row-expand",
-        "branch",
-        "category",
-        "subCategory",
-        "childSubCategory",
+        'mrt-row-select', //move the built-in selection column to the end of the table
+        'mrt-row-drag',
+        'order',
+        'name',
+        'description',
+        'price',
+        'mrt-row-expand',
+        'branch',
+        'category',
+        'subCategory',
+        'childSubCategory',
         // 'extras',
         // 'types',
-        "available",
-        "showWeight",
-        "book",
+        'available',
+        'showWeight',
+        'book',
       ],
     },
     muiDetailPanelProps: () => ({
       sx: (theme) => ({
         backgroundColor:
-          theme.palette.mode === "dark"
-            ? "rgba(255,210,244,0.1)"
-            : "rgba(0,0,0,0.1)",
+          theme.palette.mode === 'dark'
+            ? 'rgba(255,210,244,0.1)'
+            : 'rgba(0,0,0,0.1)',
       }),
     }),
     muiExpandButtonProps: ({ row, table }) => ({
       onClick: () => table.setExpanded({ [row.id]: !row.getIsExpanded() }), //only 1 detail panel open at a time
       sx: {
-        transform: row.getIsExpanded() ? "rotate(180deg)" : "rotate(-90deg)",
-        transition: "transform 0.2s",
+        transform: row.getIsExpanded() ? 'rotate(180deg)' : 'rotate(-90deg)',
+        transition: 'transform 0.2s',
       },
     }),
     renderDetailPanel: ({ row }) =>
@@ -1493,7 +1491,7 @@ const ProductsTable = () => {
       onDragEnd: async () => {
         const { draggingRow, hoveredRow } = table.getState();
         // console.log('hoveredRow',hoveredRow)
-        if (hoveredTable === "table-1") {
+        if (hoveredTable === 'table-1') {
           // console.log('draggingRow',draggingRow)
           setHoveredTable(null);
           await updateCategoryAvailable.mutateAsync({
@@ -1506,7 +1504,7 @@ const ProductsTable = () => {
             draggingRow!.original,
           ]);
           setActiveProducts((activeProducts) =>
-            activeProducts.filter((d) => d !== draggingRow!.original),
+            activeProducts.filter((d) => d !== draggingRow!.original)
           );
         } else if (hoveredRow && draggingRow) {
           // console.log('hoveredRow',hoveredRow)
@@ -1536,10 +1534,10 @@ const ProductsTable = () => {
         </div>
         <Box
           sx={{
-            display: "flex",
-            gap: "1rem",
-            p: "4px",
-            justifyContent: "right",
+            display: 'flex',
+            gap: '1rem',
+            p: '4px',
+            justifyContent: 'right',
           }}
         >
           {/* <Typography color="success.main" component="span" variant="h4">
@@ -1603,21 +1601,21 @@ const ProductsTable = () => {
     onEditingRowSave: (originalRow) => handleSaveCategories(originalRow),
     getRowId: (originalRow) => `table-2-${originalRow.name}`,
     muiTablePaperProps: {
-      onDragEnter: () => setHoveredTable("table-2"),
+      onDragEnter: () => setHoveredTable('table-2'),
       sx: {
-        outline: hoveredTable === "table-2" ? "2px dashed pink" : undefined,
+        outline: hoveredTable === 'table-2' ? '2px dashed pink' : undefined,
       },
     },
     displayColumnDefOptions: {
-      "mrt-row-actions": {
+      'mrt-row-actions': {
         // size: 350, //set custom width
         muiTableHeadCellProps: {
-          align: "center", //change head cell props
+          align: 'center', //change head cell props
         },
       },
     },
     renderRowActions: ({ row, table }) => (
-      <Box sx={{ display: "flex", gap: "1rem" }}>
+      <Box sx={{ display: 'flex', gap: '1rem' }}>
         <Tooltip title="Edit">
           <IconButton onClick={() => table.setEditingRow(row)}>
             <EditIcon />
@@ -1651,7 +1649,7 @@ const ProductsTable = () => {
           <IconButton
             color="warning"
             onClick={() => {
-              console.log("row.original._id", row.original._id);
+              console.log('row.original._id', row.original._id);
               setProductToDuplicate(row.original);
               handleArrangeSubsClick();
               // table.toggleAllRowsSelected(false)
@@ -1668,22 +1666,22 @@ const ProductsTable = () => {
     <>
       <Box
         sx={{
-          display: "grid",
+          display: 'grid',
           // gridTemplateColumns: { xs: 'auto', lg: '1fr 1fr' },
-          gap: "1rem",
-          overflow: "auto",
-          p: "4px",
+          gap: '1rem',
+          overflow: 'auto',
+          p: '4px',
         }}
       >
         <MaterialReactTable table={table1} />
       </Box>
       <Box
         sx={{
-          display: "grid",
+          display: 'grid',
           // gridTemplateColumns: { xs: 'auto', lg: '1fr 1fr' },
-          gap: "1rem",
-          overflow: "auto",
-          p: "4px",
+          gap: '1rem',
+          overflow: 'auto',
+          p: '4px',
         }}
       >
         <MaterialReactTable table={table2} />
@@ -1697,7 +1695,7 @@ const ProductsTable = () => {
         </Modal.Header>
         <Modal.Body>Are you sure you want to delete this item?</Modal.Body>
         <Modal.Footer>
-          <Box sx={{ display: "flex", gap: "1rem", p: "4px" }}>
+          <Box sx={{ display: 'flex', gap: '1rem', p: '4px' }}>
             <Button color="info" variant="contained" onClick={handleClose}>
               Cancel
             </Button>
@@ -1723,7 +1721,7 @@ const ProductsTable = () => {
           {/* <CategoryProductsTable  id={CategoriesDelete?._id } /> */}
         </Modal.Body>
         <Modal.Footer>
-          <Box sx={{ display: "flex", gap: "1rem", p: "4px" }}>
+          <Box sx={{ display: 'flex', gap: '1rem', p: '4px' }}>
             <Button
               color="info"
               variant="contained"
@@ -1766,8 +1764,8 @@ const ProductsTable = () => {
                 // handleAddItems
                 await duplicateItem.mutateAsync();
                 // duplicateItem(duplicateRef?.current?.value)
-                console.log("duplicateRef", duplicateRef?.current?.value);
-                console.log("productToDuplicate", productToDuplicate);
+                console.log('duplicateRef', duplicateRef?.current?.value);
+                console.log('productToDuplicate', productToDuplicate);
               }}
             >
               Add
@@ -1775,7 +1773,7 @@ const ProductsTable = () => {
           </Box>
         </Modal.Body>
         <Modal.Footer>
-          <Box sx={{ display: "flex", gap: "1rem", p: "4px" }}>
+          <Box sx={{ display: 'flex', gap: '1rem', p: '4px' }}>
             <Button
               color="info"
               variant="contained"

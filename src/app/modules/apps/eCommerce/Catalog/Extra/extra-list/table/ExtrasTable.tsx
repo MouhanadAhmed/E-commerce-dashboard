@@ -244,7 +244,6 @@ const ExtrasTable = () => {
     originalRow.values.stock = originalRow.values.stock
       ? originalRow.values.stock.toString()
       : "null";
-    console.log("values", originalRow);
     editExtrasSchema
       .validate(originalRow.row.original)
       .catch((err) => setValidationErrors(err.message));

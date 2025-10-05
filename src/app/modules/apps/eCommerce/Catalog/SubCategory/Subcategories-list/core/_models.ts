@@ -1,4 +1,5 @@
 import { Response } from "../../../../../../../../_metronic/helpers";
+import { Branch } from "../../../Branch/branches-list/core/_models";
 
 export type SubCategories = {
   imgCover?: string;
@@ -7,14 +8,13 @@ export type SubCategories = {
   slug?: string;
   description?: string;
   order?: number;
-  branch?: [
+  branch?:
     {
       _id?: string;
-      branch: string;
+      branch: Branch;
       available: boolean;
       order: number;
-    },
-  ];
+    }[];
   available?: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -37,14 +37,7 @@ export const initialCategory: SubCategories = {
   slug: "اول-قسم",
   description: "وصف اول قسم",
   order: 1,
-  branch: [
-    {
-      branch: "6559c51ad057da4061a73efc",
-      available: true,
-      order: 1,
-      _id: "66464d997a132b21c121e912",
-    },
-  ],
+  branch: [],
   available: true,
   deleted: false,
   createdAt: "2024-05-16T18:16:57.462Z",

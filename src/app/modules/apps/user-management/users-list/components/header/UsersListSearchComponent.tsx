@@ -20,8 +20,6 @@ const UsersListSearchComponent = () => {
   useEffect(
     () => {
       if (debouncedSearchTerm !== undefined && searchTerm !== undefined) {
-        // console.log('initialQueryState',initialQueryState)
-        // console.log('search',debouncedSearchTerm)
         updateState({
           keyword: `${debouncedSearchTerm}`,
           ...initialQueryState,

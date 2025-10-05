@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
-import { useQueryRequest } from "../../core/QueryRequestProvider";
-import { useQueryResponse } from "../../core/QueryResponseProvider";
-import { MenuComponent } from "../../../../../../../../../_metronic/assets/ts/components";
+import { useEffect, useState } from 'react';
+import { useQueryRequest } from '../../../types-list/core/QueryRequestProvider';
+import { useQueryResponse } from '../../../types-list/core/QueryResponseProvider';
+import { MenuComponent } from '../../../../../../../../../_metronic/assets/ts/components';
 import {
   KTIcon,
   initialQueryState,
-} from "../../../../../../../../../_metronic/helpers";
+} from '../../../../../../../../../_metronic/helpers';
 
 const UsersListFilter = () => {
   const { updateState } = useQueryRequest();

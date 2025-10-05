@@ -9,7 +9,6 @@ let baseUrl = "";
 const getPermissions = async (
   query?: string,
 ): Promise<PermissionsQueryResponse> => {
-  console.log("query", query, query?.length);
   baseUrl = GET_USERS_URL + "?" + query;
   const d = await axios.get(`${query != undefined ? baseUrl : GET_USERS_URL}`);
   return d.data;

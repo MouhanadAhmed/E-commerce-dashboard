@@ -30,7 +30,7 @@ const SubCategoryEditModalFormWrapper = () => {
     return (
       <SubCategoryEditModalForm
         isSubCategoryLoading={isLoading}
-        subCategory={{ _id: undefined, available: true }}
+        subCategory={{ _id: undefined, available: true, category: null }}
       />
     );
   }

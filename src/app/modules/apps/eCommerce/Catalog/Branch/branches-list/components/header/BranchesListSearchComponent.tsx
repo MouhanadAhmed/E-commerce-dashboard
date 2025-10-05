@@ -39,7 +39,6 @@ const BranchesListSearchComponent = () => {
           placeholder="Search Branch"
           value={searchTerm}
           onChange={(e) => {
-            console.log(e.target.value);
             setSearchTerm(decodeURIComponent(e.target.value));
           }}
         />

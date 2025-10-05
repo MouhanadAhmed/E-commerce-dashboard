@@ -12,7 +12,6 @@ const PRODUCT_URL = `${API_URL}/product`;
 const GET_PRODUCTS_URL = `${API_URL}/product?deleted=false`;
 const GET_ARCHIVED_PRODUCTS_URL = `${API_URL}/product?deleted=true`;
 let baseUrl = "";
-// console.log("initialQueryRequest.state",initialQueryRequest.state)
 if (
   initialQueryRequest.state &&
   typeof initialQueryRequest.state === "object"
@@ -61,7 +60,6 @@ const getArchivedProducts = (
 const getProductById = async (id: ID) => {
   const response = await axios.get(`${PRODUCT_URL}/${id}`);
   const response_1 = response.data;
-  console.log("res", response);
   return response_1.Product;
 };
 
@@ -116,7 +114,6 @@ const getAllProductsInCategory = (categoryId: string): Promise<[]> => {
   return axios
     .get(`${API_URL}/product/category/${categoryId}?fields=name,category`)
     .then((response) => {
-      // console.log("_requests => Product",response.data.data)
       return response.data;
     });
 };
@@ -136,7 +133,6 @@ const getAllSubCategoriesInCategory = (categoryId: string): Promise<[]> => {
   return axios
     .get(`${API_URL}/subCategory/category/${categoryId}?fields=name,category`)
     .then((response) => {
-      // console.log("_requests => Product",response.data.data)
       return response.data;
     });
 };

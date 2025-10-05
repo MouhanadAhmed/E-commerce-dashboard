@@ -60,7 +60,6 @@ const ExtraEditModalForm: FC<Props> = ({ category, isExtraLoading }) => {
         if (isNotEmpty(values._id)) {
           await updateExtra(values?._id, values);
         } else {
-          console.log("values", values);
           await createExtra(values);
         }
       } catch (ex) {

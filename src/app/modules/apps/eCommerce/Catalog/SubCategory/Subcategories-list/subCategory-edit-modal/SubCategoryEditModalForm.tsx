@@ -103,48 +103,9 @@ const SubCategoryEditModalForm: FC<Props> = ({
                 style={{ backgroundImage: `url('${userAvatarImg}')` }}
               ></div>
               {/* end::Preview existing imgCover */}
-
-              {/* begin::Label */}
-              {/* <label
-              className='btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow'
-              data-kt-image-input-action='change'
-              data-bs-toggle='tooltip'
-              title='Change imgCover'
-            >
-              <i className='bi bi-pencil-fill fs-7'></i>
-
-              <input type='file' name='imgCover' accept='.png, .jpg, .jpeg' />
-              <input type='hidden' name='avatar_remove' />
-            </label> */}
-              {/* end::Label */}
-
-              {/* begin::Cancel */}
-              {/* <span
-              className='btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow'
-              data-kt-image-input-action='cancel'
-              data-bs-toggle='tooltip'
-              title='Cancel imgCover'
-            >
-              <i className='bi bi-x fs-2'></i>
-            </span> */}
-              {/* end::Cancel */}
-
-              {/* begin::Remove */}
-              {/* <span
-              className='btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow'
-              data-kt-image-input-action='remove'
-              data-bs-toggle='tooltip'
-              title='Remove imgCover'
-            >
-              <i className='bi bi-x fs-2'></i>
-            </span> */}
-              {/* end::Remove */}
             </div>
             {/* end::Image input */}
 
-            {/* begin::Hint */}
-            {/* <div className='form-text'>Allowed file types: png, jpg, jpeg.</div> */}
-            {/* end::Hint */}
           </div>
           {/* end::Input group */}
 

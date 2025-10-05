@@ -45,18 +45,15 @@ const PermEditModalForm: FC<Props> = ({ Role, isUserLoading }) => {
     setItemIdForUpdate(undefined);
   };
   useEffect(() => {
-    console.log("Role", Role);
     const fetchPermissions = async () => {
       try {
         const resActive = await getPermissions();
-        console.log("Permissions", resActive.data);
         setPermissions(resActive.data);
         formik.initialValues.permissions = resActive.data.map((p, index) => ({
           permission: p?._id,
           access: [],
         }));
       } catch (error) {
-        console.error("Error fetching permissions:", error);
       }
     };
     fetchPermissions();
@@ -91,14 +88,12 @@ const PermEditModalForm: FC<Props> = ({ Role, isUserLoading }) => {
     })),
   });
 
-  console.log("userForEdit", userForEdit.permissions);
   const handleCheckboxChange = (index, accessType) => {
     const perms = [...formik.values.permissions];
     // permissions.map((p,)=>({
     //   permission:p?._id,
     //   access:[]
     // }))
-    console.log("handle", perms);
     const accessSet = new Set(
       perms.find((p) => p.permission === index)?.access,
     );
@@ -144,14 +139,12 @@ const PermEditModalForm: FC<Props> = ({ Role, isUserLoading }) => {
     onSubmit: async (values, { setSubmitting }) => {
       setSubmitting(true);
       try {
-        console.log("role values", values);
         if (isNotEmpty(values._id)) {
           // await updateRole(values)
         } else {
           // await createRole(values)
         }
       } catch (ex) {
-        console.error(ex);
       } finally {
         setSubmitting(true);
         cancel(true);

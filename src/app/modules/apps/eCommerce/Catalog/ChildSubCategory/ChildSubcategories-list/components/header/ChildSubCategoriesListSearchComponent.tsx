@@ -39,7 +39,6 @@ const ChildSubCategoriesListSearchComponent = () => {
           placeholder="Search SubCategory"
           value={searchTerm}
           onChange={(e) => {
-            console.log(e.target.value);
             setSearchTerm(decodeURIComponent(e.target.value));
           }}
         />

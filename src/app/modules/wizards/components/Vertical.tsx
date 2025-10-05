@@ -49,8 +49,6 @@ const Vertical = () => {
       actions.resetForm();
     }
 
-    console.log(values);
-
     setCurrentSchema(createAccountSchemas[stepper.currentStepIndex - 1]);
   };
 

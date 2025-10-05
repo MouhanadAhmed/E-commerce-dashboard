@@ -39,7 +39,6 @@ const ExtrasListSearchComponent = () => {
           placeholder="Search Extra"
           value={searchTerm}
           onChange={(e) => {
-            console.log(e.target.value);
             setSearchTerm(decodeURIComponent(e.target.value));
           }}
         />

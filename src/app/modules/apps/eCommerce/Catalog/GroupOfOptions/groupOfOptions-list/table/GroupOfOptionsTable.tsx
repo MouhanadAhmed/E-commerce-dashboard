@@ -213,7 +213,6 @@ const GroupTable = () => {
   // Handle save options
   const handleSaveOptions = () => {
     // Here you would typically save to your backend
-    console.log("Saving options:", dummyOptions);
     setIsEditingOptions(false);
     // Show success message or handle accordingly
   };

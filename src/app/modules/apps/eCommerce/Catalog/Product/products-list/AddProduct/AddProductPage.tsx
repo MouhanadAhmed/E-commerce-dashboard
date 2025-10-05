@@ -3,8 +3,7 @@ import {
   PageLink,
   PageTitle,
 } from "../../../../../../../../_metronic/layout/core";
-// import { ProductsListWrapper } from '../../products-list/ProductsList'
-import ProductForm from "./ProductForm";
+import { ProductFormWrapper } from "./ProductFormWrapper";
 
 const productsBreadcrumbs: Array<PageLink> = [
   {
@@ -32,7 +31,8 @@ const AddProductsPage = () => {
               <PageTitle breadcrumbs={productsBreadcrumbs}>
                 Products Form
               </PageTitle>
-              <ProductForm />
+
+              <ProductFormWrapper />
             </>
           }
         />

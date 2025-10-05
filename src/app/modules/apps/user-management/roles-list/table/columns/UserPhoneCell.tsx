@@ -5,7 +5,6 @@ type Props = {
 };
 
 const UserPhoneCell: FC<Props> = ({ phone }) => {
-  // console.log("phone",phone)
   return (
     <div>
       {phone?.map((perm) => {

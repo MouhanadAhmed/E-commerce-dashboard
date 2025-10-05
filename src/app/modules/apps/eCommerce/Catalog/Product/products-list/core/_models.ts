@@ -1,10 +1,10 @@
-import { Branch } from "../../../Branch/branches-list/core/_models";
-import { Categories } from "../../../Category/categories-list/core/_models";
-import { ChildSubCategories } from "../../../ChildSubCategory/ChildSubcategories-list/core/_models";
-import { Extras } from "../../../Extra/extra-list/core/_models";
-import { GroupOfOptions } from "../../../GroupOfOptions/groupOfOptions-list/core/_models";
-import { SubCategories } from "../../../SubCategory/Subcategories-list/core/_models";
-import { Types } from "../../../Type/categories-list/core/_models";
+import { Branch } from '../../../Branch/branches-list/core/_models';
+import { Categories } from '../../../Category/categories-list/core/_models';
+import { ChildSubCategories } from '../../../ChildSubCategory/ChildSubcategories-list/core/_models';
+import { Extras } from '../../../Extra/extra-list/core/_models';
+import { GroupOfOptions } from '../../../GroupOfOptions/groupOfOptions-list/core/_models';
+import { SubCategories } from '../../../SubCategory/Subcategories-list/core/_models';
+import { Types } from '../../../Type/types-list/core/_models';
 
 export type Product = {
   imgCover?: { _id?: string; url: string }[];
@@ -68,7 +68,7 @@ export type Products = {
     {
       order?: string;
       id?: string | null;
-    },
+    }
   ];
   id?: string | null;
 };
@@ -113,7 +113,6 @@ export type ProductsQueryResponse = {
   totalPages: number;
 };
 
-
 export interface ProductFormValues {
   _id?: string;
   name: string;
@@ -146,27 +145,27 @@ export interface ProductFormValues {
 }
 
 export const initialProduct: Product = {
-  name: "",
+  name: '',
   // "slug": "تالت-منتح",
-  description: "",
-  shortDesc: "",
+  description: '',
+  shortDesc: '',
 
-  stock: "null",
+  stock: 'null',
   available: true,
-  price: "",
+  price: '',
 
-  priceAfterDiscount: "",
+  priceAfterDiscount: '',
 
-  descTableName: "",
+  descTableName: '',
 
-  weight: "",
+  weight: '',
   showWeight: false,
-  book: "",
+  book: '',
 
-  minQty: "",
-  dimensions: "",
-  rewardPoint: "",
-  sold: "",
+  minQty: '',
+  dimensions: '',
+  rewardPoint: '',
+  sold: '',
   // "imgCover": [],
   // "createdAt": "",
   // "updatedAt": "",
@@ -175,4 +174,3 @@ export const initialProduct: Product = {
   parentAvailable: true,
   // "id": "",
 };
-

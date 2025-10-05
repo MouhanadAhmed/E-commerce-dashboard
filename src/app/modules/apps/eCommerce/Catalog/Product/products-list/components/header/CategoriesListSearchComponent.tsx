@@ -39,7 +39,6 @@ const CategoriesListSearchComponent = () => {
           placeholder="Search Category"
           value={searchTerm}
           onChange={(e) => {
-            console.log(e.target.value);
             setSearchTerm(decodeURIComponent(e.target.value));
           }}
         />

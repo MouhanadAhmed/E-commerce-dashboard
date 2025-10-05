@@ -1,132 +1,113 @@
-import blankImage from "../../../../../../../../_metronic/assets/images/blank-image.svg";
-import { FC, useEffect, useMemo, useRef, useState } from "react";
-import * as Yup from "yup";
-import { useFormik } from "formik";
-import clsx from "clsx";
-import { UsersListLoading } from "../components/loading/UsersListLoading";
-import { BranchOfProduct, Product, ProductFormValues, initialProduct } from "../core/_models";
+import blankImage from '../../../../../../../../_metronic/assets/images/blank-image.svg';
+import { FC, useEffect, useMemo, useRef, useState } from 'react';
+import * as Yup from 'yup';
+import { useFormik } from 'formik';
+import clsx from 'clsx';
+import { UsersListLoading } from '../components/loading/UsersListLoading';
+import {
+  BranchOfProduct,
+  Product,
+  ProductFormValues,
+  initialProduct,
+} from '../core/_models';
 import {
   createProduct,
   getProductById,
   updateProduct,
-} from "../core/_requests";
-import ReactQuill, { Quill } from "react-quill";
-import { isNotEmpty } from "../../../../../../../../_metronic/helpers";
-import { useQueryResponseData as branchesData } from "../../../Branch/branches-list/core/QueryResponseProvider";
-import { useQueryResponseData as categoriesData } from "../../../Category/categories-list/core/QueryResponseProvider";
-import { useQueryResponseData as subcategoriesData } from "../../../SubCategory/Subcategories-list/core/QueryResponseProvider";
-import { useQueryResponseData as childSubCategoryData } from "../../../ChildSubCategory/ChildSubcategories-list/core/QueryResponseProvider";
-import { useQueryResponseData as typesData } from "../../../Type/categories-list/core/QueryResponseProvider";
-import { useQueryResponseData as extrasData } from "../../../Extra/extra-list/core/QueryResponseProvider";
-import {
-  getArchivedBranches,
-  getBranches,
-} from "../../../Branch/branches-list/core/_requests";
-import {
-  getArchivedCategories,
-  getCategories,
-} from "../../../Category/categories-list/core/_requests";
-import {
-  getArchivedSubCategories,
-  getSubCategories,
-} from "../../../SubCategory/Subcategories-list/core/_requests";
-import {
-  getArchivedChildSubCategories,
-  getChildSubCategories,
-} from "../../../ChildSubCategory/ChildSubcategories-list/core/_requests";
-import {
-  getArchivedExtras,
-  getExtras,
-} from "../../../Extra/extra-list/core/_requests";
-import {
-  getArchivedTypes,
-  getTypes,
-} from "../../../Type/categories-list/core/_requests";
-import Select from "react-select";
-import BranchesForm from "./branchesForm";
-import DescTableForm from "./DescTableForm";
-import "react-quill/dist/quill.snow.css";
-import { useParams } from "react-router-dom";
-import { uploadToCloudinary } from "../../../../../../../../_metronic/helpers/cloudinaryUpload";
-import Swal from "sweetalert2";
+} from '../core/_requests';
+import ReactQuill, { Quill } from 'react-quill';
+import { isNotEmpty } from '../../../../../../../../_metronic/helpers';
+import { useActiveBranchesData as branchesData } from '../../../Branch/branches-list/core/QueryResponseProvider';
+import { useActiveCategoriesData as categoriesData } from '../../../Category/categories-list/core/QueryResponseProvider';
+import { useActiveSubCategoriesData as subcategoriesData } from '../../../SubCategory/Subcategories-list/core/QueryResponseProvider';
+import { useActiveChildSubCategoriesData as childSubCategoryData } from '../../../ChildSubCategory/ChildSubcategories-list/core/QueryResponseProvider';
+import { useActiveTypesData as typesData } from '../../../Type/types-list/core/QueryResponseProvider';
+import { useActiveExtrasData as extrasData } from '../../../Extra/extra-list/core/QueryResponseProvider';
+import Select from 'react-select';
+import BranchesForm from './branchesForm';
+import DescTableForm from './DescTableForm';
+import 'react-quill/dist/quill.snow.css';
+import { useParams } from 'react-router-dom';
+import { uploadToCloudinary } from '../../../../../../../../_metronic/helpers/cloudinaryUpload';
+import Swal from 'sweetalert2';
 
 type Props = {
   product?: Product;
 };
 
 const customColors = [
-  "#e60000",
-  "#000000",
-  "#ff9900",
-  "#ffff00",
-  "#008a00",
-  "#0066cc",
-  "#9933ff",
-  "#ffffff",
-  "#facccc",
-  "#ffebcc",
-  "#ffffcc",
-  "#cce8cc",
-  "#cce0f5",
-  "#ebd6ff",
-  "#bbbbbb",
-  "#f06666",
-  "#ffc266",
-  "#ffff66",
-  "#66b966",
-  "#66a3e0",
-  "#c285ff",
-  "#888888",
-  "#a10000",
-  "#b26b00",
-  "#b2b200",
-  "#006100",
-  "#0047b2",
-  "#6b24b2",
-  "#444444",
-  "#5c0000",
-  "#663d00",
-  "#666600",
-  "#003700",
-  "#002966",
-  "#3d1466",
+  '#e60000',
+  '#000000',
+  '#ff9900',
+  '#ffff00',
+  '#008a00',
+  '#0066cc',
+  '#9933ff',
+  '#ffffff',
+  '#facccc',
+  '#ffebcc',
+  '#ffffcc',
+  '#cce8cc',
+  '#cce0f5',
+  '#ebd6ff',
+  '#bbbbbb',
+  '#f06666',
+  '#ffc266',
+  '#ffff66',
+  '#66b966',
+  '#66a3e0',
+  '#c285ff',
+  '#888888',
+  '#a10000',
+  '#b26b00',
+  '#b2b200',
+  '#006100',
+  '#0047b2',
+  '#6b24b2',
+  '#444444',
+  '#5c0000',
+  '#663d00',
+  '#666600',
+  '#003700',
+  '#002966',
+  '#3d1466',
 ];
 const modules = {
   toolbar: [
     [{ header: [1, 2, 3, 4, 5, 6, false] }], // Add all header options
     //   [{ 'font': [] }],
-    [{ list: "ordered" }, { list: "bullet" }],
-    ["bold", "italic", "underline"],
+    [{ list: 'ordered' }, { list: 'bullet' }],
+    ['bold', 'italic', 'underline'],
     [{ color: customColors }, { background: [] }],
-    ["link", "image"],
-    ["clean"],
+    ['link', 'image'],
+    ['clean'],
   ],
 };
 // Define the nested schemas first
 const category = Yup.object().shape({
   category: Yup.string()
-    .matches(/^[0-9a-fA-F]{24}$/, "Must be a valid hex string of length 24")
+    .matches(/^[0-9a-fA-F]{24}$/, 'Must be a valid hex string of length 24')
     .optional(),
   order: Yup.number().min(1).optional(),
 });
 
 const subCategory = Yup.object().shape({
   subCategory: Yup.string()
-    .matches(/^[0-9a-fA-F]{24}$/, "Must be a valid hex string of length 24")
+    .matches(/^[0-9a-fA-F]{24}$/, 'Must be a valid hex string of length 24')
     .optional(),
   order: Yup.number().min(1).optional(),
 });
 
 const childSubCategory = Yup.object().shape({
   childSubCategory: Yup.string()
-    .matches(/^[0-9a-fA-F]{24}$/, "Must be a valid hex string of length 24")
+    .matches(/^[0-9a-fA-F]{24}$/, 'Must be a valid hex string of length 24')
     .optional(),
   order: Yup.number().min(1).optional(),
 });
 
 const branch = Yup.object().shape({
   branch: Yup.string()
-    .matches(/^[0-9a-fA-F]{24}$/, "Must be a valid hex string of length 24")
+    .matches(/^[0-9a-fA-F]{24}$/, 'Must be a valid hex string of length 24')
     .optional(),
   price: Yup.number().optional(),
   available: Yup.boolean().optional(),
@@ -137,61 +118,61 @@ const branch = Yup.object().shape({
   sold: Yup.number().min(1).optional(),
 });
 
-const extras = Yup.object().shape({
-  extra: Yup.string()
-    .matches(/^[0-9a-fA-F]{24}$/, "Must be a valid hex string of length 24")
+const extras = Yup.string();
+
+const types = Yup.object().shape({
+  type: Yup.string()
+    .matches(/^[0-9a-fA-F]{24}$/, 'Must be a valid hex string of length 24')
     .optional(),
   order: Yup.number().min(1).optional(),
 });
 
-const types = Yup.string();
-
 const groupOfOptions = Yup.object().shape({
   groupOfOptions: Yup.string()
-    .matches(/^[0-9a-fA-F]{24}$/, "Must be a valid hex string of length 24")
+    .matches(/^[0-9a-fA-F]{24}$/, 'Must be a valid hex string of length 24')
     .optional(),
   order: Yup.number().min(1).optional(),
 });
 
 const descTable = Yup.object().shape({
   name: Yup.string().optional(),
-  value: Yup.boolean().optional(),
+  value: Yup.mixed().optional(),
   order: Yup.number().min(1).optional(),
 });
 
 // main schema
 const editProductSchema = Yup.object().shape({
-  name: Yup.string().min(2).max(100).required("Name is required"),
+  name: Yup.string().min(2).max(100).required('Name is required'),
   description: Yup.string().optional(),
   shortDesc: Yup.string().optional(),
   metaTags: Yup.array()
     .of(Yup.string())
     .transform((value, originalValue) =>
-      typeof originalValue === "string" ? [originalValue] : originalValue,
+      typeof originalValue === 'string' ? [originalValue] : originalValue
     )
     .optional(),
   category: Yup.array()
     .of(category)
     .transform((value, originalValue) =>
-      Array.isArray(originalValue) ? originalValue : [originalValue],
+      Array.isArray(originalValue) ? originalValue : [originalValue]
     )
     .optional(),
   subCategory: Yup.array()
     .of(subCategory)
     .transform((value, originalValue) =>
-      Array.isArray(originalValue) ? originalValue : [originalValue],
+      Array.isArray(originalValue) ? originalValue : [originalValue]
     )
     .optional(),
   childSubCategory: Yup.array()
     .of(childSubCategory)
     .transform((value, originalValue) =>
-      Array.isArray(originalValue) ? originalValue : [originalValue],
+      Array.isArray(originalValue) ? originalValue : [originalValue]
     )
     .optional(),
   types: Yup.array()
     .of(types)
     .transform((value, originalValue) =>
-      Array.isArray(originalValue) ? originalValue : [originalValue],
+      Array.isArray(originalValue) ? originalValue : [originalValue]
     )
     .optional(),
   // stock: Yup.string().optional(),
@@ -200,7 +181,7 @@ const editProductSchema = Yup.object().shape({
   branch: Yup.array()
     .of(branch)
     .transform((value, originalValue) =>
-      Array.isArray(originalValue) ? originalValue : [originalValue],
+      Array.isArray(originalValue) ? originalValue : [originalValue]
     )
     .optional(),
   priceAfterDiscount: Yup.number().min(0).optional(),
@@ -208,14 +189,14 @@ const editProductSchema = Yup.object().shape({
   extras: Yup.array()
     .of(extras)
     .transform((value, originalValue) =>
-      Array.isArray(originalValue) ? originalValue : [originalValue],
+      Array.isArray(originalValue) ? originalValue : [originalValue]
     )
     .optional(),
   descTableName: Yup.string().optional(),
   descTable: Yup.array()
     .of(descTable)
     .transform((value, originalValue) =>
-      Array.isArray(originalValue) ? originalValue : [originalValue],
+      Array.isArray(originalValue) ? originalValue : [originalValue]
     )
     .optional(),
   weight: Yup.string().optional(),
@@ -225,7 +206,7 @@ const editProductSchema = Yup.object().shape({
   groupOfOptions: Yup.array()
     .of(groupOfOptions)
     .transform((value, originalValue) =>
-      Array.isArray(originalValue) ? originalValue : [originalValue],
+      Array.isArray(originalValue) ? originalValue : [originalValue]
     )
     .optional(),
   minQty: Yup.number().min(0).optional(),
@@ -241,50 +222,29 @@ const editProductSchema = Yup.object().shape({
 
 const ProductForm: FC<Props> = ({ product }) => {
   const { id } = useParams();
-  const { active: activeBranches, archived: archivedBranches } = branchesData();
-  const { active: activeCategories, archived: archivedCategories } =
-    categoriesData();
-  const { active: activeSubCategories, archived: archivedSubCategories } =
-    subcategoriesData();
-  const {
-    active: activeChildSubCategories,
-    archived: archivedChildSubCategories,
-  } = childSubCategoryData();
-  const { active: activeExtras, archived: archivedExtras } = extrasData();
-  const { active: activeTypes, archived: archivedTypes } = typesData();
+  const branches = branchesData();
+  const categories = categoriesData();
+  const subcategories = subcategoriesData();
+  const childSubCategories = childSubCategoryData();
+  const extras = extrasData();
+  const types = typesData();
+
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [branches, setBranches] = useState([
-    ...activeBranches,
-    ...archivedBranches,
-  ]);
-  const [categories, setCategories] = useState([
-    ...activeCategories,
-    ...archivedCategories,
-  ]);
-  const [subcategories, setSubCategories] = useState([
-    ...activeSubCategories,
-    ...archivedSubCategories,
-  ]);
-  const [childSubCategories, setChildSubCategories] = useState([
-    ...activeChildSubCategories,
-    ...archivedChildSubCategories,
-  ]);
-  const [extras, setExtras] = useState([...activeExtras, ...archivedExtras]);
-  const [types, setTypes] = useState([...activeTypes, ...archivedTypes]);
+
   const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
   const [existingGalleryUrls, setExistingGalleryUrls] = useState<string[]>([]);
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const [updatedBranches, setUpdatedBranches] = useState<BranchOfProduct[]>();
-  const [activeTab, setActiveTab] = useState("general");
+  const [activeTab, setActiveTab] = useState('general');
   const [items, setItems] = useState([]);
 
   const [productForEdit, setProductForEdit] = useState<Product>();
-  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [previewUrl, setPreviewUrl] = useState<string>('');
 
   const handleTabClick = (tab: string) => {
     setActiveTab(tab);
@@ -300,78 +260,15 @@ const ProductForm: FC<Props> = ({ product }) => {
           setPreviewUrl(data?.imgCover[0].url);
         formik.setValues(data);
       } catch (error) {
-        console.error("Error fetching product", error);
+        console.error('Error fetching product', error);
       }
     };
-    if (id !== "new") {
+    if (id !== 'new') {
       fetchProduct();
     } else {
       setProductForEdit(initialProduct);
     }
   }, [id, setProductForEdit]);
-
-  useEffect(() => {
-    const fetchBranches = async () => {
-      try {
-        const resActive = await getBranches();
-        const resArchived = await getArchivedBranches();
-        setBranches([...resActive.data, ...resArchived.data]);
-      } catch (error) {
-        console.error("Error fetching branches:", error);
-      }
-    };
-    fetchBranches();
-    const fetchCategories = async () => {
-      try {
-        const resActive = await getCategories();
-        const resArchived = await getArchivedCategories();
-        setCategories([...resActive.data, ...resArchived.data]);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-      }
-    };
-    fetchCategories();
-    const fetchSubCategories = async () => {
-      try {
-        const resActive = await getSubCategories();
-        const resArchived = await getArchivedSubCategories();
-        setSubCategories([...resActive.data, ...resArchived.data]);
-      } catch (error) {
-        console.error("Error fetching subcategories:", error);
-      }
-    };
-    fetchSubCategories();
-    const fetchChildSubCategories = async () => {
-      try {
-        const resActive = await getChildSubCategories();
-        const resArchived = await getArchivedChildSubCategories();
-        setChildSubCategories([...resActive.data, ...resArchived.data]);
-      } catch (error) {
-        console.error("Error fetching childsubcategories:", error);
-      }
-    };
-    fetchChildSubCategories();
-    const fetchExtras = async () => {
-      try {
-        const resActive = await getExtras();
-        const resArchived = await getArchivedExtras();
-        setExtras([...resActive.data, ...resArchived.data]);
-      } catch (error) {
-        console.error("Error fetching extras:", error);
-      }
-    };
-    fetchExtras();
-    const fetchTypes = async () => {
-      try {
-        const resActive = await getTypes();
-        const resArchived = await getArchivedTypes();
-        setTypes([...resActive.data, ...resArchived.data]);
-      } catch (error) {
-        console.error("Error fetching types:", error);
-      }
-    };
-    fetchTypes();
-  }, []);
 
   const memoizedCategories = useMemo(
     () =>
@@ -379,7 +276,7 @@ const ProductForm: FC<Props> = ({ product }) => {
         value: category._id,
         label: category.name,
       })),
-    [categories],
+    [categories]
   );
   const memoizedSubCategories = useMemo(
     () =>
@@ -387,7 +284,7 @@ const ProductForm: FC<Props> = ({ product }) => {
         value: subCategory._id,
         label: subCategory.name,
       })),
-    [subcategories],
+    [subcategories]
   );
   const memoizedChildSubCategories = useMemo(
     () =>
@@ -395,48 +292,48 @@ const ProductForm: FC<Props> = ({ product }) => {
         value: childSubCategory._id,
         label: childSubCategory.name,
       })),
-    [childSubCategories],
+    [childSubCategories]
   );
   const memoizedExtras = useMemo(
     () => extras.map((extra) => ({ value: extra._id, label: extra.name })),
-    [extras],
+    [extras]
   );
   const memoizedTypes = useMemo(
     () => types.map((type) => ({ value: type._id, label: type.name })),
-    [types],
+    [types]
   );
 
   const initialBranches = branches.map((branch, index) => {
     return {
       key: index,
       branch: branch._id,
-      price: "",
+      price: '',
       available: false,
-      stock: "",
-      priceAfterDiscount: "",
-      priceAfterExpiresAt: "",
-      order: "",
-      sold: "",
+      stock: '',
+      priceAfterDiscount: '',
+      priceAfterExpiresAt: '',
+      order: '',
+      sold: '',
       _id: index.toLocaleString(),
       name: branch.name,
     };
   });
   initialProduct.branch = initialBranches;
 
-  const keysToRemove = ["key", "name", "_id"];
+  const keysToRemove = ['key', 'name', '_id'];
 
   const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
 
     // Validate total images won't exceed 10
     if (galleryFiles.length + files.length > 10) {
-      setError("Maximum 10 images allowed in gallery");
+      setError('Maximum 10 images allowed in gallery');
       return;
     }
 
     // Validate each file
     const validFiles = files.filter((file) => {
-      if (!file.type.match("image/jpeg|image/png|image/jpg")) {
+      if (!file.type.match('image/jpeg|image/png|image/jpg')) {
         return false;
       }
       if (file.size > 5 * 1024 * 1024) {
@@ -466,110 +363,57 @@ const ProductForm: FC<Props> = ({ product }) => {
     enableReinitialize: true,
     initialValues: {
       name: productForEdit ? productForEdit.name : initialProduct.name,
-      ...(productForEdit && productForEdit._id
-        ? { _id: productForEdit._id }
-        : {}),
-      ...(productForEdit && productForEdit.slug
-        ? { slug: productForEdit.slug }
-        : {}),
-      ...(productForEdit && productForEdit.description
-        ? { description: productForEdit.description }
-        : {}),
-      ...(productForEdit && productForEdit.description
-        ? { description: productForEdit.description }
-        : {}),
-      ...(productForEdit?.imgCover?.[0]?.url
-        ? { imgCover: productForEdit.imgCover[0].url }
-        : {}),
-      ...(productForEdit && productForEdit.metaTags
-        ? { metaTags: productForEdit.metaTags }
-        : {}),
-      ...(productForEdit && productForEdit.price
-        ? { price: productForEdit.price }
-        : {}),
-      ...(productForEdit && productForEdit.showWeight
-        ? { showWeight: productForEdit.showWeight }
-        : {}),
-      ...(productForEdit && productForEdit.weight
-        ? { weight: productForEdit.weight }
-        : {}),
-      ...(productForEdit && productForEdit.dimensions
-        ? { dimensions: productForEdit.dimensions }
-        : {}),
-      ...(productForEdit && productForEdit.quantity
-        ? { quantity: productForEdit.quantity }
-        : {}),
-      ...(productForEdit && productForEdit.minQty
-        ? { minQty: productForEdit.minQty }
-        : {}),
-      ...(productForEdit && productForEdit.stock
-        ? { stock: productForEdit.stock }
-        : {}),
-      ...(productForEdit && productForEdit.sold
-        ? { sold: productForEdit.sold }
-        : {}),
-      ...(productForEdit && productForEdit.book
-        ? { book: productForEdit.book }
-        : {}),
-      ...(productForEdit && productForEdit.extras
-        ? {
-            extras: productForEdit?.extras?.map((option) => ({
-              value: option.extra._id,
-              label: option.extra.name,
-            })),
-          }
-        : []),
-      ...(productForEdit && productForEdit.types
-        ? {
-            types: [
-              ...productForEdit?.types?.map((option) => ({
-                value: option._id,
-                label: option.name,
-              })),
-            ],
-          }
-        : []),
-      ...(productForEdit && productForEdit.metaTags
-        ? { metaTags: productForEdit.metaTags }
-        : []),
-      ...(productForEdit && productForEdit.descTableName
-        ? { descTableName: productForEdit.descTableName }
-        : {}),
-      ...(productForEdit && productForEdit.available
-        ? { available: productForEdit.available }
-        : {}),
-      ...(productForEdit && productForEdit.deleted
-        ? { deleted: productForEdit.deleted }
-        : {}),
-      ...(productForEdit && productForEdit.order
-        ? { order: productForEdit.order }
-        : {}),
-      ...(productForEdit && productForEdit.category
-        ? {
-            category: productForEdit?.category?.map((option) => ({
-              value: option.category._id,
-              label: option.category.name,
-            })),
-          }
-        : []),
-      ...(productForEdit && productForEdit.subCategory
-        ? {
-            subCategory: productForEdit?.subCategory?.map((option) => ({
-              value: option.subCategory._id,
-              label: option.subCategory.name,
-            })),
-          }
-        : []),
-      ...(productForEdit && productForEdit.childSubCategory
-        ? {
-            childSubCategory: productForEdit?.childSubCategory?.map(
-              (option) => ({
-                value: option.childSubCategory._id,
-                label: option.childSubCategory.name,
-              })
-            ),
-          }
-        : []),
+      // Provide default values for all fields to avoid undefined
+      _id: productForEdit?._id || '',
+      slug: productForEdit?.slug || '',
+      description: productForEdit?.description || '',
+      imgCover: productForEdit?.imgCover?.[0]?.url || '',
+      metaTags: productForEdit?.metaTags || [],
+      price: productForEdit?.price || initialProduct.price,
+      showWeight: productForEdit?.showWeight || initialProduct.showWeight,
+      weight: productForEdit?.weight || initialProduct.weight,
+      dimensions: productForEdit?.dimensions || initialProduct.dimensions,
+      quantity: productForEdit?.quantity || initialProduct.quantity,
+      minQty: productForEdit?.minQty || initialProduct.minQty,
+      stock: productForEdit?.stock || initialProduct.stock,
+      sold: productForEdit?.sold || initialProduct.sold,
+      book: productForEdit?.book || initialProduct.book,
+      descTableName:
+        productForEdit?.descTableName || initialProduct.descTableName,
+      available: productForEdit?.available ?? initialProduct.available,
+      deleted: productForEdit?.deleted ?? initialProduct.deleted,
+      order: productForEdit?.order || initialProduct.order,
+
+      // React-Select arrays - provide empty arrays as fallback
+      extras:
+        productForEdit?.extras?.map((option) => ({
+          value: option.extra._id,
+          label: option.extra.name,
+        })) || [],
+
+      types:
+        productForEdit?.types?.map((option) => ({
+          value: option._id,
+          label: option.name,
+        })) || [],
+
+      category:
+        productForEdit?.category?.map((option) => ({
+          value: option.category._id,
+          label: option.category.name,
+        })) || [],
+
+      subCategory:
+        productForEdit?.subCategory?.map((option) => ({
+          value: option.subCategory._id,
+          label: option.subCategory.name,
+        })) || [],
+
+      childSubCategory:
+        productForEdit?.childSubCategory?.map((option) => ({
+          value: option.childSubCategory._id,
+          label: option.childSubCategory.name,
+        })) || [],
     },
     validationSchema: editProductSchema,
     onSubmit: async (values: ProductFormValues, { setSubmitting }) => {
@@ -598,6 +442,8 @@ const ProductForm: FC<Props> = ({ product }) => {
         }
         if (imageFile) {
           values.imgCover = (await uploadToCloudinary(imageFile)) as any;
+        } else {
+          delete values.imgCover;
         }
         // Upload gallery images
         if (galleryFiles.length > 0) {
@@ -608,20 +454,26 @@ const ProductForm: FC<Props> = ({ product }) => {
         } else if (existingGalleryUrls.length > 0) {
           values.images = existingGalleryUrls;
         }
-        items.length != 0 ? (values.descTable = items) : '';
-        values.types = values?.types?.map((type) => type.value);
-        values.extras = values?.extras?.map((extra) => ({
-          extra: extra.value,
-        }));
-        values.category = values?.category?.map((item) => ({
-          category: item.value,
-        }));
-        values.subCategory = values?.subCategory?.map((subCategory) => ({
-          subCategory: subCategory.value,
-        }));
-        values.childSubCategory = values?.childSubCategory?.map(
-          (childSubCategory) => ({ childSubCategory: childSubCategory._id })
-        );
+        items.length !== 0 ? (values.descTable = items) : '';
+        values.types = values.types?.map((type) => 
+          type?.value,
+        ) || [];
+        values.extras =
+          values.extras?.map((extra) => ({
+            extra: extra?.value,
+          })) || [];
+        values.category =
+          values.category?.map((item) => ({
+            category: item?.value,
+          })) || [];
+        values.subCategory =
+          values.subCategory?.map((subCategory) => ({
+            subCategory: subCategory?.value,
+          })) || [];
+        values.childSubCategory =
+          values.childSubCategory?.map((childSubCategory) => ({
+            childSubCategory: childSubCategory?.value,
+          })) || [];
 
         if (isNotEmpty(values._id)) {
           await updateProduct(values?._id, values);
@@ -661,22 +513,22 @@ const ProductForm: FC<Props> = ({ product }) => {
     },
   });
 
-  console.log(formik.errors)
-  console.log(formik.values.types)
+  console.log(formik.errors);
+  console.log(formik.values);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     // Validate file type
-    if (!file.type.match("image/jpeg|image/png|image/jpg")) {
-      setError("Please select a valid image file (PNG, JPG, JPEG)");
+    if (!file.type.match('image/jpeg|image/png|image/jpg')) {
+      setError('Please select a valid image file (PNG, JPG, JPEG)');
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      setError("File size must be less than 5MB");
+      setError('File size must be less than 5MB');
       return;
     }
 
@@ -693,14 +545,14 @@ const ProductForm: FC<Props> = ({ product }) => {
 
   const handleRemoveImage = () => {
     setImageFile(null);
-    setPreviewUrl("");
-    formik.setFieldValue("imgCover", "");
+    setPreviewUrl('');
+    formik.setFieldValue('imgCover', '');
     if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+      fileInputRef.current.value = '';
     }
   };
 
-  if (id !== "new" && productForEdit == undefined) {
+  if (id !== 'new' && productForEdit == undefined) {
     return <div>Loading...</div>;
   }
 
@@ -961,7 +813,7 @@ const ProductForm: FC<Props> = ({ product }) => {
                       }
                     )}
                     name="category"
-                    value={(formik.values as any).category} // Connect to Formik value
+                    value={(formik.values as any).category || []}
                     onChange={(selected) => {
                       // Update Formik state directly
                       formik.setFieldValue(
@@ -970,14 +822,6 @@ const ProductForm: FC<Props> = ({ product }) => {
                       );
                     }}
                     onBlur={formik.handleBlur} // Handle blur for validation
-                    defaultValue={
-                      productForEdit !== undefined
-                        ? productForEdit?.category?.map((option) => ({
-                            value: option.category._id,
-                            label: option.category.name,
-                          }))
-                        : []
-                    }
                   />
 
                   {(formik.touched as any).category &&
@@ -1010,6 +854,7 @@ const ProductForm: FC<Props> = ({ product }) => {
                       'form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2'
                     )}
                     name="subCategory"
+                    value={(formik.values as any).subCategory || []}
                     onChange={(selected) => {
                       // Update Formik state directly
                       formik.setFieldValue(
@@ -1017,14 +862,6 @@ const ProductForm: FC<Props> = ({ product }) => {
                         selected ? selected : []
                       );
                     }}
-                    defaultValue={
-                      productForEdit !== undefined
-                        ? productForEdit?.subCategory?.map((option) => ({
-                            value: option.subCategory._id,
-                            label: option.subCategory.name,
-                          }))
-                        : []
-                    }
                   />
                   {/* end::Input */}
                   {(formik.touched as any).subCategory &&
@@ -1057,6 +894,7 @@ const ProductForm: FC<Props> = ({ product }) => {
                       'form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2'
                     )}
                     name="childSubCategory"
+                    value={(formik.values as any).childSubCategory || []}
                     onChange={(selected) => {
                       // Update Formik state directly
                       formik.setFieldValue(
@@ -1064,14 +902,6 @@ const ProductForm: FC<Props> = ({ product }) => {
                         selected ? selected : []
                       );
                     }}
-                    defaultValue={
-                      productForEdit !== undefined
-                        ? productForEdit?.childSubCategory?.map((option) => ({
-                            value: option.childSubCategory._id,
-                            label: option.childSubCategory.name,
-                          }))
-                        : []
-                    }
                   />
                   {/* end::Input */}
                   {(formik.touched as any).childSubCategory &&
@@ -1734,6 +1564,7 @@ const ProductForm: FC<Props> = ({ product }) => {
                         'form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2'
                       )}
                       name="extras"
+                      value={(formik.values as any).extras || []}
                       onChange={(selected) => {
                         // Update Formik state directly
                         formik.setFieldValue(
@@ -1741,14 +1572,6 @@ const ProductForm: FC<Props> = ({ product }) => {
                           selected ? selected : []
                         );
                       }}
-                      defaultValue={
-                        productForEdit !== undefined
-                          ? productForEdit?.extras?.map((option) => ({
-                              value: option.extra._id,
-                              label: option.extra.name,
-                            }))
-                          : []
-                      }
                     />
                     {/* end::Input */}
                     {(formik.touched as any).extras &&
@@ -1771,28 +1594,21 @@ const ProductForm: FC<Props> = ({ product }) => {
                     {/* end::Label */}
                     {/* begin::Input */}
                     <Select
-                      // className='react-select-styled'
-                      // classNamePrefix='react-select'
                       isMulti
                       options={memoizedTypes}
                       placeholder="Types"
-                      // {...formik.getFieldProps('types')}
                       className={clsx(
                         'form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2'
                       )}
                       name="types"
+                      value={(formik.values).types || []}
                       onChange={(selected) => {
                         // Update Formik state directly
-                        formik.setFieldValue('types', selected ? selected : []);
+                        formik.setFieldValue(
+                          'types',
+                          selected ? selected : []
+                        );
                       }}
-                      defaultValue={
-                        productForEdit !== undefined
-                          ? productForEdit?.types?.map((option) => ({
-                              value: option._id,
-                              label: option.name,
-                            }))
-                          : []
-                      }
                     />
                     {/* end::Input */}
                     {(formik.touched as any).types &&

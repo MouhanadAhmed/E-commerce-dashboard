@@ -12,7 +12,6 @@ const SUB_CATEGORY_URL = `${API_URL}/subCategory`;
 const GET_SUB_CATEGORIES_URL = `${API_URL}/subCategory?deleted=false`;
 const GET_ARCHIVED_SUB_CATEGORIES_URL = `${API_URL}/subCategory?deleted=true`;
 let baseUrl = "";
-// console.log("initialQueryRequest.state",initialQueryRequest.state)
 if (
   initialQueryRequest.state &&
   typeof initialQueryRequest.state === "object"
@@ -28,25 +27,21 @@ if (
 const getSubCategories = (
   query?: string,
 ): Promise<SubCategoriesQueryResponse> => {
-  // console.log(query);
   baseUrl = GET_SUB_CATEGORIES_URL + "&" + query;
   return axios
     .get(`${query != undefined ? baseUrl : GET_SUB_CATEGORIES_URL}`)
     .then((response) => {
-      // console.log("_requests => categories",response.data.data)
       return response.data;
     });
 };
 const getArchivedSubCategories = (
   query?: string,
 ): Promise<SubCategoriesQueryResponse> => {
-  // console.log(initialQueryRequest.state)
   baseUrl = GET_ARCHIVED_SUB_CATEGORIES_URL + "&" + query;
 
   return axios
     .get(`${query != undefined ? baseUrl : GET_ARCHIVED_SUB_CATEGORIES_URL}`)
     .then((response) => {
-      // console.log("_requests => subCategory",response.data.data)
       return response.data;
     });
 };
@@ -102,7 +97,6 @@ const getAllProductsInSubCategory = (categoryId: string): Promise<[]> => {
   return axios
     .get(`${API_URL}/product/subCategory/${categoryId}?fields=name,subCategory`)
     .then((response) => {
-      // console.log("_requests => categories",response.data.data)
       return response.data;
     });
 };
@@ -124,7 +118,6 @@ const getAllChildsInSubCategory = (categoryId: string): Promise<[]> => {
       `${API_URL}/childSubCategory/subCategory/${categoryId}?fields=name,subCategory`,
     )
     .then((response) => {
-      // console.log("_requests => categories",response.data.data)
       return response.data;
     });
 };

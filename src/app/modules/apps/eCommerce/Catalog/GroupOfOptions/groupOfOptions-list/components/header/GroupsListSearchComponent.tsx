@@ -39,7 +39,6 @@ const GroupsListSearchComponent = () => {
           placeholder="Search Group of options"
           value={searchTerm}
           onChange={(e) => {
-            console.log(e.target.value);
             setSearchTerm(decodeURIComponent(e.target.value));
           }}
         />
