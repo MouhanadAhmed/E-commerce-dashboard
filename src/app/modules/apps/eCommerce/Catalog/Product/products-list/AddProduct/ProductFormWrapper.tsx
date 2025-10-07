@@ -7,6 +7,7 @@ import { QueryResponseProvider as SubCategoriesQuery } from '../../../SubCategor
 import { QueryResponseProvider as ChildCategoriesQuery } from '../../../ChildSubCategory/ChildSubcategories-list/core/QueryResponseProvider';
 import { QueryResponseProvider as TypesQuery } from '../../../Type/types-list/core/QueryResponseProvider';
 import { QueryResponseProvider as ExtrasQuery } from '../../../Extra/extra-list/core/QueryResponseProvider';
+import { QueryResponseProvider as GroupsQuery } from '../../../GroupOfOptions/groupOfOptions-list/core/QueryResponseProvider';
 import { ToolbarWrapper } from '../../../../../../../../_metronic/layout/components/toolbar';
 import { Content } from '../../../../../../../../_metronic/layout/components/content';
 import { DndProvider } from 'react-dnd';
@@ -22,6 +23,7 @@ const ProductFormWrapper = () => (
               <ChildCategoriesQuery>
                 <TypesQuery>
                   <ExtrasQuery>
+                  <GroupsQuery>
                     <ListViewProvider>
                       <ToolbarWrapper />
                       <DndProvider backend={HTML5Backend}>
@@ -30,6 +32,7 @@ const ProductFormWrapper = () => (
                         </Content>
                       </DndProvider>
                     </ListViewProvider>
+                  </GroupsQuery>
                   </ExtrasQuery>
                 </TypesQuery>
               </ChildCategoriesQuery>

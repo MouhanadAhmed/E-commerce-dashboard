@@ -139,6 +139,7 @@ export interface ProductFormValues {
   category?: any[]; // Select values before transformation
   subCategory?: any[]; // Select values before transformation
   childSubCategory?: any[]; // Select values before transformation
+  groupOfOptions?: any[];
   branch?: any[];
   images?: string[];
   descTable?: any[];
@@ -146,7 +147,6 @@ export interface ProductFormValues {
 
 export const initialProduct: Product = {
   name: '',
-  // "slug": "تالت-منتح",
   description: '',
   shortDesc: '',
 
@@ -166,11 +166,6 @@ export const initialProduct: Product = {
   dimensions: '',
   rewardPoint: '',
   sold: '',
-  // "imgCover": [],
-  // "createdAt": "",
-  // "updatedAt": "",
-  // "__v": '',
   deleted: false,
   parentAvailable: true,
-  // "id": "",
 };

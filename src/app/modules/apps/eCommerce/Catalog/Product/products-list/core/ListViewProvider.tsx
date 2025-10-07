@@ -23,7 +23,8 @@ const ListViewProvider: FC<WithChildren> = ({ children }) => {
     initialListView.itemIdForUpdate,
   );
   const { isLoading } = useQueryResponse();
-  const data = useQueryResponseData();
+  const dataResponse = useQueryResponseData();
+  const data = { ...dataResponse.active, ...dataResponse.archived}
   const disabled = useMemo(
     () => calculatedGroupingIsDisabled(isLoading, data),
     [isLoading, data],

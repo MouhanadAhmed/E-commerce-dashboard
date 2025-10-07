@@ -4,30 +4,25 @@ import {
   useQueryResponseData,
   useQueryRefetch,
 } from '../core/QueryResponseProvider';
-import { useQueryResponseData as branchesData } from '../../../Branch/branches-list/core/QueryResponseProvider';
-import { useQueryResponseData as categoriesData } from '../../../Category/categories-list/core/QueryResponseProvider';
-import { useQueryResponseData as subcategoriesData } from '../../../SubCategory/Subcategories-list/core/QueryResponseProvider';
-import { useQueryResponseData as childSubCategoryData } from '../../../ChildSubCategory/ChildSubcategories-list/core/QueryResponseProvider';
-import { useQueryResponseData as typesData } from '../../../Type/types-list/core/QueryResponseProvider';
-import { useQueryResponseData as extrasData } from '../../../Extra/extra-list/core/QueryResponseProvider';
+import { useActiveBranchesData as branchesData } from '../../../Branch/branches-list/core/QueryResponseProvider';
+import { useActiveCategoriesData as categoriesData } from '../../../Category/categories-list/core/QueryResponseProvider';
+import { useActiveSubCategoriesData as subcategoriesData } from '../../../SubCategory/Subcategories-list/core/QueryResponseProvider';
+import { useActiveChildSubCategoriesData as childSubCategoryData } from '../../../ChildSubCategory/ChildSubcategories-list/core/QueryResponseProvider';
+import { useActiveTypesData as typesData } from '../../../Type/types-list/core/QueryResponseProvider';
+import { useActiveExtrasData as extrasData } from '../../../Extra/extra-list/core/QueryResponseProvider';
+import { useActiveGroupsData as groupsData } from '../../../GroupOfOptions/groupOfOptions-list/core/QueryResponseProvider';
 import { Product } from '../core/_models';
 import {
   type MRT_TableOptions,
   type MRT_ColumnDef,
-  type MRT_Row,
   MaterialReactTable,
   useMaterialReactTable,
-  // MRT_TableContainer,
-  // MRT_ActionMenuItem,
-  // MRT_ToggleDensePaddingButton,
 } from 'material-react-table';
-// import { Divider } from '@mui/material';
 import Select from 'react-select';
 import {
   Box,
   Button,
   IconButton,
-  Input,
   TextField,
   Tooltip,
 } from '@mui/material';
@@ -35,70 +30,37 @@ import {
   deleteProduct,
   deleteSelectedProducts,
   updateProduct,
-  updateSelectedProducts,
   duplicateProduct,
 } from '../core/_requests';
-import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query';
 import { QUERIES } from '../../../../../../../../_metronic/helpers';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
 import SettingsIcon from '@mui/icons-material/Settings';
 import * as Yup from 'yup';
 import { Modal } from 'react-bootstrap';
 import { useListView } from '../core/ListViewProvider';
-// import { TablesWidget12 } from '../../../../../../../../_metronic/partials/widgets';
-import {
-  getArchivedBranches,
-  getBranches,
-} from '../../../Branch/branches-list/core/_requests';
-// import { CategoryProductsTable } from '../../products-list/categoryProductsTable';
-// import { CategorySubsTable } from '../../subCategories-list/categorySubsTable';
-// import { ArchivedCategoriesTable } from './ArchivedCategoriesTable';
-import {
-  getArchivedCategories,
-  getCategories,
-} from '../../../Category/categories-list/core/_requests';
-import {
-  getArchivedSubCategories,
-  getSubCategories,
-} from '../../../SubCategory/Subcategories-list/core/_requests';
-import {
-  getArchivedChildSubCategories,
-  getChildSubCategories,
-} from '../../../ChildSubCategory/ChildSubcategories-list/core/_requests';
-import {
-  getArchivedExtras,
-  getExtras,
-} from '../../../Extra/extra-list/core/_requests';
-import {
-  getArchivedTypes,
-  getTypes,
-} from '../../../Type/types-list/core/_requests';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useQueryRequest } from '../core/QueryRequestProvider';
 
 const ProductsTable = () => {
   const duplicateRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
+  const { state, updateState } = useQueryRequest();
   const { selected, clearSelected } = useListView();
   const queryClient = useQueryClient();
   const { setItemIdForUpdate } = useListView();
-  const { state, updateState } = useQueryRequest();
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string | undefined>
   >({});
   const { active, archived } = useQueryResponseData();
-  const { active: activeBranches, archived: archivedBranches } = branchesData();
-  const { active: activeCategories, archived: archivedCategories } =
-    categoriesData();
-  const { active: activeSubCategories, archived: archivedSubCategories } =
-    subcategoriesData();
-  const {
-    active: activeChildSubCategories,
-    archived: archivedChildSubCategories,
-  } = childSubCategoryData();
-  const { active: activeExtras, archived: archivedExtras } = extrasData();
-  const { active: activeTypes, archived: archivedTypes } = typesData();
+  const branches = branchesData();
+  const categories = categoriesData();
+  const subcategories = subcategoriesData();
+  const childSubCategories = childSubCategoryData();
+  const extras = extrasData();
+  const types = typesData();
+  const groups = groupsData();
   const refetch = useQueryRefetch();
   const [trigger, setTrigger] = useState(false);
   const [activeProducts, setActiveProducts] = useState<Product[]>(
@@ -107,7 +69,6 @@ const ProductsTable = () => {
   const [archivedProducts, setArchivedProducts] = useState<Product[]>(
     () => archived.data || []
   );
-  const [draggingRow, setDraggingRow] = useState<MRT_Row<Product> | null>(null);
   const [hoveredTable, setHoveredTable] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [showProductsModal, setShowProductsModal] = useState(false);
@@ -118,98 +79,16 @@ const ProductsTable = () => {
   const [productToDuplicate, setProductToDuplicate] = useState<
     Product | undefined
   >();
-  const [branches, setBranches] = useState([
-    ...activeBranches,
-    ...archivedBranches,
-  ]);
-  const [categories, setCategories] = useState([
-    ...activeCategories,
-    ...archivedCategories,
-  ]);
-  const [subcategories, setSubCategories] = useState([
-    ...activeSubCategories,
-    ...archivedSubCategories,
-  ]);
-  const [childSubCategories, setChildSubCategories] = useState([
-    ...activeChildSubCategories,
-    ...archivedChildSubCategories,
-  ]);
-  const [extras, setExtras] = useState([...activeExtras, ...archivedExtras]);
-  const [types, setTypes] = useState([...activeTypes, ...archivedTypes]);
-  const [loading, setLoading] = useState(true);
   const [editBranch, setEditBranch] = useState<any[] | undefined>();
   const [editCategory, setEditCategory] = useState<any[] | undefined>();
   const [editSubCategory, setEditSubCategory] = useState<any[] | undefined>();
   const [editChildSubCategory, setEditChildSubCategory] = useState<
     any[] | undefined
   >();
-  const [editExtra, setEditExtra] = useState<any[] | undefined>();
-  const [editType, setEditType] = useState<any[] | undefined>();
+  const [editGroups, setEditGroups] = useState<
+    any[] | undefined
+  >();
   const [book, setBook] = useState<any | undefined>();
-
-  // Fetch branches data
-  useEffect(() => {
-    const fetchBranches = async () => {
-      try {
-        const resActive = await getBranches();
-        const resArchived = await getArchivedBranches();
-        setBranches([...resActive.data, ...resArchived.data]);
-      } catch (error) {
-        console.error('Error fetching branches:', error);
-      }
-    };
-    fetchBranches();
-    const fetchCategories = async () => {
-      try {
-        const resActive = await getCategories();
-        const resArchived = await getArchivedCategories();
-        setCategories([...resActive.data, ...resArchived.data]);
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-      }
-    };
-    fetchCategories();
-    const fetchSubCategories = async () => {
-      try {
-        const resActive = await getSubCategories();
-        const resArchived = await getArchivedSubCategories();
-        setSubCategories([...resActive.data, ...resArchived.data]);
-      } catch (error) {
-        console.error('Error fetching subcategories:', error);
-      }
-    };
-    fetchSubCategories();
-    const fetchChildSubCategories = async () => {
-      try {
-        const resActive = await getChildSubCategories();
-        const resArchived = await getArchivedChildSubCategories();
-        setChildSubCategories([...resActive.data, ...resArchived.data]);
-      } catch (error) {
-        console.error('Error fetching childsubcategories:', error);
-      }
-    };
-    fetchChildSubCategories();
-    const fetchExtras = async () => {
-      try {
-        const resActive = await getExtras();
-        const resArchived = await getArchivedExtras();
-        setExtras([...resActive.data, ...resArchived.data]);
-      } catch (error) {
-        console.error('Error fetching extras:', error);
-      }
-    };
-    fetchExtras();
-    const fetchTypes = async () => {
-      try {
-        const resActive = await getTypes();
-        const resArchived = await getArchivedTypes();
-        setTypes([...resActive.data, ...resArchived.data]);
-      } catch (error) {
-        console.error('Error fetching types:', error);
-      }
-    };
-    fetchTypes();
-  }, []);
 
   const memoizedBranches = useMemo(
     () => branches.map((branch) => ({ value: branch._id, label: branch.name })),
@@ -239,6 +118,14 @@ const ProductsTable = () => {
       })),
     [childSubCategories]
   );
+  const memoizedGroupsOfOptions = useMemo(
+    () =>
+      groups.map((group) => ({
+        value: group._id,
+        label: group.name,
+      })),
+    [groups]
+  );
   const memoizedExtras = useMemo(
     () => extras.map((extra) => ({ value: extra._id, label: extra.name })),
     [extras]
@@ -248,7 +135,6 @@ const ProductsTable = () => {
     [types]
   );
 
-  const parser = new DOMParser();
   const columns = useMemo<MRT_ColumnDef<Product>[]>(
     //column definitions...
     () => [
@@ -278,8 +164,6 @@ const ProductsTable = () => {
           const tempElement = document.createElement('div');
           tempElement.innerHTML = cellValue;
           const innerText = tempElement.textContent || tempElement.innerText;
-          // console.log('doc',innerText.trim())
-          // Show only first 100 characters to simulate short description
           const shortText = innerText.trim().substring(0, 100);
           return (
             <span>
@@ -326,13 +210,12 @@ const ProductsTable = () => {
           align: 'left',
         },
         Cell: ({ cell }) => (
-          // <span className={`badge ${cell.getValue<boolean>() == true?'badge-success':'badge-danger'}`}>{cell.getValue<number>().toLocaleString()}</span>
           <div className="form-check form-switch form-check-custom form-check-solid">
             <input
               className="form-check-input cursor-pointer"
               type="checkbox"
               checked={cell.getValue<boolean>()}
-              onClick={() =>
+              onChange={() =>
                 updateCategoryAvailable.mutateAsync({
                   id: cell.row.original._id,
                   update: { available: !cell.row.original.available },
@@ -340,7 +223,6 @@ const ProductsTable = () => {
               }
               id={cell.row.original._id}
             />
-            {/* {console.log('cell',cell.row.original)} */}
           </div>
         ),
       },
@@ -355,13 +237,12 @@ const ProductsTable = () => {
           align: 'left',
         },
         Cell: ({ cell }) => (
-          // <span className={`badge ${cell.getValue<boolean>() == true?'badge-success':'badge-danger'}`}>{cell.getValue<number>().toLocaleString()}</span>
           <div className="form-check form-switch form-check-custom form-check-solid">
             <input
               className="form-check-input cursor-pointer"
               type="checkbox"
               checked={cell.getValue<boolean>()}
-              onClick={() =>
+              onChange={() =>
                 updateCategoryAvailable.mutateAsync({
                   id: cell.row.original._id,
                   update: { showWeight: !cell.row.original.showWeight },
@@ -369,7 +250,6 @@ const ProductsTable = () => {
               }
               id={cell.row.original._id}
             />
-            {/* {console.log('cell',cell.row.original)} */}
           </div>
         ),
       },
@@ -395,12 +275,8 @@ const ProductsTable = () => {
               label: branch?.branch?.name,
             });
           });
-          // console.log('edit',defV)
 
           return (
-            // loading ? (
-            //   <div>Loading...</div>
-            // ) : (
             <Select
               className="react-select-styled"
               classNamePrefix="react-select"
@@ -415,27 +291,21 @@ const ProductsTable = () => {
                 const updatedBranches = selected
                   ? selected.map((option) => option.value)
                   : [];
-                //  console.log('updatedBranches',updatedBranches)
                 setEditBranch(updatedBranches);
-                // table.setEditingCell(row.id, 'branch', updatedBranches);
               }}
             />
-            // )
           );
         },
         Cell: ({ cell }) => {
           const branchs = cell.getValue<{ branch: { name: string } }[]>();
           return (
             <>
-              {branchs.map((branch) => (
-                <span className="badge badge-secondary me-1">
+              {branchs.map((branch, index) => (
+                <span key={index} className="badge badge-secondary me-1">
                   {branch?.branch?.name}
                 </span>
               ))}
             </>
-            // <span className="badge badge-secondary">
-            //   {branch.branch.name}
-            // </span>
           );
         },
       },
@@ -454,7 +324,6 @@ const ProductsTable = () => {
         Edit: ({ cell, row, table }) => {
           const categories =
             cell.getValue<{ category: { name: string; _id: string } }[]>();
-          // console.log("categories from sub",categories)
           let defV = [];
           categories.map((category) => {
             defV.push({
@@ -462,12 +331,8 @@ const ProductsTable = () => {
               label: category?.category?.name,
             });
           });
-          console.log('edit', defV);
 
           return (
-            // loading ? (
-            //   <div>Loading...</div>
-            // ) : (
             <Select
               className="react-select-styled"
               classNamePrefix="react-select"
@@ -482,28 +347,21 @@ const ProductsTable = () => {
                 const updatedBranches = selected
                   ? selected.map((option) => option.value)
                   : [];
-                //  console.log('updatedBranches',updatedBranches)
                 setEditCategory(updatedBranches);
-                // table.setEditingCell(row.id, 'branch', updatedBranches);
               }}
             />
-            // )
           );
         },
         Cell: ({ cell }) => {
           const categoriess = cell.getValue<{ category: { name: string } }[]>();
-          // console.log('categoriess',categoriess)
           return (
             <>
-              {categoriess?.map((category) => (
-                <span className="badge badge-warning me-1">
+              {categoriess?.map((category, index) => (
+                <span key={index} className="badge badge-warning me-1">
                   {category.category?.name}
                 </span>
               ))}
             </>
-            // <span className="badge badge-secondary">
-            //   {branch.branch.name}
-            // </span>
           );
         },
       },
@@ -522,7 +380,6 @@ const ProductsTable = () => {
         Edit: ({ cell, row, table }) => {
           const subcategories =
             cell.getValue<{ subCategory: { name: string; _id: string } }[]>();
-          console.log('subcategories from child', subcategories);
           let defV = [];
           subcategories.map((subCategory) => {
             defV.push({
@@ -530,12 +387,8 @@ const ProductsTable = () => {
               label: subCategory?.subCategory?.name,
             });
           });
-          // console.log('edit',defV)
 
           return (
-            // loading ? (
-            //   <div>Loading...</div>
-            // ) : (
             <Select
               className="react-select-styled"
               classNamePrefix="react-select"
@@ -550,29 +403,22 @@ const ProductsTable = () => {
                 const updatedBranches = selected
                   ? selected.map((option) => option.value)
                   : [];
-                //  console.log('updatedBranches',updatedBranches)
                 setEditSubCategory(updatedBranches);
-                // table.setEditingCell(row.id, 'branch', updatedBranches);
               }}
             />
-            // )
           );
         },
         Cell: ({ cell }) => {
           const categoriess =
             cell.getValue<{ subCategory: { name: string } }[]>();
-          // console.log('categoriess',categoriess)
           return (
             <>
-              {categoriess?.map((subCategory) => (
-                <span className="badge badge-primary me-1">
+              {categoriess?.map((subCategory, index) => (
+                <span key={index} className="badge badge-primary me-1">
                   {subCategory?.subCategory?.name}
                 </span>
               ))}
             </>
-            // <span className="badge badge-secondary">
-            //   {branch.branch.name}
-            // </span>
           );
         },
       },
@@ -593,7 +439,6 @@ const ProductsTable = () => {
             cell.getValue<
               { childSubCategory: { name: string; _id: string } }[]
             >();
-          // console.log("subcategories from child",subcategories)
           let defV = [];
           childsubcategories.map((childSubCategory) => {
             defV.push({
@@ -601,12 +446,8 @@ const ProductsTable = () => {
               label: childSubCategory?.childSubCategory?.name,
             });
           });
-          // console.log('edit',defV)
 
           return (
-            // loading ? (
-            //   <div>Loading...</div>
-            // ) : (
             <Select
               className="react-select-styled"
               classNamePrefix="react-select"
@@ -621,29 +462,81 @@ const ProductsTable = () => {
                 const ChildSubCategories = selected
                   ? selected.map((option) => option.value)
                   : [];
-                //  console.log('updatedBranches',updatedBranches)
                 setEditChildSubCategory(ChildSubCategories);
-                // table.setEditingCell(row.id, 'branch', updatedBranches);
               }}
             />
-            // )
           );
         },
         Cell: ({ cell }) => {
           const categoriess =
             cell.getValue<{ childSubCategory: { name: string } }[]>();
-          // console.log('categoriess',categoriess)
           return (
             <>
-              {categoriess?.map((childSubCategory) => (
-                <span className="badge badge-primary me-1">
+              {categoriess?.map((childSubCategory, index) => (
+                <span key={index} className="badge badge-primary me-1">
                   {childSubCategory?.childSubCategory?.name}
                 </span>
               ))}
             </>
-            // <span className="badge badge-secondary">
-            //   {branch.branch.name}
-            // </span>
+          );
+        },
+      },
+      {
+        accessorKey: 'groupOfOptions',
+        header: 'GroupOfOptions',
+        editVariant: 'select',
+        grow: true,
+        size: 200,
+        muiTableBodyCellProps: {
+          align: 'center',
+        },
+        muiTableHeadCellProps: {
+          align: 'center',
+        },
+        Edit: ({ cell, row, table }) => {
+          const groupOfOptions =
+            cell.getValue<
+              { groupOfOptions: { name: string; _id: string } }[]
+            >();
+          let defV = [];
+          groupOfOptions.map((group) => {
+            defV.push({
+              value: group?.groupOfOptions?._id,
+              label: group?.groupOfOptions?.name,
+            });
+          });
+
+          return (
+            <Select
+              className="react-select-styled"
+              classNamePrefix="react-select"
+              isMulti
+              options={memoizedGroupsOfOptions}
+              defaultValue={defV}
+              menuPortalTarget={document.body}
+              styles={{
+                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+              }}
+              onChange={(selected) => {
+                const groupsOfOptions = selected
+                  ? selected.map((option) => option.value)
+                  : [];
+                setEditGroups(groupsOfOptions);
+              }}
+            />
+          );
+        },
+        Cell: ({ cell }) => {
+          const groups =
+            cell.getValue<{ groupsOfOptions: { name: string } }[]>();
+          return (
+            <>
+              {groups?.map((group, index) => (
+                <span key={index} className="badge badge-primary me-1">
+                  {group?.groupsOfOptions?.name}
+                </span>
+              ))}
+            </>
           );
         },
       },
@@ -664,18 +557,8 @@ const ProductsTable = () => {
             value: cell.getValue(),
             label: cell.getValue(),
           };
-          // console.log("subcategories from child",subcategories)
-          let defV = [];
-          // childsubcategories.map(childSubCategory => {
-          //   defV.push({value:childSubCategory?.childSubCategory?._id, label:childSubCategory?.childSubCategory?.name})
-
-          // })
-          // console.log('edit',defV)
 
           return (
-            // loading ? (
-            //   <div>Loading...</div>
-            // ) : (
             <Select
               className="react-select-styled"
               classNamePrefix="react-select"
@@ -691,151 +574,21 @@ const ProductsTable = () => {
                 menuPortal: (base) => ({ ...base, zIndex: 9999 }),
               }}
               onChange={(selected) => {
-                //  console.log('updatedBranches',updatedBranches)
                 setBook(selected);
-                // table.setEditingCell(row.id, 'branch', updatedBranches);
               }}
             />
-            // )
           );
         },
         Cell: ({ cell }) => {
-          // const categoriess = cell.getValue();
-          // console.log('categoriess',categoriess)
           return (
             <>
               <span className="badge badge-primary me-1">
                 {cell.getValue() as string}
               </span>
             </>
-            // <span className="badge badge-secondary">
-            //   {branch.branch.name}
-            // </span>
           );
         },
       },
-      // {
-      //   accessorKey: 'extras',
-      //   header: 'Extras',
-      //   editVariant: 'select',
-      //   grow: true,
-      //   size: 200,
-      //   muiTableBodyCellProps: {
-      //     align: 'center',
-      //   },
-      //   muiTableHeadCellProps: {
-      //     align: 'center',
-      //   },
-      //   Edit: ({cell, row, table}) => {
-      //     const extras = cell.getValue<{ extras: { name: string , _id:string} }[]>();
-      //     // console.log("subcategories from child",subcategories)
-      //     let defV =[]
-      //     extras.map(extra => {
-      //       defV.push({value:extra?.extra?._id, label:extra?.extra?.name})
-
-      //     })
-      //     // console.log('edit',defV)
-
-      //     return (
-      //       // loading ? (
-      //       //   <div>Loading...</div>
-      //       // ) : (
-      //         <Select
-      //           className='react-select-styled'
-      //           classNamePrefix='react-select'
-      //           isMulti
-      //           options={memoizedExtras}
-      //           defaultValue={defV}
-      //           menuPortalTarget={document.body}
-      //           styles={{
-      //             menuPortal: base => ({ ...base, zIndex: 9999 })
-      //           }}
-      //           onChange={(selected) => {
-      //             const Extras = selected ? selected.map((option) => option.value  ) : [];
-      //           //  console.log('updatedBranches',updatedBranches)
-      //           setEditExtra(Extras)
-      //            // table.setEditingCell(row.id, 'branch', updatedBranches);
-      //           }}
-      //         />
-      //       // )
-      //     );
-      //   },
-      //   Cell: ({ cell }) => {
-      //     const extras = cell.getValue<{ extras: { name: string } }[]>();
-      //     // console.log('categoriess',categoriess)
-      //     return (
-      //       <>
-      //         {extras?.map(extra => <span className="badge badge-primary me-1">
-      //         {extra?.extra?.name}
-      //       </span>)}
-      //       </>
-      //       // <span className="badge badge-secondary">
-      //       //   {branch.branch.name}
-      //       // </span>
-      //     );
-      //   },
-      // },
-      // {
-      //   accessorKey: 'types',
-      //   header: 'Types',
-      //   editVariant: 'select',
-      //   grow: true,
-      //   size: 200,
-      //   muiTableBodyCellProps: {
-      //     align: 'center',
-      //   },
-      //   muiTableHeadCellProps: {
-      //     align: 'center',
-      //   },
-      //   Edit: ({cell, row, table}) => {
-      //     const types = cell.getValue<{ types: { name: string , _id:string} }[]>();
-      //     // console.log("subcategories from child",subcategories)
-      //     let defV =[]
-      //     types.map(type => {
-      //       defV.push({value:type?._id, label:type?.name})
-
-      //     })
-      //     // console.log('edit',defV)
-
-      //     return (
-      //       // loading ? (
-      //       //   <div>Loading...</div>
-      //       // ) : (
-      //         <Select
-      //           className='react-select-styled'
-      //           classNamePrefix='react-select'
-      //           isMulti
-      //           options={memoizedTypes}
-      //           defaultValue={defV}
-      //           menuPortalTarget={document.body}
-      //           styles={{
-      //             menuPortal: base => ({ ...base, zIndex: 9999 })
-      //           }}
-      //           onChange={(selected) => {
-      //             const updatedTypes = selected ? selected.map((option) => option.value  ) : [];
-      //           //  console.log('updatedBranches',updatedBranches)
-      //           setEditType(updatedTypes)
-      //            // table.setEditingCell(row.id, 'branch', updatedBranches);
-      //           }}
-      //         />
-      //       // )
-      //     );
-      //   },
-      //   Cell: ({ cell }) => {
-      //     const itemTypes = cell.getValue<{ types: { name: string } }[]>();
-      //     // console.log('categoriess',categoriess)
-      //     return (
-      //       <>
-      //         {itemTypes?.map(type => <span className="badge badge-primary me-1">
-      //         {type?.name}
-      //       </span>)}
-      //       </>
-      //       // <span className="badge badge-secondary">
-      //       //   {branch.branch.name}
-      //       // </span>
-      //     );
-      //   },
-      // },
     ],
     [
       validationErrors,
@@ -859,7 +612,6 @@ const ProductsTable = () => {
   });
   //UPDATE Product
   const handleSaveCategories = async (originalRow) => {
-    // console.log(originalRow)
     editCategoriesSchema
       .validate(originalRow.row.original)
       .catch((err) => setValidationErrors(err.message));
@@ -872,10 +624,7 @@ const ProductsTable = () => {
       childSubCategory: editChildSubCategory?.map((str) => ({
         childSubCategory: str,
       })),
-      // extras: editExtra?.map(str => ({ extra: str })),
-      // types: editType,
     };
-    // console.log(editCategory)
 
     await updateCategoryAvailable.mutateAsync({
       id: originalRow.row.original._id,
@@ -907,7 +656,7 @@ const ProductsTable = () => {
     setShowModal(false);
   };
   const openAddCategoryModal = () => {
-    setItemIdForUpdate(null);
+    navigate('/apps/eCommerce/productForm/new');
   };
   const handleClose = () => {
     setShowModal(false);
@@ -961,35 +710,11 @@ const ProductsTable = () => {
     }
   );
 
-  // const {
-  //   isLoading,
-  //   data: productsData,
-  //   error,
-  // } = useQuery(
-  //   `${QUERIES.CATEGORIES_LIST}-products-${CategoriesDelete?._id}`,
-  //   () => {
-  //     return getAllProductsInCategory(CategoriesDelete?._id)
-  //   },
-  //   {
-  //     cacheTime: 0,
-  //     enabled: enableQuery,
-  //     onError: (err) => {
-  //       // setItemIdForUpdate(undefined)
-  //       console.error(err)
-  //     },
-  //   }
-  // )
-  // console.log(active)
   const updateCategoryAvailable = useMutation(
     ({ id, update }: { id: string; update: any }) => updateProduct(id, update),
     {
       // 💡 response of the mutation is passed to onSuccess
       onSuccess: () => {
-        // ✅ update detail view directly
-        // queryClient.invalidateQueries([`${QUERIES.CATEGORIES_LIST}`]);
-        // queryClient.invalidateQueries([`${QUERIES.ARCHIVED_CATEGORIES_LIST}`]);
-        // queryClient.refetchQueries([`${QUERIES.CATEGORIES_LIST}`])
-        // queryClient.refetchQueries([`${QUERIES.ARCHIVED_CATEGORIES_LIST}`])
         refetch();
         setTrigger(true);
       },
@@ -1007,32 +732,13 @@ const ProductsTable = () => {
         minHeight: '320px',
       },
     },
-    // onDraggingRowChange: setDraggingRow,
-    // state: { draggingRow },
   };
   useEffect(() => {
     // Access the data property from the response objects
     setActiveProducts(active.data || []);
     setArchivedProducts(archived.data || []);
-    setBranches([...activeBranches, ...archivedBranches]);
-  }, [active.data, archived.data, trigger, activeBranches, archivedBranches]);
-  // useEffect(() => {
-  //   const getAvBranches = async () => {
-  //     try {
-  //       const res = await getBranches();
-  //       const res2 = await getArchivedBranches();
-  //       setBranches([...res.data, ...res2.data]);
-  //       setLoading(false);
-  //     } catch (error) {
-  //       console.error("Error fetching branches:", error);
-  //       setLoading(false);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //   getAvBranches();
-  // }, []);
-  // console.log('brenacj',branches.map(branch => ({ value: branch._id, label: branch.name })))
+  }, [active.data, archived.data, trigger]);
+
   const table1 = useMaterialReactTable({
     ...commonTableProps,
     enableRowSelection: true,
@@ -1049,11 +755,6 @@ const ProductsTable = () => {
     enableSorting: false,
     enableExpandAll: false,
     enablePagination: true,
-    initialState: {
-      pagination: {
-        pageSize: 10,
-      },
-    },
     state: {
       columnOrder: [
         'mrt-row-select', //move the built-in selection column to the end of the table
@@ -1067,8 +768,7 @@ const ProductsTable = () => {
         'category',
         'subCategory',
         'childSubCategory',
-        // 'extras',
-        // 'types',
+        'groupOfOptions',
         'available',
         'showWeight',
         'book',
@@ -1093,26 +793,12 @@ const ProductsTable = () => {
     //conditionally render detail panel
     renderDetailPanel: ({ row }) =>
       row.original.branch ? (
-        // <Box
-        //   sx={{
-        //     display: 'grid',
-        //     margin: 'auto',
-        //     gridTemplateColumns: '1fr 1fr',
-        //     width: '100%',
-        //   }}
-        // >
-
-        //   {/* <Typography>Address: {row.original.name}</Typography> */}
-        //   {/* <Typography>City: {row.original.description}</Typography> */}
-        //   {/* <Typography>State: {row.original.state}</Typography>
-        //   <Typography>Country: {row.original.country}</Typography> */}
-        // </Box>
         <div className="d-flex justify-content-evenly">
           <div>
             Branches :
             {row.original.branch.map((branch, index) => (
               <span key={index} className="badge badge-secondary me-1">
-                {branch?.branch?.name}
+                {branch?.name}
               </span>
             ))}
           </div>
@@ -1140,26 +826,12 @@ const ProductsTable = () => {
               </span>
             ))}
           </div>
-          {/* <div>
-          extras : 
-        {row.original.extras.map((extra,index) => <span key={index} className="badge badge-primary me-1">
-              {extra?.extra?.name}
-            </span>)}
-          </div>
-        <div>
-          types : 
-        {row.original.types.map((type,index) => <span key={index} className="badge badge-primary me-1">
-              {type?.name}
-            </span>)}
-          </div> */}
         </div>
       ) : null,
     muiRowDragHandleProps: ({ table }) => ({
       onDragEnd: async () => {
         const { draggingRow, hoveredRow } = table.getState();
-        // console.log('hoveredRow',hoveredRow)
         if (hoveredTable === 'table-2') {
-          // console.log('draggingRow',draggingRow)
           setHoveredTable(null);
           await updateCategoryAvailable.mutateAsync({
             id: draggingRow?.original._id,
@@ -1174,25 +846,14 @@ const ProductsTable = () => {
             activeProducts.filter((d) => d !== draggingRow!.original)
           );
         } else if (hoveredRow && draggingRow) {
-          // console.log('hoveredRow',hoveredRow)
-          // console.log('draggingRow',draggingRow)
           await updateCategoryAvailable.mutateAsync({
             id: draggingRow?.original._id,
             update: { order: hoveredRow?.original.order },
           });
           setHoveredTable(null);
-          // setTrigger(true)
-          // data.splice(
-          // (hoveredRow as MRT_Row<Person>).index,
-          // 0,
-          // data.splice(draggingRow.index, 1)[0],
-          // );
-          // setData([...data]);
         }
       },
     }),
-    // pinnedColumn:'selection',
-    // positionSelectionColumn:'first',
     renderTopToolbarCustomActions: ({ table }) => (
       <>
         <div className="card-header ribbon ribbon-start">
@@ -1208,9 +869,6 @@ const ProductsTable = () => {
             justifyContent: 'right',
           }}
         >
-          {/* <Typography color="success.main" component="span" variant="h4">
-        Active List
-      </Typography> */}
           <Tooltip title="Add product">
             <button
               type="button"
@@ -1272,32 +930,6 @@ const ProductsTable = () => {
               <i className="fa-solid fa-trash text-white fa-2xl p-3"></i>
             </button>
           </Tooltip>
-          {/* <Button
-          color="warning"
-          onClick={async() => {
-            table.getSelectedRowModel().rows.map(async(item) =>{ 
-              await updateCategoryAvailable.mutateAsync({id:item.original._id,update:{available:!item.original.available}})
-            })
-            table.toggleAllRowsSelected(false) ;
-          }}
-          variant="contained"
-        >
-          Toggle Available
-        </Button> */}
-          {/* <Button
-          color="error"
-          onClick={async() => {
-            let selcetedIDs =[];
-            table.getSelectedRowModel().rows.map((item) => selcetedIDs.push(item.original._id))
-             await deleteSelectedItems.mutateAsync(selcetedIDs);
-            table.toggleAllRowsSelected(false) ;
-
-          }}
-          variant="contained"
-        >
-          Delete Selected
-          
-        </Button> */}
         </Box>
       </>
     ),
@@ -1305,17 +937,6 @@ const ProductsTable = () => {
     onEditingRowCancel: () => setValidationErrors({}),
     onEditingRowSave: (originalRow) => handleSaveCategories(originalRow),
     getRowId: (originalRow) => `table-1-${originalRow.name}`,
-    // muiRowDragHandleProps: {
-    //   onDragEnd: async() => {
-    //     if (hoveredTable === 'table-2') {
-    //       await updateCategoryAvailable.mutateAsync({id:draggingRow?.original._id,update:{deleted:true}})
-
-    //       setArchivedProducts((archivedProducts) => [...archivedProducts, draggingRow!.original]);
-    //       setActiveProducts((activeProducts) => activeProducts.filter((d) => d !== draggingRow!.original));
-    //     }
-    //     setHoveredTable(null);
-    //   },
-    // },
     muiTablePaperProps: {
       onDragEnter: () => setHoveredTable('table-1'),
       sx: {
@@ -1324,7 +945,6 @@ const ProductsTable = () => {
     },
     displayColumnDefOptions: {
       'mrt-row-actions': {
-        // size: 50, //set custom width
         muiTableHeadCellProps: {
           align: 'center', //change head cell props
         },
@@ -1343,7 +963,6 @@ const ProductsTable = () => {
             onClick={() => {
               setCategoriesDelete(row.original);
               handleDeleteClick();
-              // table.toggleAllRowsSelected(false)
             }}
           >
             <DeleteIcon />
@@ -1351,17 +970,7 @@ const ProductsTable = () => {
         </Tooltip>
         <Tooltip title="Edit product Forum">
           <Link to={`/apps/eCommerce/productForm/${row.original._id}`}>
-            <IconButton
-              color="info"
-              onClick={() => {
-                console.log('row.original', row.original);
-
-                // setCategoriesDelete(row.original);
-                // handleArrangeProductsClick();
-                // table.toggleAllRowsSelected(false)
-              }}
-            >
-              {/* <i className="fa-brands fa-2xl text-primary fa-product-hunt"></i> */}
+            <IconButton color="info">
               <SettingsIcon />
             </IconButton>
           </Link>
@@ -1370,10 +979,6 @@ const ProductsTable = () => {
           <IconButton
             color="info"
             onClick={() => {
-              // setProductToDuplicate(row.original._id);
-              // handleArrangeSubsClick();
-              // table.toggleAllRowsSelected(false)
-              console.log('row.original._id', row.original._id);
               setProductToDuplicate(row.original);
               handleArrangeSubsClick();
             }}
@@ -1395,19 +1000,14 @@ const ProductsTable = () => {
     enableEditing: true,
     editDisplayMode: 'row',
     createDisplayMode: 'row',
-    // Add pagination props:
     enablePagination: true,
-    initialState: {
-      pagination: {
-        pageSize: 10,
-      },
-    },
     rowPinningDisplayMode: 'select-sticky',
     positionToolbarAlertBanner: 'bottom',
     positionActionsColumn: 'last',
     enableRowOrdering: true,
     enableSorting: false,
     enableExpandAll: false,
+    rowCount: archived.total || 0,
     state: {
       columnOrder: [
         'mrt-row-select', //move the built-in selection column to the end of the table
@@ -1421,8 +1021,7 @@ const ProductsTable = () => {
         'category',
         'subCategory',
         'childSubCategory',
-        // 'extras',
-        // 'types',
+        'groupOfOptions',
         'available',
         'showWeight',
         'book',
@@ -1445,26 +1044,12 @@ const ProductsTable = () => {
     }),
     renderDetailPanel: ({ row }) =>
       row.original.branch ? (
-        // <Box
-        //   sx={{
-        //     display: 'grid',
-        //     margin: 'auto',
-        //     gridTemplateColumns: '1fr 1fr',
-        //     width: '100%',
-        //   }}
-        // >
-
-        //   {/* <Typography>Address: {row.original.name}</Typography> */}
-        //   {/* <Typography>City: {row.original.description}</Typography> */}
-        //   {/* <Typography>State: {row.original.state}</Typography>
-        //   <Typography>Country: {row.original.country}</Typography> */}
-        // </Box>
         <div className="d-flex justify-content-evenly">
           <div>
             Branches :
             {row.original.branch.map((branch, index) => (
               <span key={index} className="badge badge-secondary me-1">
-                {branch.branch.name}
+                {branch.name}
               </span>
             ))}
           </div>
@@ -1490,9 +1075,7 @@ const ProductsTable = () => {
     muiRowDragHandleProps: ({ table }) => ({
       onDragEnd: async () => {
         const { draggingRow, hoveredRow } = table.getState();
-        // console.log('hoveredRow',hoveredRow)
         if (hoveredTable === 'table-1') {
-          // console.log('draggingRow',draggingRow)
           setHoveredTable(null);
           await updateCategoryAvailable.mutateAsync({
             id: draggingRow?.original._id,
@@ -1507,20 +1090,11 @@ const ProductsTable = () => {
             activeProducts.filter((d) => d !== draggingRow!.original)
           );
         } else if (hoveredRow && draggingRow) {
-          // console.log('hoveredRow',hoveredRow)
-          // console.log('draggingRow',draggingRow)
           await updateCategoryAvailable.mutateAsync({
             id: draggingRow?.original._id,
             update: { order: hoveredRow?.original.order },
           });
           setHoveredTable(null);
-          // setTrigger(true)
-          // data.splice(
-          // (hoveredRow as MRT_Row<Person>).index,
-          // 0,
-          // data.splice(draggingRow.index, 1)[0],
-          // );
-          // setData([...data]);
         }
       },
     }),
@@ -1540,32 +1114,15 @@ const ProductsTable = () => {
             justifyContent: 'right',
           }}
         >
-          {/* <Typography color="success.main" component="span" variant="h4">
-          Active List
-        </Typography> */}
-          {/* <Button
-            color="info"
-            onClick={openAddCategoryModal}
-            variant="contained"
-          >
-            Add Category
-          </Button> */}
           <Button
             color="warning"
-            // disabled={!table.getIsSomeRowsSelected()}
             onClick={async () => {
-              // let selcetedIDs =[];
               table.getSelectedRowModel().rows.map(async (item) => {
                 await updateCategoryAvailable.mutateAsync({
                   id: item.original._id,
                   update: { available: !item.original.available },
                 });
-                // selcetedIDs.push(item.original._id)
               });
-              // console.log(selcetedIDs);
-              // console.log(table.getState().rowSelection);
-              // selected = selcetedIDs;
-              //  await updateSelectedItems.mutateAsync(selcetedIDs);
               table.toggleAllRowsSelected(false);
             }}
             variant="contained"
@@ -1574,15 +1131,11 @@ const ProductsTable = () => {
           </Button>
           <Button
             color="error"
-            // disabled={!table.getIsSomeRowsSelected()}
             onClick={async () => {
               let selcetedIDs = [];
               table
                 .getSelectedRowModel()
                 .rows.map((item) => selcetedIDs.push(item.original._id));
-              // console.log(selcetedIDs);
-              // console.log(table.getState().rowSelection);
-              // selected = selcetedIDs;
               await deleteSelectedItems.mutateAsync(selcetedIDs);
               table.toggleAllRowsSelected(false);
             }}
@@ -1608,7 +1161,6 @@ const ProductsTable = () => {
     },
     displayColumnDefOptions: {
       'mrt-row-actions': {
-        // size: 350, //set custom width
         muiTableHeadCellProps: {
           align: 'center', //change head cell props
         },
@@ -1627,7 +1179,6 @@ const ProductsTable = () => {
             onClick={() => {
               setCategoriesDelete(row.original);
               handleDeleteClick();
-              // table.toggleAllRowsSelected(false)
             }}
           >
             <DeleteIcon />
@@ -1639,7 +1190,6 @@ const ProductsTable = () => {
             onClick={() => {
               setCategoriesDelete(row.original);
               handleArrangeProductsClick();
-              // table.toggleAllRowsSelected(false)
             }}
           >
             <i className="fa-brands fa-2xl text-primary fa-product-hunt"></i>
@@ -1649,10 +1199,8 @@ const ProductsTable = () => {
           <IconButton
             color="warning"
             onClick={() => {
-              console.log('row.original._id', row.original._id);
               setProductToDuplicate(row.original);
               handleArrangeSubsClick();
-              // table.toggleAllRowsSelected(false)
             }}
           >
             <i className="fa-solid fa-layer-group text-warning"></i>
@@ -1667,7 +1215,6 @@ const ProductsTable = () => {
       <Box
         sx={{
           display: 'grid',
-          // gridTemplateColumns: { xs: 'auto', lg: '1fr 1fr' },
           gap: '1rem',
           overflow: 'auto',
           p: '4px',
@@ -1678,7 +1225,6 @@ const ProductsTable = () => {
       <Box
         sx={{
           display: 'grid',
-          // gridTemplateColumns: { xs: 'auto', lg: '1fr 1fr' },
           gap: '1rem',
           overflow: 'auto',
           p: '4px',
@@ -1761,11 +1307,7 @@ const ProductsTable = () => {
               type="button"
               className="btn btn-primary "
               onClick={async () => {
-                // handleAddItems
                 await duplicateItem.mutateAsync();
-                // duplicateItem(duplicateRef?.current?.value)
-                console.log('duplicateRef', duplicateRef?.current?.value);
-                console.log('productToDuplicate', productToDuplicate);
               }}
             >
               Add

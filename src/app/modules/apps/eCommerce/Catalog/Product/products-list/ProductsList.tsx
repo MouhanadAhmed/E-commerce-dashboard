@@ -13,8 +13,9 @@ import { QueryRequestProvider as TypeRequest } from '../../Type/types-list/core/
 import { QueryResponseProvider as TypeQuery } from '../../Type/types-list/core/QueryResponseProvider';
 import { QueryRequestProvider as ExtraRequest } from '../../Extra/extra-list/core/QueryRequestProvider';
 import { QueryResponseProvider as ExtraQuery } from '../../Extra/extra-list/core/QueryResponseProvider';
+import { QueryRequestProvider as GroupRequest } from '../../GroupOfOptions/groupOfOptions-list/core/QueryRequestProvider';
+import { QueryResponseProvider as GroupQuery } from '../../GroupOfOptions/groupOfOptions-list/core/QueryResponseProvider';
 
-import { ProductEditModal } from './category-edit-modal/ProductEditModal';
 import { KTCard } from '../../../../../../../_metronic/helpers';
 import { ToolbarWrapper } from '../../../../../../../_metronic/layout/components/toolbar';
 import { Content } from '../../../../../../../_metronic/layout/components/content';
@@ -29,7 +30,6 @@ const ProductsList = () => {
         {/* <CategoriesListHeader /> */}
         <ProductsTable />
       </KTCard>
-      {itemIdForUpdate !== undefined && <ProductEditModal />}
     </>
   );
 };
@@ -49,14 +49,18 @@ const ProductsListWrapper = () => (
                         <TypeQuery>
                           <ExtraRequest>
                             <ExtraQuery>
-                              <ListViewProvider>
-                                <ToolbarWrapper />
-                                <DndProvider backend={HTML5Backend}>
-                                  <Content>
-                                    <ProductsList />
-                                  </Content>
-                                </DndProvider>
-                              </ListViewProvider>
+                              <GroupRequest>
+                                <GroupQuery>
+                                  <ListViewProvider>
+                                    <ToolbarWrapper />
+                                    <DndProvider backend={HTML5Backend}>
+                                      <Content>
+                                        <ProductsList />
+                                      </Content>
+                                    </DndProvider>
+                                  </ListViewProvider>
+                                </GroupQuery>
+                              </GroupRequest>
                             </ExtraQuery>
                           </ExtraRequest>
                         </TypeQuery>

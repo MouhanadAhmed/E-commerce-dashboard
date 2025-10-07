@@ -23,6 +23,7 @@ import { useActiveSubCategoriesData as subcategoriesData } from '../../../SubCat
 import { useActiveChildSubCategoriesData as childSubCategoryData } from '../../../ChildSubCategory/ChildSubcategories-list/core/QueryResponseProvider';
 import { useActiveTypesData as typesData } from '../../../Type/types-list/core/QueryResponseProvider';
 import { useActiveExtrasData as extrasData } from '../../../Extra/extra-list/core/QueryResponseProvider';
+import { useActiveGroupsData as groupsData } from '../../../GroupOfOptions/groupOfOptions-list/core/QueryResponseProvider';
 import Select from 'react-select';
 import BranchesForm from './branchesForm';
 import DescTableForm from './DescTableForm';
@@ -105,6 +106,13 @@ const childSubCategory = Yup.object().shape({
   order: Yup.number().min(1).optional(),
 });
 
+const groupOfOptions = Yup.object().shape({
+  groupOfOptions: Yup.string()
+    .matches(/^[0-9a-fA-F]{24}$/, 'Must be a valid hex string of length 24')
+    .optional(),
+  order: Yup.number().min(1).optional(),
+});
+
 const branch = Yup.object().shape({
   branch: Yup.string()
     .matches(/^[0-9a-fA-F]{24}$/, 'Must be a valid hex string of length 24')
@@ -118,17 +126,15 @@ const branch = Yup.object().shape({
   sold: Yup.number().min(1).optional(),
 });
 
-const extras = Yup.string();
-
-const types = Yup.object().shape({
-  type: Yup.string()
+const extras = Yup.object().shape({
+  extra: Yup.string()
     .matches(/^[0-9a-fA-F]{24}$/, 'Must be a valid hex string of length 24')
     .optional(),
   order: Yup.number().min(1).optional(),
 });
 
-const groupOfOptions = Yup.object().shape({
-  groupOfOptions: Yup.string()
+const types = Yup.object().shape({
+  type: Yup.string()
     .matches(/^[0-9a-fA-F]{24}$/, 'Must be a valid hex string of length 24')
     .optional(),
   order: Yup.number().min(1).optional(),
@@ -228,6 +234,7 @@ const ProductForm: FC<Props> = ({ product }) => {
   const childSubCategories = childSubCategoryData();
   const extras = extrasData();
   const types = typesData();
+  const groups = groupsData();
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -293,6 +300,15 @@ const ProductForm: FC<Props> = ({ product }) => {
         label: childSubCategory.name,
       })),
     [childSubCategories]
+  );
+
+  const memoizedGroupsOfOptions = useMemo(
+    () =>
+      groups.map((group) => ({
+        value: group._id,
+        label: group.name,
+      })),
+    [groups]
   );
   const memoizedExtras = useMemo(
     () => extras.map((extra) => ({ value: extra._id, label: extra.name })),
@@ -363,9 +379,9 @@ const ProductForm: FC<Props> = ({ product }) => {
     enableReinitialize: true,
     initialValues: {
       name: productForEdit ? productForEdit.name : initialProduct.name,
-      // Provide default values for all fields to avoid undefined
       _id: productForEdit?._id || '',
       slug: productForEdit?.slug || '',
+      shortDesc: productForEdit?.shortDesc || '',
       description: productForEdit?.description || '',
       imgCover: productForEdit?.imgCover?.[0]?.url || '',
       metaTags: productForEdit?.metaTags || [],
@@ -389,6 +405,12 @@ const ProductForm: FC<Props> = ({ product }) => {
         productForEdit?.extras?.map((option) => ({
           value: option.extra._id,
           label: option.extra.name,
+        })) || [],
+
+      groupOfOptions:
+        productForEdit?.groupOfOptions?.map((option) => ({
+          value: option.optionGroup._id,
+          label: option.optionGroup.name,
         })) || [],
 
       types:
@@ -420,64 +442,87 @@ const ProductForm: FC<Props> = ({ product }) => {
       setIsUploading(true);
       setSubmitting(true);
       setError(null);
+
       try {
+        // Create a new submission object instead of mutating values
+        const submissionData: any = { ...values };
+
+        // Process branches
         if (updatedBranches) {
           const newArray = updatedBranches
-            ?.filter((obj) => obj.available !== false) // Filter out unavailable branches
+            ?.filter((obj) => obj.available !== false)
             .map((obj) => {
               const newObj = { ...obj };
               keysToRemove.forEach((key) => delete newObj[key]);
               return newObj;
             });
-          values.branch = newArray;
+          submissionData.branch = newArray;
         } else {
           const newArray = initialBranches
-            .filter((obj) => obj.available !== false) // Filter out unavailable branches
+            .filter((obj) => obj.available !== false)
             .map((obj) => {
               const newObj = { ...obj };
               keysToRemove.forEach((key) => delete newObj[key]);
               return newObj;
             });
-          values.branch = newArray;
+          submissionData.branch = newArray;
         }
+
+        // Handle image uploads
         if (imageFile) {
-          values.imgCover = (await uploadToCloudinary(imageFile)) as any;
+          submissionData.imgCover = await uploadToCloudinary(imageFile);
         } else {
-          delete values.imgCover;
+          delete submissionData.imgCover;
         }
+
         // Upload gallery images
         if (galleryFiles.length > 0) {
           const galleryUrls = await Promise.all(
             galleryFiles.map((file) => uploadToCloudinary(file))
           );
-          values.images = [...existingGalleryUrls, ...galleryUrls];
+          submissionData.images = [...existingGalleryUrls, ...galleryUrls];
         } else if (existingGalleryUrls.length > 0) {
-          values.images = existingGalleryUrls;
+          submissionData.images = existingGalleryUrls;
         }
-        items.length !== 0 ? (values.descTable = items) : '';
-        values.types = values.types?.map((type) => 
-          type?.value,
-        ) || [];
-        values.extras =
+
+        // Process other fields
+        if (items.length !== 0) {
+          submissionData.descTable = items;
+        }
+
+        // Transform array fields
+        submissionData.types = values.types?.map((type) => type?.value) || [];
+
+        submissionData.extras =
           values.extras?.map((extra) => ({
             extra: extra?.value,
           })) || [];
-        values.category =
+
+        submissionData.groupOfOptions = values.groupOfOptions?.map(
+          (groupOfOption) => ({
+            optionGroup: groupOfOption?.value,
+          })
+        );
+
+        submissionData.category =
           values.category?.map((item) => ({
             category: item?.value,
           })) || [];
-        values.subCategory =
+
+        submissionData.subCategory =
           values.subCategory?.map((subCategory) => ({
             subCategory: subCategory?.value,
           })) || [];
-        values.childSubCategory =
+
+        submissionData.childSubCategory =
           values.childSubCategory?.map((childSubCategory) => ({
             childSubCategory: childSubCategory?.value,
           })) || [];
 
+        delete submissionData._id;
+        // Use submissionData instead of values
         if (isNotEmpty(values._id)) {
-          await updateProduct(values?._id, values);
-          // Show success alert for update
+          await updateProduct(values._id, submissionData);
           Swal.fire({
             icon: 'success',
             title: 'Success!',
@@ -486,8 +531,7 @@ const ProductForm: FC<Props> = ({ product }) => {
             showConfirmButton: false,
           });
         } else {
-          await createProduct(values);
-          // Show success alert for creation
+          await createProduct(submissionData);
           Swal.fire({
             icon: 'success',
             title: 'Success!',
@@ -498,11 +542,10 @@ const ProductForm: FC<Props> = ({ product }) => {
         }
       } catch (ex) {
         console.error(ex);
-        // Show error alert
         Swal.fire({
           icon: 'error',
           title: 'Error!',
-          text: ex.response.data.error,
+          text: ex.response?.data?.error || 'An error occurred',
           timer: 3000,
           showConfirmButton: false,
         });
@@ -512,9 +555,6 @@ const ProductForm: FC<Props> = ({ product }) => {
       }
     },
   });
-
-  console.log(formik.errors);
-  console.log(formik.values);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -1546,6 +1586,46 @@ const ProductForm: FC<Props> = ({ product }) => {
                 </div>
                 {/* end:: Booking group */}
 
+                {/* begin:: Groups Input group */}
+                <div className="shadow-sm rounded-end rounded p-6 mb-8">
+                  <div className="fv-row mb-7">
+                    {/* begin::Label */}
+                    <label className=" fw-bolder fs-4   ms-3 mb-2">
+                      Groups Of Options
+                    </label>
+                    {/* end::Label */}
+
+                    {/* begin::Input */}
+                    <Select
+                      isMulti
+                      options={memoizedGroupsOfOptions}
+                      placeholder="Group Of Options"
+                      className={clsx(
+                        'form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2'
+                      )}
+                      name="groupOfOptions"
+                      value={(formik.values as any).groupOfOptions || []}
+                      onChange={(selected) => {
+                        // Update Formik state directly
+                        formik.setFieldValue(
+                          'groupOfOptions',
+                          selected ? selected : []
+                        );
+                      }}
+                    />
+                    {/* end::Input */}
+                    {(formik.touched as any).groupOfOptions &&
+                      (formik.errors as any).groupOfOptions && (
+                        <div className="fv-plugins-message-container">
+                          <span role="alert">
+                            {(formik.errors as any).groupOfOptions}
+                          </span>
+                        </div>
+                      )}
+                  </div>
+                </div>
+                {/* end:: Groups Input group */}
+
                 {/* begin:: Extras Input group */}
                 <div className="shadow-sm rounded-end rounded p-6 mb-8">
                   <div className="fv-row mb-7">
@@ -1601,13 +1681,10 @@ const ProductForm: FC<Props> = ({ product }) => {
                         'form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2'
                       )}
                       name="types"
-                      value={(formik.values).types || []}
+                      value={formik.values.types || []}
                       onChange={(selected) => {
                         // Update Formik state directly
-                        formik.setFieldValue(
-                          'types',
-                          selected ? selected : []
-                        );
+                        formik.setFieldValue('types', selected ? selected : []);
                       }}
                     />
                     {/* end::Input */}

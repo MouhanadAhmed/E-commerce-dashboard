@@ -5,8 +5,6 @@ import { useQuery } from "react-query";
 import {
   createResponseContext,
   initialQueryResponse,
-  initialQueryState,
-  PaginationState,
   QUERIES,
   stringifyRequestQuery,
   WithChildren,
@@ -123,8 +121,8 @@ const useQueryResponseData = () => {
   const { response } = useQueryResponse();
   if (!response) {
     return {
-      active: { data: [], total: 0, page: 1, pageSize: 1000, totalPages: 0 },
-      archived: { data: [], total: 0, page: 1, pageSize: 1000, totalPages: 0 },
+      active: { data: [], total: 0, page: 1, pageSize: 10, totalPages: 0 },
+      archived: { data: [], total: 0, page: 1, pageSize: 10, totalPages: 0 },
     };
   }
 
@@ -133,14 +131,14 @@ const useQueryResponseData = () => {
       data: [],
       total: 0,
       page: 1,
-      pageSize: 1000,
+      pageSize: 10,
       totalPages: 0,
     },
     archived: response?.archived || {
       data: [],
       total: 0,
       page: 1,
-      pageSize: 1000,
+      pageSize: 10,
       totalPages: 0,
     },
   };
@@ -153,7 +151,7 @@ const useQueryResponseActivePagination = () => {
   if (!response || !response.active) {
     return {
       page: 1,
-      pageSize: 1000,
+      pageSize: 10,
       total: 0,
       totalPages: 0,
       links: [],
@@ -175,7 +173,7 @@ const useQueryResponseArchivedPagination = () => {
   if (!response || !response.archived) {
     return {
       page: 1,
-      pageSize: 1000,
+      pageSize: 10,
       total: 0,
       totalPages: 0,
       links: [],

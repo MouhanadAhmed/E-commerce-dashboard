@@ -28,24 +28,28 @@ export default function BranchesForm({
     setNewBranches(branchees);
   }, [branchees]);
 
-  // Price update effect - use functional update to avoid stale state
+  // Replace the problematic useEffect with this:
   useEffect(() => {
-    if (
-      formik.values.price !== previousPriceRef.current &&
-      newBranches.length > 0
-    ) {
-      setNewBranches((prevBranches) => {
-        const updatedBranches = prevBranches.map((branch) => ({
+    const updateBranchesFromPrice = () => {
+      if (
+        formik.values.price !== previousPriceRef.current &&
+        newBranches.length > 0
+      ) {
+        const updatedBranches = newBranches.map((branch) => ({
           ...branch,
           price: formik.values.price?.toString() || '',
         }));
 
+        setNewBranches(updatedBranches);
         setUpdatedBranches(updatedBranches);
         previousPriceRef.current = formik.values.price;
-        return updatedBranches;
-      });
-    }
-  }, [formik.values.price, setUpdatedBranches]);
+      }
+    };
+
+    // Use requestAnimationFrame to defer the update
+    const rafId = requestAnimationFrame(updateBranchesFromPrice);
+    return () => cancelAnimationFrame(rafId);
+  }, [formik.values.price, setUpdatedBranches, newBranches.length]);
 
   // Helper function to get branch ID consistently
   const getBranchId = (branch: string | Branch): string => {

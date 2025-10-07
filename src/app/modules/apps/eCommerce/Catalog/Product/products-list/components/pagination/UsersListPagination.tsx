@@ -30,7 +30,7 @@ const UsersListPagination = () => {
       return;
     }
 
-    const pageSize = pagination.pageSize || 1000;
+    const pageSize = pagination.pageSize || 10;
     updateState({
       page: pageStr,
       PageCount: pageSize,
