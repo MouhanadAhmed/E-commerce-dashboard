@@ -6,6 +6,7 @@ export type GroupOfOptions = {
   _id: string;
   name: string;
   slug: string;
+  options: Option[];
   available: boolean;
   stock: number | null;
   sold: number;
@@ -21,7 +22,7 @@ export type Option = {
   price: number;
   available: boolean;
   isDefault: boolean;
-  groupId: string;
+  groupOfOptions: {groupOfOptions: string; _id?: string}[];
   createdAt?: string;
   updatedAt?: string;
   __v?: number;
@@ -37,6 +38,7 @@ export const initialGroupOfOptions: GroupOfOptions = {
   name: "اول جروب",
   slug: "اول-جروب",
   available: true,
+  options: [],
   stock: null,
   sold: 0,
   order: 1,

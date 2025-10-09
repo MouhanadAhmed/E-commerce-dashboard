@@ -254,6 +254,33 @@ const ProductsTable = () => {
         ),
       },
       {
+        accessorKey: 'fractionalQuantity',
+        header: 'Fractional Quantity',
+        size: 100,
+        muiTableBodyCellProps: {
+          align: 'right',
+        },
+        muiTableHeadCellProps: {
+          align: 'left',
+        },
+        Cell: ({ cell }) => (
+          <div className="form-check form-switch form-check-custom form-check-solid">
+            <input
+              className="form-check-input cursor-pointer"
+              type="checkbox"
+              checked={cell.getValue<boolean>()}
+              onChange={() =>
+                updateCategoryAvailable.mutateAsync({
+                  id: cell.row.original._id,
+                  update: { fractionalQuantity: !cell.row.original.fractionalQuantity },
+                })
+              }
+              id={cell.row.original._id}
+            />
+          </div>
+        ),
+      },
+      {
         accessorKey: 'branch',
         header: 'Branch',
         editVariant: 'select',
@@ -579,15 +606,6 @@ const ProductsTable = () => {
             />
           );
         },
-        Cell: ({ cell }) => {
-          return (
-            <>
-              <span className="badge badge-primary me-1">
-                {cell.getValue() as string}
-              </span>
-            </>
-          );
-        },
       },
     ],
     [
@@ -655,14 +673,14 @@ const ProductsTable = () => {
     await deleteItem.mutateAsync();
     setShowModal(false);
   };
-  const openAddCategoryModal = () => {
-    navigate('/apps/eCommerce/productForm/new');
+  const openAddCategoryModal = (id: string) => {
+    navigate(`/apps/eCommerce/productForm/${id}`);
   };
   const handleClose = () => {
     setShowModal(false);
   };
   const deleteItem = useMutation(
-    () => deleteProduct(CategoriesDelete as string),
+    () => deleteProduct(CategoriesDelete as any),
     {
       // 💡 response of the mutation is passed to onSuccess
       onSuccess: () => {
@@ -771,6 +789,7 @@ const ProductsTable = () => {
         'groupOfOptions',
         'available',
         'showWeight',
+        'fractionalQuantity',
         'book',
       ],
     },
@@ -872,7 +891,7 @@ const ProductsTable = () => {
           <Tooltip title="Add product">
             <button
               type="button"
-              onClick={openAddCategoryModal}
+              onClick={() => openAddCategoryModal('new')}
               className="rounded bg-primary rounded-circle p-0 border-0"
             >
               {/* Add Product */}
@@ -953,7 +972,7 @@ const ProductsTable = () => {
     renderRowActions: ({ row, table }) => (
       <Box sx={{ display: 'flex', gap: '1rem' }}>
         <Tooltip title="Edit">
-          <IconButton onClick={() => table.setEditingRow(row)}>
+          <IconButton onClick={() => openAddCategoryModal(row.original._id)}>
             <EditIcon />
           </IconButton>
         </Tooltip>
@@ -1024,6 +1043,7 @@ const ProductsTable = () => {
         'groupOfOptions',
         'available',
         'showWeight',
+        'fractionalQuantity',
         'book',
       ],
     },
@@ -1169,7 +1189,7 @@ const ProductsTable = () => {
     renderRowActions: ({ row, table }) => (
       <Box sx={{ display: 'flex', gap: '1rem' }}>
         <Tooltip title="Edit">
-          <IconButton onClick={() => table.setEditingRow(row)}>
+          <IconButton onClick={() => openAddCategoryModal(row.original._id)}>
             <EditIcon />
           </IconButton>
         </Tooltip>

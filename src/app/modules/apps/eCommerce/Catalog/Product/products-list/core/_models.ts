@@ -49,6 +49,7 @@ export type Product = {
   }[];
   minQty?: string;
   quantity?: string;
+  fractionalQuantity: boolean;
   dimensions?: string;
   rewardPoint?: string;
   sold?: string;
@@ -126,6 +127,7 @@ export interface ProductFormValues {
   weight?: string;
   dimensions?: string;
   quantity?: string;
+  fractionalQuantity: boolean;
   minQty?: string;
   stock?: string;
   sold?: string;
@@ -157,7 +159,7 @@ export const initialProduct: Product = {
   priceAfterDiscount: '',
 
   descTableName: '',
-
+  fractionalQuantity: false,
   weight: '',
   showWeight: false,
   book: '',

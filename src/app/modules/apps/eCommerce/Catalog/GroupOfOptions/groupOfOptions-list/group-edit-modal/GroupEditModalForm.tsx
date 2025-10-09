@@ -136,8 +136,8 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
         name: option.name,
         price: option.price,
         available: option.available,
-        isDefault: option.isDefault,
-        groupId: groupId,
+        // isDefault: option.isDefault,
+        groupOfOptions: [{groupOfOptions: groupId}],
       };
 
       return createOption(optionWithGroupId)

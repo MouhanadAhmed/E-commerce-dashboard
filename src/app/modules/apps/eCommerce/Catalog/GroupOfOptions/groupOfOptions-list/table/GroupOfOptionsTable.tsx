@@ -1,13 +1,17 @@
-import { useEffect, useMemo, useState } from "react";
-import { useActiveGroupsLoading, useArchivedGroupsLoading, useQueryResponseData } from "../core/QueryResponseProvider";
-import { GroupOfOptions } from "../core/_models";
+import { useEffect, useMemo, useState } from 'react';
+import {
+  useActiveGroupsLoading,
+  useArchivedGroupsLoading,
+  useQueryResponseData,
+} from '../core/QueryResponseProvider';
+import { GroupOfOptions } from '../core/_models';
 import {
   type MRT_TableOptions,
   type MRT_ColumnDef,
   type MRT_Row,
   MaterialReactTable,
   useMaterialReactTable,
-} from "material-react-table";
+} from 'material-react-table';
 import {
   Box,
   Typography,
@@ -18,60 +22,28 @@ import {
   Switch,
   FormControlLabel,
   Alert,
-} from "@mui/material";
+  Snackbar,
+} from '@mui/material';
 import {
   deleteGroup,
   deleteSelectedGroups,
   updateGroup,
-} from "../core/_requests";
-import { useMutation, useQueryClient } from "react-query";
-import { QUERIES } from "../../../../../../../../_metronic/helpers";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import RestoreFromTrashIcon from "@mui/icons-material/RestoreFromTrash";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
-import SaveIcon from "@mui/icons-material/Save";
-import CancelIcon from "@mui/icons-material/Cancel";
-import * as Yup from "yup";
-import { Modal } from "react-bootstrap";
-import { useListView } from "../core/ListViewProvider";
-
-// Dummy options data for the modal
-const initialDummyOptions = [
-  {
-    id: "opt1",
-    name: "Option 1",
-    price: 0,
-    order: 1,
-    status: "active",
-    isDefault: true,
-  },
-  {
-    id: "opt2",
-    name: "Option 2",
-    price: 5,
-    order: 2,
-    status: "active",
-    isDefault: false,
-  },
-  {
-    id: "opt3",
-    name: "Option 3",
-    price: 10,
-    order: 3,
-    status: "active",
-    isDefault: false,
-  },
-  {
-    id: "opt4",
-    name: "Option 4",
-    price: 15,
-    order: 4,
-    status: "inactive",
-    isDefault: false,
-  },
-];
+  createOption,
+  updateOption,
+  deleteOption,
+} from '../core/_requests';
+import { useMutation, useQueryClient } from 'react-query';
+import { QUERIES } from '../../../../../../../../_metronic/helpers';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
+import SaveIcon from '@mui/icons-material/Save';
+import CancelIcon from '@mui/icons-material/Cancel';
+import * as Yup from 'yup';
+import { Modal } from 'react-bootstrap';
+import { useListView } from '../core/ListViewProvider';
 
 const GroupTable = () => {
   const { selected, clearSelected } = useListView();
@@ -80,11 +52,14 @@ const GroupTable = () => {
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string | undefined>
   >({});
+  const [optionValidationErrors, setOptionValidationErrors] = useState<
+    Record<string, string | undefined>
+  >({});
   const { active, archived } = useQueryResponseData();
   const [trigger, setTrigger] = useState(false);
   const [activeGroup, setActiveGroup] = useState<GroupOfOptions[]>(active);
   const [archivedGroup, setArchivedGroup] = useState<GroupOfOptions[]>(
-    () => archived,
+    () => archived
   );
   const [draggingRow, setDraggingRow] =
     useState<MRT_Row<GroupOfOptions> | null>(null);
@@ -93,19 +68,24 @@ const GroupTable = () => {
   const [groupDelete, setGroupDelete] = useState();
   const [showOptionsModal, setShowOptionsModal] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<GroupOfOptions | null>(
-    null,
+    null
   );
   const [isEditingOptions, setIsEditingOptions] = useState(false);
-  const [dummyOptions, setDummyOptions] = useState(initialDummyOptions);
+  const [groupOptions, setGroupOptions] = useState<any[]>([]);
   const [draggingOption, setDraggingOption] = useState<string | null>(null);
-  const isActiveLoading = useActiveGroupsLoading()
-  const isArchivedLoading = useArchivedGroupsLoading()
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success' as 'success' | 'error',
+  });
+  const isActiveLoading = useActiveGroupsLoading();
+  const isArchivedLoading = useArchivedGroupsLoading();
 
   const columns = useMemo<MRT_ColumnDef<GroupOfOptions>[]>(
     () => [
       {
-        accessorKey: "name",
-        header: "Name",
+        accessorKey: 'name',
+        header: 'Name',
         muiEditTextFieldProps: {
           required: true,
           error: !!validationErrors?.name,
@@ -118,10 +98,10 @@ const GroupTable = () => {
         },
       },
       {
-        accessorKey: "min",
-        header: "Minimum",
+        accessorKey: 'min',
+        header: 'Minimum',
         muiEditTextFieldProps: {
-          type: "number",
+          type: 'number',
           required: true,
           error: !!validationErrors?.min,
           helperText: validationErrors?.min,
@@ -133,10 +113,10 @@ const GroupTable = () => {
         },
       },
       {
-        accessorKey: "order",
-        header: "Order",
+        accessorKey: 'order',
+        header: 'Order',
         muiEditTextFieldProps: {
-          type: "number",
+          type: 'number',
           required: true,
           error: !!validationErrors?.order,
           helperText: validationErrors?.order,
@@ -148,10 +128,10 @@ const GroupTable = () => {
         },
       },
       {
-        accessorKey: "available",
-        header: "Available",
-        Cell: ({ cell }) => (cell.getValue() ? "Yes" : "No"),
-        editVariant: "select",
+        accessorKey: 'available',
+        header: 'Available',
+        Cell: ({ cell }) => (cell.getValue() ? 'Yes' : 'No'),
+        editVariant: 'select',
         muiEditTextFieldProps: {
           select: true,
           error: !!validationErrors?.available,
@@ -164,37 +144,55 @@ const GroupTable = () => {
         },
         // Define the select options
         editSelectOptions: [
-          { value: true, label: "Yes" },
-          { value: false, label: "No" },
+          { value: true, label: 'Yes' },
+          { value: false, label: 'No' },
         ],
       },
     ],
-    [validationErrors],
+    [validationErrors]
   );
 
   const editGroupSchema = Yup.object().shape({
-    name: Yup.string().min(1, "Minimum 1 symbol").required("Name is required"),
+    name: Yup.string().min(1, 'Minimum 1 symbol').required('Name is required'),
     min: Yup.number()
-      .min(0, "Minimum value is 0")
-      .required("Minimum is required"),
+      .min(0, 'Minimum value is 0')
+      .required('Minimum is required'),
     stock: Yup.number()
       .nullable()
-      .min(0, "Stock cannot be negative")
+      .min(0, 'Stock cannot be negative')
       .optional(),
     sold: Yup.number()
-      .min(0, "Sold cannot be negative")
-      .required("Sold is required"),
+      .min(0, 'Sold cannot be negative')
+      .required('Sold is required'),
     order: Yup.number()
-      .min(0, "Order cannot be negative")
-      .required("Order is required"),
-    available: Yup.boolean().required("Availability is required"),
+      .min(0, 'Order cannot be negative')
+      .required('Order is required'),
+    available: Yup.boolean().required('Availability is required'),
   });
+
+  const editOptionSchema = Yup.object().shape({
+    name: Yup.string().min(1, 'Minimum 1 symbol').required('Name is required'),
+    price: Yup.number()
+      .min(0, 'Price cannot be negative')
+      .required('Price is required'),
+    available: Yup.boolean().required('Availability is required'),
+  });
+
+  // Show snackbar notification
+  const showNotification = (
+    message: string,
+    severity: 'success' | 'error' = 'success'
+  ) => {
+    setSnackbar({ open: true, message, severity });
+  };
 
   // Handle expand button click
   const handleExpandClick = (group: GroupOfOptions) => {
     setSelectedGroup(group);
+    setGroupOptions(group.options || []);
     setShowOptionsModal(true);
     setIsEditingOptions(false);
+    setOptionValidationErrors({});
   };
 
   // Handle close options modal
@@ -202,7 +200,8 @@ const GroupTable = () => {
     setShowOptionsModal(false);
     setSelectedGroup(null);
     setIsEditingOptions(false);
-    setDummyOptions(initialDummyOptions); // Reset to initial state
+    setGroupOptions([]);
+    setOptionValidationErrors({});
   };
 
   // Handle manage options button click
@@ -210,81 +209,173 @@ const GroupTable = () => {
     setIsEditingOptions(true);
   };
 
+  // Validate all options
+  const validateAllOptions = async (): Promise<boolean> => {
+    const errors: Record<string, string> = {};
+
+    for (const option of groupOptions) {
+      try {
+        await editOptionSchema.validate(option, { abortEarly: false });
+      } catch (err: any) {
+        err.inner.forEach((error: any) => {
+          errors[`${option.id}_${error.path}`] = error.message;
+        });
+      }
+    }
+
+    setOptionValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   // Handle save options
-  const handleSaveOptions = () => {
-    // Here you would typically save to your backend
-    setIsEditingOptions(false);
-    // Show success message or handle accordingly
+  const handleSaveOptions = async () => {
+    const isValid = await validateAllOptions();
+    if (!isValid) {
+      showNotification(
+        'Please fix all validation errors before saving',
+        'error'
+      );
+      return;
+    }
+
+    try {
+
+      // First, process all options and find the default option
+      const savePromises = groupOptions.map(async (option) => {
+        const optionData = {
+          name: option.name,
+          price: option.price,
+          order: option.order,
+          available: option.available,
+          groupOfOptions: { groupOfOptions: selectedGroup?._id },
+          // isDefault: option.isDefault,
+          // Note: We don't send isDefault to the option creation/update
+        };
+
+        if (option.isNew) {
+          // Create new option
+          const result = await createOptionMutation.mutateAsync(optionData);
+
+          return result;
+        } else {
+          // Update existing option
+          const result = await updateOptionMutation.mutateAsync({
+            optionId: option._id || option.id,
+            option: optionData,
+          });
+
+          return result;
+        }
+      });
+
+      await Promise.all(savePromises);
+
+      setIsEditingOptions(false);
+      showNotification('Options saved successfully');
+
+      // Refresh the groups data
+      queryClient.invalidateQueries([`${QUERIES.GROUPS_LIST}`]);
+    } catch (error) {
+      console.error('Error saving options:', error);
+      showNotification('Error saving options', 'error');
+    }
   };
 
   // Handle cancel editing
   const handleCancelEditing = () => {
     setIsEditingOptions(false);
-    setDummyOptions(initialDummyOptions); // Reset to initial state
+    // Reset to original group options
+    setGroupOptions(selectedGroup?.options || []);
+    setOptionValidationErrors({});
   };
 
   // Handle option field change
   const handleOptionChange = (optionId: string, field: string, value: any) => {
-    setDummyOptions((prev) =>
+    setGroupOptions((prev) =>
       prev.map((option) => {
-        if (option.id === optionId) {
-          return { ...option, [field]: value };
+        if (option.id === optionId || option._id === optionId) {
+          const updatedOption = { ...option, [field]: value };
+
+          // Clear validation errors for this field
+          if (optionValidationErrors[`${optionId}_${field}`]) {
+            setOptionValidationErrors((prevErrors) => {
+              const newErrors = { ...prevErrors };
+              delete newErrors[`${optionId}_${field}`];
+              return newErrors;
+            });
+          }
+
+          return updatedOption;
         }
         return option;
-      }),
+      })
     );
   };
 
-  // Handle default toggle change
-  const handleDefaultChange = (optionId: string) => {
-    setDummyOptions((prev) =>
-      prev.map((option) => ({
-        ...option,
-        isDefault: option.id === optionId,
-      })),
-    );
-  };
-
-  // Handle status toggle change
-  const handleStatusChange = (optionId: string) => {
-    setDummyOptions((prev) =>
+  // Handle available toggle change (replaced status)
+  const handleAvailableChange = (optionId: string) => {
+    setGroupOptions((prev) =>
       prev.map((option) => {
-        if (option.id === optionId) {
+        if (option.id === optionId || option._id === optionId) {
           return {
             ...option,
-            status: option.status === "active" ? "inactive" : "active",
+            available: !option.available,
           };
         }
         return option;
-      }),
+      })
+    );
+  };
+
+  // Handle add new option
+  const handleAddNewOption = () => {
+    const newOption = {
+      id: `opt${Date.now()}`,
+      name: 'New Option',
+      price: 0,
+      order: groupOptions.length + 1,
+      available: true,
+      isDefault: groupOptions.length === 0, // Mark as default if it's the first option
+      isNew: true,
+    };
+    setGroupOptions((prev) => [...prev, newOption]);
+  };
+
+  // Handle default toggle change - updated to ensure only one default
+  const handleDefaultChange = (optionId: string) => {
+    setGroupOptions((prev) =>
+      prev.map((option) => ({
+        ...option,
+        isDefault: option.id === optionId || option._id === optionId,
+      }))
     );
   };
 
   // Drag and drop handlers
   const handleDragStart = (e: React.DragEvent, optionId: string) => {
     setDraggingOption(optionId);
-    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.effectAllowed = 'move';
   };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
+    e.dataTransfer.dropEffect = 'move';
   };
 
   const handleDrop = (e: React.DragEvent, targetOptionId: string) => {
     e.preventDefault();
     if (!draggingOption || draggingOption === targetOptionId) return;
 
-    const draggedIndex = dummyOptions.findIndex(
-      (opt) => opt.id === draggingOption,
+    const draggedIndex = groupOptions.findIndex(
+      (opt) => opt.id === draggingOption || opt._id === draggingOption
     );
-    const targetIndex = dummyOptions.findIndex(
-      (opt) => opt.id === targetOptionId,
+    const targetIndex = groupOptions.findIndex(
+      (opt) => opt.id === targetOptionId || opt._id === targetOptionId
     );
 
     if (draggedIndex === -1 || targetIndex === -1) return;
 
-    const newOptions = [...dummyOptions];
+    const newOptions = [...groupOptions];
     const [draggedItem] = newOptions.splice(draggedIndex, 1);
     newOptions.splice(targetIndex, 0, draggedItem);
 
@@ -294,7 +385,7 @@ const GroupTable = () => {
       order: index + 1,
     }));
 
-    setDummyOptions(updatedOptions);
+    setGroupOptions(updatedOptions);
     setDraggingOption(null);
   };
 
@@ -335,6 +426,10 @@ const GroupTable = () => {
     onSuccess: () => {
       queryClient.invalidateQueries([`${QUERIES.GROUPS_LIST}`]);
       setTrigger(true);
+      showNotification('Group deleted successfully');
+    },
+    onError: () => {
+      showNotification('Error deleting group', 'error');
     },
   });
 
@@ -345,8 +440,12 @@ const GroupTable = () => {
         queryClient.invalidateQueries([`${QUERIES.GROUPS_LIST}`]);
         setTrigger(true);
         clearSelected();
+        showNotification('Selected groups deleted successfully');
       },
-    },
+      onError: () => {
+        showNotification('Error deleting selected groups', 'error');
+      },
+    }
   );
 
   const updateGroupAvailable = useMutation(
@@ -354,9 +453,69 @@ const GroupTable = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries([`${QUERIES.GROUPS_LIST}`]);
+        showNotification('Group updated successfully');
       },
-    },
+      onError: () => {
+        showNotification('Error updating group', 'error');
+      },
+    }
   );
+
+  // Option mutations
+  const createOptionMutation = useMutation(
+    (option: any) => createOption(option),
+    {
+      onError: () => {
+        showNotification('Error creating option', 'error');
+      },
+    }
+  );
+
+  const updateOptionMutation = useMutation(
+    ({ optionId, option }: { optionId: string; option: any }) =>
+      updateOption(optionId, option),
+    {
+      onError: () => {
+        showNotification('Error updating option', 'error');
+      },
+    }
+  );
+
+  const deleteOptionMutation = useMutation(
+    (optionId: string) => deleteOption(optionId),
+    {
+      onSuccess: () => {
+        showNotification('Option deleted successfully');
+      },
+      onError: () => {
+        showNotification('Error deleting option', 'error');
+      },
+    }
+  );
+
+  // Handle delete option
+  const handleDeleteOption = async (optionId: string) => {
+    const option = groupOptions.find(
+      (opt) => opt.id === optionId || opt._id === optionId
+    );
+
+    if (option && !option.isNew) {
+      // Existing option - delete from backend
+      try {
+        await deleteOptionMutation.mutateAsync(option._id || option.id);
+        setGroupOptions((prev) =>
+          prev.filter((opt) => opt.id !== optionId && opt._id !== optionId)
+        );
+      } catch (error) {
+        console.error('Error deleting option:', error);
+      }
+    } else {
+      // New option - just remove from local state
+      setGroupOptions((prev) =>
+        prev.filter((opt) => opt.id !== optionId && opt._id !== optionId)
+      );
+    }
+  };
 
   const commonTableProps: Partial<MRT_TableOptions<GroupOfOptions>> & {
     columns: MRT_ColumnDef<GroupOfOptions>[];
@@ -366,7 +525,7 @@ const GroupTable = () => {
     enableFullScreenToggle: false,
     muiTableContainerProps: {
       sx: {
-        minHeight: "320px",
+        minHeight: '320px',
       },
     },
     onDraggingRowChange: setDraggingRow,
@@ -633,20 +792,20 @@ const GroupTable = () => {
     <>
       <Box
         sx={{
-          display: "grid",
-          gap: "1rem",
-          overflow: "auto",
-          p: "4px",
+          display: 'grid',
+          gap: '1rem',
+          overflow: 'auto',
+          p: '4px',
         }}
       >
         <MaterialReactTable table={table1} />
       </Box>
       <Box
         sx={{
-          display: "grid",
-          gap: "1rem",
-          overflow: "auto",
-          p: "4px",
+          display: 'grid',
+          gap: '1rem',
+          overflow: 'auto',
+          p: '4px',
         }}
       >
         <MaterialReactTable table={table2} />
@@ -659,7 +818,7 @@ const GroupTable = () => {
         </Modal.Header>
         <Modal.Body>Are you sure you want to delete this item?</Modal.Body>
         <Modal.Footer>
-          <Box sx={{ display: "flex", gap: "1rem", p: "4px" }}>
+          <Box sx={{ display: 'flex', gap: '1rem', p: '4px' }}>
             <Button color="info" variant="contained" onClick={handleClose}>
               Cancel
             </Button>
@@ -678,7 +837,7 @@ const GroupTable = () => {
       <Modal show={showOptionsModal} onHide={handleCloseOptionsModal} size="xl">
         <Modal.Header closeButton>
           <Modal.Title>
-            {isEditingOptions ? "Manage Options" : "View Options"} -{" "}
+            {isEditingOptions ? 'Manage Options' : 'View Options'} -{' '}
             {selectedGroup?.name}
           </Modal.Title>
         </Modal.Header>
@@ -690,8 +849,8 @@ const GroupTable = () => {
               </Typography>
               <Box
                 sx={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
                   gap: 2,
                   mb: 3,
                 }}
@@ -725,7 +884,7 @@ const GroupTable = () => {
                     Available:
                   </Typography>
                   <Typography variant="body1" fontWeight="medium">
-                    {selectedGroup?.available ? "Yes" : "No"}
+                    {selectedGroup?.available ? 'Yes' : 'No'}
                   </Typography>
                 </div>
               </Box>
@@ -734,14 +893,14 @@ const GroupTable = () => {
 
           <Box
             sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
               mb: 2,
             }}
           >
             <Typography variant="h6" gutterBottom>
-              Available Options ({dummyOptions.length})
+              Available Options ({groupOptions.length})
             </Typography>
             {isEditingOptions && (
               <Alert severity="info" sx={{ mb: 2 }}>
@@ -751,39 +910,43 @@ const GroupTable = () => {
             )}
           </Box>
 
-          <Box sx={{ maxHeight: "400px", overflow: "auto" }}>
+          <Box sx={{ maxHeight: '400px', overflow: 'auto' }}>
             <table className="table table-striped table-hover">
               <thead>
                 <tr>
-                  {isEditingOptions && <th style={{ width: "30px" }}></th>}
+                  {isEditingOptions && <th style={{ width: '30px' }}></th>}
                   <th>Order</th>
                   <th>Name</th>
                   <th>Price</th>
-                  <th>Status</th>
+                  <th>Available</th>
                   <th>Default</th>
                   {isEditingOptions && <th>Actions</th>}
                 </tr>
               </thead>
               <tbody>
-                {dummyOptions
+                {groupOptions
                   .sort((a, b) => a.order - b.order)
                   .map((option) => (
                     <tr
-                      key={option.id}
+                      key={option.id || option._id}
                       draggable={isEditingOptions}
-                      onDragStart={(e) => handleDragStart(e, option.id)}
+                      onDragStart={(e) =>
+                        handleDragStart(e, option.id || option._id)
+                      }
                       onDragOver={handleDragOver}
-                      onDrop={(e) => handleDrop(e, option.id)}
+                      onDrop={(e) => handleDrop(e, option.id || option._id)}
                       style={{
-                        cursor: isEditingOptions ? "move" : "default",
+                        cursor: isEditingOptions ? 'move' : 'default',
                         backgroundColor:
-                          draggingOption === option.id ? "#f0f0f0" : "inherit",
+                          draggingOption === (option.id || option._id)
+                            ? '#f0f0f0'
+                            : 'inherit',
                       }}
                     >
                       {isEditingOptions && (
                         <td>
                           <DragIndicatorIcon
-                            sx={{ color: "text.secondary", cursor: "grab" }}
+                            sx={{ color: 'text.secondary', cursor: 'grab' }}
                           />
                         </td>
                       )}
@@ -795,12 +958,12 @@ const GroupTable = () => {
                             value={option.order}
                             onChange={(e) =>
                               handleOptionChange(
-                                option.id,
-                                "order",
-                                parseInt(e.target.value),
+                                option.id || option._id,
+                                'order',
+                                parseInt(e.target.value)
                               )
                             }
-                            sx={{ width: "80px" }}
+                            sx={{ width: '80px' }}
                             inputProps={{ min: 1 }}
                           />
                         ) : (
@@ -811,18 +974,30 @@ const GroupTable = () => {
                       </td>
                       <td>
                         {isEditingOptions ? (
-                          <TextField
-                            size="small"
-                            value={option.name}
-                            onChange={(e) =>
-                              handleOptionChange(
-                                option.id,
-                                "name",
-                                e.target.value,
-                              )
-                            }
-                            sx={{ minWidth: "120px" }}
-                          />
+                          <Box>
+                            <TextField
+                              size="small"
+                              value={option.name}
+                              onChange={(e) =>
+                                handleOptionChange(
+                                  option.id || option._id,
+                                  'name',
+                                  e.target.value
+                                )
+                              }
+                              sx={{ minWidth: '120px' }}
+                              error={
+                                !!optionValidationErrors[
+                                  `${option.id || option._id}_name`
+                                ]
+                              }
+                              helperText={
+                                optionValidationErrors[
+                                  `${option.id || option._id}_name`
+                                ]
+                              }
+                            />
+                          </Box>
                         ) : (
                           <Typography variant="body1" fontWeight="medium">
                             {option.name}
@@ -831,35 +1006,47 @@ const GroupTable = () => {
                       </td>
                       <td>
                         {isEditingOptions ? (
-                          <TextField
-                            size="small"
-                            type="number"
-                            value={option.price}
-                            onChange={(e) =>
-                              handleOptionChange(
-                                option.id,
-                                "price",
-                                parseFloat(e.target.value),
-                              )
-                            }
-                            sx={{ width: "100px" }}
-                            inputProps={{ min: 0, step: 0.01 }}
-                            InputProps={{
-                              startAdornment: (
-                                <Typography sx={{ mr: 1 }}>$</Typography>
-                              ),
-                            }}
-                          />
+                          <Box>
+                            <TextField
+                              size="small"
+                              type="number"
+                              value={option.price}
+                              onChange={(e) =>
+                                handleOptionChange(
+                                  option.id || option._id,
+                                  'price',
+                                  parseFloat(e.target.value)
+                                )
+                              }
+                              sx={{ width: '100px' }}
+                              inputProps={{ min: 0, step: 0.01 }}
+                              InputProps={{
+                                startAdornment: (
+                                  <Typography sx={{ mr: 1 }}>$</Typography>
+                                ),
+                              }}
+                              error={
+                                !!optionValidationErrors[
+                                  `${option.id || option._id}_price`
+                                ]
+                              }
+                              helperText={
+                                optionValidationErrors[
+                                  `${option.id || option._id}_price`
+                                ]
+                              }
+                            />
+                          </Box>
                         ) : (
                           <Typography
                             variant="body1"
                             color={
                               option.price > 0
-                                ? "success.main"
-                                : "text.secondary"
+                                ? 'success.main'
+                                : 'text.secondary'
                             }
                           >
-                            {option.price > 0 ? `+$${option.price}` : "Free"}
+                            {option.price > 0 ? `+$${option.price}` : 'Free'}
                           </Typography>
                         )}
                       </td>
@@ -867,15 +1054,15 @@ const GroupTable = () => {
                         <FormControlLabel
                           control={
                             <Switch
-                              checked={option.status === "active"}
-                              onChange={() => handleStatusChange(option.id)}
+                              checked={option.available}
+                              onChange={() =>
+                                handleAvailableChange(option.id || option._id)
+                              }
                               disabled={!isEditingOptions}
                               color="success"
                             />
                           }
-                          label={
-                            option.status === "active" ? "Active" : "Inactive"
-                          }
+                          label={option.available ? 'Yes' : 'No'}
                         />
                       </td>
                       <td>
@@ -883,12 +1070,14 @@ const GroupTable = () => {
                           control={
                             <Switch
                               checked={option.isDefault}
-                              onChange={() => handleDefaultChange(option.id)}
+                              onChange={() =>
+                                handleDefaultChange(option.id || option._id)
+                              }
                               disabled={!isEditingOptions}
                               color="primary"
                             />
                           }
-                          label={option.isDefault ? "Default" : ""}
+                          label={option.isDefault ? 'Default' : ''}
                         />
                       </td>
                       {isEditingOptions && (
@@ -897,11 +1086,9 @@ const GroupTable = () => {
                             <IconButton
                               size="small"
                               color="error"
-                              onClick={() => {
-                                setDummyOptions((prev) =>
-                                  prev.filter((opt) => opt.id !== option.id),
-                                );
-                              }}
+                              onClick={() =>
+                                handleDeleteOption(option.id || option._id)
+                              }
                             >
                               <DeleteIcon fontSize="small" />
                             </IconButton>
@@ -918,25 +1105,15 @@ const GroupTable = () => {
             <Box sx={{ mt: 2 }}>
               <Button
                 variant="outlined"
-                onClick={() => {
-                  const newOption = {
-                    id: `opt${Date.now()}`,
-                    name: "New Option",
-                    price: 0,
-                    order: dummyOptions.length + 1,
-                    status: "active",
-                    isDefault: false,
-                  };
-                  setDummyOptions((prev) => [...prev, newOption]);
-                }}
+                onClick={handleAddNewOption}
               >
                 Add New Option
               </Button>
             </Box>
           )}
 
-          {dummyOptions.length === 0 && (
-            <Box sx={{ textAlign: "center", py: 4 }}>
+          {groupOptions.length === 0 && (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
               <Typography variant="body1" color="textSecondary">
                 No options available for this group.
               </Typography>
@@ -945,7 +1122,7 @@ const GroupTable = () => {
         </Modal.Body>
         <Modal.Footer>
           <Box
-            sx={{ display: "flex", gap: "1rem", justifyContent: "flex-end" }}
+            sx={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}
           >
             {isEditingOptions ? (
               <>
@@ -983,6 +1160,14 @@ const GroupTable = () => {
           </Box>
         </Modal.Footer>
       </Modal>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        message={snackbar.message}
+      />
     </>
   );
 };

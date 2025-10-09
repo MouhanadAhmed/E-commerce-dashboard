@@ -207,6 +207,7 @@ const editProductSchema = Yup.object().shape({
     .optional(),
   weight: Yup.string().optional(),
   showWeight: Yup.boolean().optional(),
+  fractionalQuantity: Yup.boolean().optional(),
   book: Yup.string().optional(),
   bookAt: Yup.date().optional(),
   groupOfOptions: Yup.array()
@@ -397,6 +398,8 @@ const ProductForm: FC<Props> = ({ product }) => {
       descTableName:
         productForEdit?.descTableName || initialProduct.descTableName,
       available: productForEdit?.available ?? initialProduct.available,
+      fractionalQuantity:
+        productForEdit?.fractionalQuantity || initialProduct.fractionalQuantity,
       deleted: productForEdit?.deleted ?? initialProduct.deleted,
       order: productForEdit?.order || initialProduct.order,
 
@@ -470,7 +473,7 @@ const ProductForm: FC<Props> = ({ product }) => {
 
         // Handle image uploads
         if (imageFile) {
-          submissionData.imgCover = await uploadToCloudinary(imageFile);
+          submissionData.imgCover = {url: await uploadToCloudinary(imageFile)};
         } else {
           delete submissionData.imgCover;
         }
@@ -1219,9 +1222,6 @@ const ProductForm: FC<Props> = ({ product }) => {
 
                   {/* begin:: Show weight Input group */}
                   <div className="fv-row mb-7 form-check form-switch form-check-custom form-check-solid">
-                    {/* begin::Label */}
-                    {/* end::Label */}
-
                     {/* begin::Input */}
                     <input
                       {...formik.getFieldProps('showWeight')}
@@ -1251,6 +1251,41 @@ const ProductForm: FC<Props> = ({ product }) => {
                     )}
                     <label className=" fw-semibold fs-6 mb-2 ms-4 pt-2">
                       Show Weight
+                    </label>
+                  </div>
+                  {/* end:: Show weight Input group */}
+
+                  {/* begin:: Show weight Input group */}
+                  <div className="fv-row mb-7 form-check form-switch form-check-custom form-check-solid">
+                    {/* begin::Input */}
+                    <input
+                      {...formik.getFieldProps('fractionalQuantity')}
+                      className={clsx(
+                        ' form-check-input mb-3 mb-lg-0 ms-2 border border-2',
+                        {
+                          'is-invalid':
+                            formik.touched.fractionalQuantity &&
+                            formik.errors.fractionalQuantity,
+                        },
+                        {
+                          'is-valid':
+                            formik.touched.fractionalQuantity &&
+                            !formik.errors.fractionalQuantity,
+                        }
+                      )}
+                      name="fractionalQuantity"
+                      autoComplete="off"
+                      type="checkbox"
+                      defaultChecked={productForEdit?.fractionalQuantity}
+                    />
+                    {/* end::Input */}
+                    {formik.touched.fractionalQuantity && formik.errors.fractionalQuantity && (
+                      <div className="fv-plugins-message-container">
+                        <span role="alert">{formik.errors.fractionalQuantity}</span>
+                      </div>
+                    )}
+                    <label className=" fw-semibold fs-6 mb-2 ms-4 pt-2">
+                      Fractional Quantity
                     </label>
                   </div>
                   {/* end:: Show weight Input group */}
@@ -1566,6 +1601,7 @@ const ProductForm: FC<Props> = ({ product }) => {
                       )}
                       autoComplete="off"
                       disabled={formik.isSubmitting}
+                      value={formik.values.book}
                     >
                       <option defaultChecked value="regular">
                         Regular
@@ -1911,11 +1947,7 @@ const ProductForm: FC<Props> = ({ product }) => {
                         )}
                         autoComplete="off"
                         disabled={formik.isSubmitting}
-                        defaultValue={
-                          productForEdit !== undefined
-                            ? productForEdit.descTableName
-                            : ''
-                        }
+                        value={formik.values.descTableName || ''}
                       />
                       {formik.touched.descTableName &&
                         formik.errors.descTableName && (

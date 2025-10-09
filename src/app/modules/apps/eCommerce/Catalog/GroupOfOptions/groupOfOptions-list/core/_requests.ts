@@ -123,13 +123,6 @@ const deleteSelectedGroups = (GroupIds: Array<ID | string>): Promise<void> => {
   return axios.all(requests).then(() => {});
 };
 
-const getOptions = (): Promise<string[]> => {
-  return axios
-    .get(`${API_URL}/option`)
-    .then((response: AxiosResponse<Response<string[]>>) => response.data)
-    .then((response: Response<string[]>) => response.data);
-};
-
 const getOptionById = (id: ID): Promise<string | undefined> => {
   return axios
     .get(`${API_URL}/option/${id}`)
@@ -139,7 +132,7 @@ const getOptionById = (id: ID): Promise<string | undefined> => {
 
 // Option CRUD operations
 const createOption = (
-  option: Omit<Option, "_id" | "createdAt" | "updatedAt" | "__v">,
+  option: Omit<Partial<Option>, "_id" | "createdAt" | "updatedAt" | "__v">,
 ): Promise<Option | undefined> => {
   return axios
     .post(`${API_URL}/option`, option)
@@ -186,7 +179,6 @@ export {
   createGroup,
   updateGroup,
   updateGroupOrder,
-  getOptions,
   getOptionById,
   createOption,
   updateOption,
