@@ -1,15 +1,13 @@
-import { useMemo, useState, useEffect, useRef } from 'react';
+import { useMemo, useState, useEffect, useRef } from "react";
 import {
   MaterialReactTable,
   type MRT_ColumnDef,
   useMaterialReactTable,
   MRT_TableOptions,
-} from 'material-react-table';
-import { Box, IconButton, Tooltip } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import { BranchOfProduct } from '../core/_models';
-import { Branch } from '../../../Branch/branches-list/core/_models';
-
+} from "material-react-table";
+import { Box, IconButton, Tooltip } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import { BranchOfProduct } from "../core/_models";
 
 export default function BranchesForm({
   branchees,
@@ -23,12 +21,10 @@ export default function BranchesForm({
   const [newBranches, setNewBranches] = useState<BranchOfProduct[]>(branchees);
   const previousPriceRef = useRef(formik.values.price);
 
-  // Only update when branchees changes
   useEffect(() => {
     setNewBranches(branchees);
   }, [branchees]);
 
-  // Replace the problematic useEffect with this:
   useEffect(() => {
     const updateBranchesFromPrice = () => {
       if (
@@ -37,7 +33,7 @@ export default function BranchesForm({
       ) {
         const updatedBranches = newBranches.map((branch) => ({
           ...branch,
-          price: formik.values.price?.toString() || '',
+          price: formik.values.price?.toString() || "",
         }));
 
         setNewBranches(updatedBranches);
@@ -46,16 +42,12 @@ export default function BranchesForm({
       }
     };
 
-    // Use requestAnimationFrame to defer the update
     const rafId = requestAnimationFrame(updateBranchesFromPrice);
     return () => cancelAnimationFrame(rafId);
   }, [formik.values.price, setUpdatedBranches, newBranches.length]);
 
-  // Helper function to get branch ID consistently
   const getBranchId = (branch: string | Branch): string => {
-    if (typeof branch === 'string') {
-      return branch;
-    }
+    if (typeof branch === "string") return branch;
     return branch._id || (branch._id as string);
   };
 
@@ -67,11 +59,9 @@ export default function BranchesForm({
     let updatedArray;
 
     if (index !== -1) {
-      // Update existing item
       updatedArray = [...array];
       updatedArray[index] = newObject;
     } else {
-      // Add new item
       updatedArray = [...array, newObject];
     }
 
@@ -83,32 +73,21 @@ export default function BranchesForm({
     () => [
       {
         accessorFn: (row) => getBranchId(row.branch),
-        header: 'id',
+        header: "id",
         enableEditing: false,
       },
       {
-        accessorFn: (row) => row.name,
-        header: 'Name',
+        accessorKey: "name",
+        header: "Name",
         enableEditing: false,
-        size: 80,
       },
       {
-        accessorKey: 'price',
-        header: 'Price',
-        muiEditTextFieldProps: {
-          required: false,
-        },
+        accessorKey: "price",
+        header: "Price",
       },
       {
-        accessorKey: 'available',
-        header: 'Available',
-        size: 100,
-        muiTableBodyCellProps: {
-          align: 'right',
-        },
-        muiTableHeadCellProps: {
-          align: 'left',
-        },
+        accessorKey: "available",
+        header: "Available",
         Cell: ({ cell, row }) => (
           <div className="form-check form-switch form-check-custom form-check-solid">
             <input
@@ -116,55 +95,61 @@ export default function BranchesForm({
               type="checkbox"
               checked={cell.getValue<boolean>()}
               onChange={(e) => {
-                setNewBranches((prevBranches) => {
+                setNewBranches((prev) => {
                   const currentBranchId = getBranchId(row.original.branch);
-                  const updatedBranches = prevBranches.map((branch) =>
+                  const updated = prev.map((branch) =>
                     getBranchId(branch.branch) === currentBranchId
                       ? { ...branch, available: e.target.checked }
                       : branch
                   );
-                  setUpdatedBranches(updatedBranches);
-                  return updatedBranches;
+                  setUpdatedBranches(updated);
+                  return updated;
                 });
               }}
               id={getBranchId(row.original.branch)}
             />
           </div>
         ),
+        Edit: ({ cell, row, table }) => {
+          const [checked, setChecked] = useState(
+            cell.getValue<boolean>() ?? true
+          );
+
+          return (
+            <div className="form-check form-switch form-check-custom form-check-solid">
+              <input
+                className="form-check-input cursor-pointer"
+                type="checkbox"
+                checked={checked}
+                onChange={(e) => {
+                  const newValue = e.target.checked;
+                  setChecked(newValue);
+                  row._valuesCache.available = newValue;
+                }}
+                id={`edit-${
+                  row.original.branch ? getBranchId(row.original.branch) : "new"
+                }`}
+              />
+            </div>
+          );
+        },
       },
-      {
-        accessorKey: 'stock',
-        header: 'Stock',
-        muiEditTextFieldProps: {},
-      },
-      {
-        accessorKey: 'priceAfterDiscount',
-        header: 'Price After Discount',
-        muiEditTextFieldProps: {},
-      },
-      {
-        accessorKey: 'priceAfterExpiresAt',
-        header: 'Discount Expiry',
-        muiEditTextFieldProps: {},
-      },
-      {
-        accessorKey: 'order',
-        header: 'order',
-        muiEditTextFieldProps: {},
-      },
-      {
-        accessorKey: 'sold',
-        header: 'sold',
-        enableEditing: false,
-        muiEditTextFieldProps: {},
-      },
+      { accessorKey: "stock", header: "Stock" },
+      { accessorKey: "priceAfterDiscount", header: "Price After Discount" },
+      { accessorKey: "priceAfterExpiresAt", header: "Discount Expiry" },
+      { accessorKey: "order", header: "Order" },
+      { accessorKey: "sold", header: "Sold", enableEditing: false },
     ],
     []
   );
 
-  const handleSaveBranch: MRT_TableOptions<BranchOfProduct>['onEditingRowSave'] =
+  const handleSaveBranch: MRT_TableOptions<BranchOfProduct>["onEditingRowSave"] =
     async ({ values, table, row }) => {
       values.branch = row.original.branch;
+      // Ensure available is properly set
+      if (values.available === undefined) {
+        values.available = row.original.available ?? true;
+      }
       updateOrPush(newBranches, values);
       table.setEditingRow(null);
     };
@@ -172,14 +157,15 @@ export default function BranchesForm({
   const table = useMaterialReactTable({
     columns,
     data: newBranches,
-    createDisplayMode: 'row',
-    editDisplayMode: 'row',
+    editDisplayMode: "row",
     enableEditing: true,
-    initialState: { columnVisibility: { id: false } },
+    enableRowActions: true,
+    enableRowSelection: false,
     getRowId: (row) => getBranchId(row.branch),
     onEditingRowSave: handleSaveBranch,
+    initialState: { columnVisibility: { id: false } },
     renderRowActions: ({ row, table }) => (
-      <Box sx={{ display: 'flex', gap: '1rem' }}>
+      <Box sx={{ display: "flex", gap: "1rem" }}>
         <Tooltip title="Edit">
           <IconButton onClick={() => table.setEditingRow(row)}>
             <EditIcon />

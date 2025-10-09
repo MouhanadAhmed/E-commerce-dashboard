@@ -1,47 +1,41 @@
 // export {CategoriesesTable}
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   useQueryResponseData,
   useQueryRefetch,
-} from '../core/QueryResponseProvider';
-import { useActiveBranchesData as branchesData } from '../../../Branch/branches-list/core/QueryResponseProvider';
-import { useActiveCategoriesData as categoriesData } from '../../../Category/categories-list/core/QueryResponseProvider';
-import { useActiveSubCategoriesData as subcategoriesData } from '../../../SubCategory/Subcategories-list/core/QueryResponseProvider';
-import { useActiveChildSubCategoriesData as childSubCategoryData } from '../../../ChildSubCategory/ChildSubcategories-list/core/QueryResponseProvider';
-import { useActiveTypesData as typesData } from '../../../Type/types-list/core/QueryResponseProvider';
-import { useActiveExtrasData as extrasData } from '../../../Extra/extra-list/core/QueryResponseProvider';
-import { useActiveGroupsData as groupsData } from '../../../GroupOfOptions/groupOfOptions-list/core/QueryResponseProvider';
-import { Product } from '../core/_models';
+} from "../core/QueryResponseProvider";
+import { useActiveBranchesData as branchesData } from "../../../Branch/branches-list/core/QueryResponseProvider";
+import { useActiveCategoriesData as categoriesData } from "../../../Category/categories-list/core/QueryResponseProvider";
+import { useActiveSubCategoriesData as subcategoriesData } from "../../../SubCategory/Subcategories-list/core/QueryResponseProvider";
+import { useActiveChildSubCategoriesData as childSubCategoryData } from "../../../ChildSubCategory/ChildSubcategories-list/core/QueryResponseProvider";
+import { useActiveTypesData as typesData } from "../../../Type/types-list/core/QueryResponseProvider";
+import { useActiveExtrasData as extrasData } from "../../../Extra/extra-list/core/QueryResponseProvider";
+import { useActiveGroupsData as groupsData } from "../../../GroupOfOptions/groupOfOptions-list/core/QueryResponseProvider";
+import { Product } from "../core/_models";
 import {
   type MRT_TableOptions,
   type MRT_ColumnDef,
   MaterialReactTable,
   useMaterialReactTable,
-} from 'material-react-table';
-import Select from 'react-select';
-import {
-  Box,
-  Button,
-  IconButton,
-  TextField,
-  Tooltip,
-} from '@mui/material';
+} from "material-react-table";
+import Select from "react-select";
+import { Box, Button, IconButton, TextField, Tooltip } from "@mui/material";
 import {
   deleteProduct,
   deleteSelectedProducts,
   updateProduct,
   duplicateProduct,
-} from '../core/_requests';
-import { useMutation, useQueryClient } from 'react-query';
-import { QUERIES } from '../../../../../../../../_metronic/helpers';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import SettingsIcon from '@mui/icons-material/Settings';
-import * as Yup from 'yup';
-import { Modal } from 'react-bootstrap';
-import { useListView } from '../core/ListViewProvider';
-import { Link, useNavigate } from 'react-router-dom';
-import { useQueryRequest } from '../core/QueryRequestProvider';
+} from "../core/_requests";
+import { useMutation, useQueryClient } from "react-query";
+import { QUERIES } from "../../../../../../../../_metronic/helpers";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import SettingsIcon from "@mui/icons-material/Settings";
+import * as Yup from "yup";
+import { Modal } from "react-bootstrap";
+import { useListView } from "../core/ListViewProvider";
+import { Link, useNavigate } from "react-router-dom";
+import { useQueryRequest } from "../core/QueryRequestProvider";
 
 const ProductsTable = () => {
   const duplicateRef = useRef<HTMLInputElement>(null);
@@ -85,9 +79,7 @@ const ProductsTable = () => {
   const [editChildSubCategory, setEditChildSubCategory] = useState<
     any[] | undefined
   >();
-  const [editGroups, setEditGroups] = useState<
-    any[] | undefined
-  >();
+  const [editGroups, setEditGroups] = useState<any[] | undefined>();
   const [book, setBook] = useState<any | undefined>();
 
   const memoizedBranches = useMemo(
@@ -139,8 +131,8 @@ const ProductsTable = () => {
     //column definitions...
     () => [
       {
-        accessorKey: 'name',
-        header: 'Name',
+        accessorKey: "name",
+        header: "Name",
         size: 50,
         muiEditTextFieldProps: {
           required: true,
@@ -154,21 +146,21 @@ const ProductsTable = () => {
         },
       },
       {
-        accessorKey: 'description',
-        header: 'Short Description',
+        accessorKey: "description",
+        header: "Short Description",
         size: 200,
         Cell: ({ cell }) => {
           const cellValue = cell.getValue() as string;
           if (!cellValue) return <span>-</span>;
 
-          const tempElement = document.createElement('div');
+          const tempElement = document.createElement("div");
           tempElement.innerHTML = cellValue;
           const innerText = tempElement.textContent || tempElement.innerText;
           const shortText = innerText.trim().substring(0, 100);
           return (
             <span>
               {shortText}
-              {innerText.length > 100 ? '...' : ''}
+              {innerText.length > 100 ? "..." : ""}
             </span>
           );
         },
@@ -178,36 +170,36 @@ const ProductsTable = () => {
         },
       },
       {
-        accessorKey: 'order',
-        header: 'Order',
+        accessorKey: "order",
+        header: "Order",
         size: 30,
         muiTableBodyCellProps: {
-          align: 'center',
+          align: "center",
         },
         muiTableHeadCellProps: {
-          align: 'center',
+          align: "center",
         },
       },
       {
-        accessorKey: 'price',
-        header: 'Price',
+        accessorKey: "price",
+        header: "Price",
         size: 30,
         muiTableBodyCellProps: {
-          align: 'center',
+          align: "center",
         },
         muiTableHeadCellProps: {
-          align: 'center',
+          align: "center",
         },
       },
       {
-        accessorKey: 'available',
-        header: 'Available',
+        accessorKey: "available",
+        header: "Available",
         size: 100,
         muiTableBodyCellProps: {
-          align: 'right',
+          align: "right",
         },
         muiTableHeadCellProps: {
-          align: 'left',
+          align: "left",
         },
         Cell: ({ cell }) => (
           <div className="form-check form-switch form-check-custom form-check-solid">
@@ -227,14 +219,14 @@ const ProductsTable = () => {
         ),
       },
       {
-        accessorKey: 'showWeight',
-        header: 'Show Weight',
+        accessorKey: "showWeight",
+        header: "Show Weight",
         size: 100,
         muiTableBodyCellProps: {
-          align: 'right',
+          align: "right",
         },
         muiTableHeadCellProps: {
-          align: 'left',
+          align: "left",
         },
         Cell: ({ cell }) => (
           <div className="form-check form-switch form-check-custom form-check-solid">
@@ -254,14 +246,14 @@ const ProductsTable = () => {
         ),
       },
       {
-        accessorKey: 'fractionalQuantity',
-        header: 'Fractional Quantity',
+        accessorKey: "fractionalQuantity",
+        header: "Fractional Quantity",
         size: 100,
         muiTableBodyCellProps: {
-          align: 'right',
+          align: "right",
         },
         muiTableHeadCellProps: {
-          align: 'left',
+          align: "left",
         },
         Cell: ({ cell }) => (
           <div className="form-check form-switch form-check-custom form-check-solid">
@@ -272,7 +264,9 @@ const ProductsTable = () => {
               onChange={() =>
                 updateCategoryAvailable.mutateAsync({
                   id: cell.row.original._id,
-                  update: { fractionalQuantity: !cell.row.original.fractionalQuantity },
+                  update: {
+                    fractionalQuantity: !cell.row.original.fractionalQuantity,
+                  },
                 })
               }
               id={cell.row.original._id}
@@ -281,16 +275,16 @@ const ProductsTable = () => {
         ),
       },
       {
-        accessorKey: 'branch',
-        header: 'Branch',
-        editVariant: 'select',
+        accessorKey: "branch",
+        header: "Branch",
+        editVariant: "select",
         grow: true,
         size: 200,
         muiTableBodyCellProps: {
-          align: 'center',
+          align: "center",
         },
         muiTableHeadCellProps: {
-          align: 'center',
+          align: "center",
         },
         Edit: ({ cell, row, table }) => {
           const branchs =
@@ -337,16 +331,16 @@ const ProductsTable = () => {
         },
       },
       {
-        accessorKey: 'category',
-        header: 'Category',
-        editVariant: 'select',
+        accessorKey: "category",
+        header: "Category",
+        editVariant: "select",
         grow: true,
         size: 200,
         muiTableBodyCellProps: {
-          align: 'center',
+          align: "center",
         },
         muiTableHeadCellProps: {
-          align: 'center',
+          align: "center",
         },
         Edit: ({ cell, row, table }) => {
           const categories =
@@ -393,16 +387,16 @@ const ProductsTable = () => {
         },
       },
       {
-        accessorKey: 'subCategory',
-        header: 'SubCategory',
-        editVariant: 'select',
+        accessorKey: "subCategory",
+        header: "SubCategory",
+        editVariant: "select",
         grow: true,
         size: 200,
         muiTableBodyCellProps: {
-          align: 'center',
+          align: "center",
         },
         muiTableHeadCellProps: {
-          align: 'center',
+          align: "center",
         },
         Edit: ({ cell, row, table }) => {
           const subcategories =
@@ -450,16 +444,16 @@ const ProductsTable = () => {
         },
       },
       {
-        accessorKey: 'childSubCategory',
-        header: 'ChildSubCategory',
-        editVariant: 'select',
+        accessorKey: "childSubCategory",
+        header: "ChildSubCategory",
+        editVariant: "select",
         grow: true,
         size: 200,
         muiTableBodyCellProps: {
-          align: 'center',
+          align: "center",
         },
         muiTableHeadCellProps: {
-          align: 'center',
+          align: "center",
         },
         Edit: ({ cell, row, table }) => {
           const childsubcategories =
@@ -509,16 +503,16 @@ const ProductsTable = () => {
         },
       },
       {
-        accessorKey: 'groupOfOptions',
-        header: 'GroupOfOptions',
-        editVariant: 'select',
+        accessorKey: "groupOfOptions",
+        header: "GroupOfOptions",
+        editVariant: "select",
         grow: true,
         size: 200,
         muiTableBodyCellProps: {
-          align: 'center',
+          align: "center",
         },
         muiTableHeadCellProps: {
-          align: 'center',
+          align: "center",
         },
         Edit: ({ cell, row, table }) => {
           const groupOfOptions =
@@ -568,16 +562,16 @@ const ProductsTable = () => {
         },
       },
       {
-        accessorKey: 'book',
-        header: 'Book',
-        editVariant: 'select',
+        accessorKey: "book",
+        header: "Book",
+        editVariant: "select",
         grow: true,
         size: 200,
         muiTableBodyCellProps: {
-          align: 'center',
+          align: "center",
         },
         muiTableHeadCellProps: {
-          align: 'center',
+          align: "center",
         },
         Edit: ({ cell, row, table }) => {
           const childsubcategories = {
@@ -591,9 +585,9 @@ const ProductsTable = () => {
               classNamePrefix="react-select"
               // isMulti
               options={[
-                { value: 'regular', label: 'regular' },
-                { value: 'book', label: 'book' },
-                { value: 'only book', label: 'only book' },
+                { value: "regular", label: "regular" },
+                { value: "book", label: "book" },
+                { value: "only book", label: "only book" },
               ]}
               defaultValue={childsubcategories}
               menuPortalTarget={document.body}
@@ -620,11 +614,11 @@ const ProductsTable = () => {
   );
 
   const editCategoriesSchema = Yup.object().shape({
-    name: Yup.string().min(3, 'Minimum 3 symbols').required('Name is required'),
-    description: Yup.string().min(3, 'Minimum 3 symbols').optional(),
-    imgCover: Yup.string().min(3, 'Minimum 3 symbols').optional(),
-    order: Yup.number().min(1, 'Minimum order is 1').optional(),
-    branch: Yup.array().of(Yup.string()).min(1, 'Minimum 3 symbols').optional(),
+    name: Yup.string().min(3, "Minimum 3 symbols").required("Name is required"),
+    description: Yup.string().min(3, "Minimum 3 symbols").optional(),
+    imgCover: Yup.string().min(3, "Minimum 3 symbols").optional(),
+    order: Yup.number().min(1, "Minimum order is 1").optional(),
+    branch: Yup.array().of(Yup.string()).min(1, "Minimum 3 symbols").optional(),
     available: Yup.boolean().optional(),
     deleted: Yup.boolean().optional(),
   });
@@ -673,26 +667,34 @@ const ProductsTable = () => {
     await deleteItem.mutateAsync();
     setShowModal(false);
   };
-  const openAddCategoryModal = (id: string) => {
-    navigate(`/apps/eCommerce/productForm/${id}`);
+  const openEditProductModal = (product: Product) => {
+    console.log("Product being passed:", product);
+    // Pass the full product data via route state
+    navigate(`/apps/eCommerce/productForm/${product._id}`, {
+      state: { product },
+    });
+  };
+  const openAddProductModal = (id: string) => {
+    if (id === "new") {
+      navigate(`/apps/eCommerce/productForm/new`);
+    } else {
+      navigate(`/apps/eCommerce/productForm/${id}`);
+    }
   };
   const handleClose = () => {
     setShowModal(false);
   };
-  const deleteItem = useMutation(
-    () => deleteProduct(CategoriesDelete as any),
-    {
-      // 💡 response of the mutation is passed to onSuccess
-      onSuccess: () => {
-        // ✅ update detail view directly
-        queryClient.invalidateQueries([`${QUERIES.CATEGORIES_LIST}`]);
-        queryClient.invalidateQueries([`${QUERIES.ARCHIVED_CATEGORIES_LIST}`]);
-        queryClient.refetchQueries([`${QUERIES.CATEGORIES_LIST}`]);
-        queryClient.refetchQueries([`${QUERIES.ARCHIVED_CATEGORIES_LIST}`]);
-        setTrigger(true);
-      },
-    }
-  );
+  const deleteItem = useMutation(() => deleteProduct(CategoriesDelete as any), {
+    // 💡 response of the mutation is passed to onSuccess
+    onSuccess: () => {
+      // ✅ update detail view directly
+      queryClient.invalidateQueries([`${QUERIES.CATEGORIES_LIST}`]);
+      queryClient.invalidateQueries([`${QUERIES.ARCHIVED_CATEGORIES_LIST}`]);
+      queryClient.refetchQueries([`${QUERIES.CATEGORIES_LIST}`]);
+      queryClient.refetchQueries([`${QUERIES.ARCHIVED_CATEGORIES_LIST}`]);
+      setTrigger(true);
+    },
+  });
   const duplicateItem = useMutation(
     () =>
       duplicateProduct(
@@ -747,7 +749,7 @@ const ProductsTable = () => {
     enableFullScreenToggle: false,
     muiTableContainerProps: {
       sx: {
-        minHeight: '320px',
+        minHeight: "320px",
       },
     },
   };
@@ -762,51 +764,51 @@ const ProductsTable = () => {
     enableRowSelection: true,
     enableStickyHeader: true,
     enableCellActions: true,
-    enableClickToCopy: 'context-menu',
+    enableClickToCopy: "context-menu",
     enableEditing: true,
-    editDisplayMode: 'row',
-    createDisplayMode: 'row',
-    rowPinningDisplayMode: 'select-sticky',
-    positionToolbarAlertBanner: 'bottom',
-    positionActionsColumn: 'last',
+    editDisplayMode: "row",
+    createDisplayMode: "row",
+    rowPinningDisplayMode: "select-sticky",
+    positionToolbarAlertBanner: "bottom",
+    positionActionsColumn: "last",
     enableRowOrdering: true,
     enableSorting: false,
     enableExpandAll: false,
     enablePagination: true,
     state: {
       columnOrder: [
-        'mrt-row-select', //move the built-in selection column to the end of the table
-        'mrt-row-drag',
-        'order',
-        'name',
-        'description',
-        'price',
-        'mrt-row-expand',
-        'branch',
-        'category',
-        'subCategory',
-        'childSubCategory',
-        'groupOfOptions',
-        'available',
-        'showWeight',
-        'fractionalQuantity',
-        'book',
+        "mrt-row-select", //move the built-in selection column to the end of the table
+        "mrt-row-drag",
+        "order",
+        "name",
+        "description",
+        "price",
+        "mrt-row-expand",
+        "branch",
+        "category",
+        "subCategory",
+        "childSubCategory",
+        "groupOfOptions",
+        "available",
+        "showWeight",
+        "fractionalQuantity",
+        "book",
       ],
     },
     muiDetailPanelProps: () => ({
       sx: (theme) => ({
         backgroundColor:
-          theme.palette.mode === 'dark'
-            ? 'rgba(255,210,244,0.1)'
-            : 'rgba(0,0,0,0.1)',
+          theme.palette.mode === "dark"
+            ? "rgba(255,210,244,0.1)"
+            : "rgba(0,0,0,0.1)",
       }),
     }),
     //custom expand button rotation
     muiExpandButtonProps: ({ row, table }) => ({
       onClick: () => table.setExpanded({ [row.id]: !row.getIsExpanded() }), //only 1 detail panel open at a time
       sx: {
-        transform: row.getIsExpanded() ? 'rotate(180deg)' : 'rotate(-90deg)',
-        transition: 'transform 0.2s',
+        transform: row.getIsExpanded() ? "rotate(180deg)" : "rotate(-90deg)",
+        transition: "transform 0.2s",
       },
     }),
     //conditionally render detail panel
@@ -850,7 +852,7 @@ const ProductsTable = () => {
     muiRowDragHandleProps: ({ table }) => ({
       onDragEnd: async () => {
         const { draggingRow, hoveredRow } = table.getState();
-        if (hoveredTable === 'table-2') {
+        if (hoveredTable === "table-2") {
           setHoveredTable(null);
           await updateCategoryAvailable.mutateAsync({
             id: draggingRow?.original._id,
@@ -882,16 +884,16 @@ const ProductsTable = () => {
         </div>
         <Box
           sx={{
-            display: 'flex',
-            gap: '1rem',
-            p: '4px',
-            justifyContent: 'right',
+            display: "flex",
+            gap: "1rem",
+            p: "4px",
+            justifyContent: "right",
           }}
         >
           <Tooltip title="Add product">
             <button
               type="button"
-              onClick={() => openAddCategoryModal('new')}
+              onClick={() => openAddProductModal("new")}
               className="rounded bg-primary rounded-circle p-0 border-0"
             >
               {/* Add Product */}
@@ -957,22 +959,22 @@ const ProductsTable = () => {
     onEditingRowSave: (originalRow) => handleSaveCategories(originalRow),
     getRowId: (originalRow) => `table-1-${originalRow.name}`,
     muiTablePaperProps: {
-      onDragEnter: () => setHoveredTable('table-1'),
+      onDragEnter: () => setHoveredTable("table-1"),
       sx: {
-        outline: hoveredTable === 'table-1' ? '2px dashed green' : undefined,
+        outline: hoveredTable === "table-1" ? "2px dashed green" : undefined,
       },
     },
     displayColumnDefOptions: {
-      'mrt-row-actions': {
+      "mrt-row-actions": {
         muiTableHeadCellProps: {
-          align: 'center', //change head cell props
+          align: "center", //change head cell props
         },
       },
     },
     renderRowActions: ({ row, table }) => (
-      <Box sx={{ display: 'flex', gap: '1rem' }}>
+      <Box sx={{ display: "flex", gap: "1rem" }}>
         <Tooltip title="Edit">
-          <IconButton onClick={() => openAddCategoryModal(row.original._id)}>
+          <IconButton onClick={() => openEditProductModal(row.original)}>
             <EditIcon />
           </IconButton>
         </Tooltip>
@@ -987,13 +989,7 @@ const ProductsTable = () => {
             <DeleteIcon />
           </IconButton>
         </Tooltip>
-        <Tooltip title="Edit product Forum">
-          <Link to={`/apps/eCommerce/productForm/${row.original._id}`}>
-            <IconButton color="info">
-              <SettingsIcon />
-            </IconButton>
-          </Link>
-        </Tooltip>
+
         <Tooltip title="Duplicate Product">
           <IconButton
             color="info"
@@ -1015,51 +1011,51 @@ const ProductsTable = () => {
     enableRowSelection: true,
     enableStickyHeader: true,
     enableCellActions: true,
-    enableClickToCopy: 'context-menu',
+    enableClickToCopy: "context-menu",
     enableEditing: true,
-    editDisplayMode: 'row',
-    createDisplayMode: 'row',
+    editDisplayMode: "row",
+    createDisplayMode: "row",
     enablePagination: true,
-    rowPinningDisplayMode: 'select-sticky',
-    positionToolbarAlertBanner: 'bottom',
-    positionActionsColumn: 'last',
+    rowPinningDisplayMode: "select-sticky",
+    positionToolbarAlertBanner: "bottom",
+    positionActionsColumn: "last",
     enableRowOrdering: true,
     enableSorting: false,
     enableExpandAll: false,
     rowCount: archived.total || 0,
     state: {
       columnOrder: [
-        'mrt-row-select', //move the built-in selection column to the end of the table
-        'mrt-row-drag',
-        'order',
-        'name',
-        'description',
-        'price',
-        'mrt-row-expand',
-        'branch',
-        'category',
-        'subCategory',
-        'childSubCategory',
-        'groupOfOptions',
-        'available',
-        'showWeight',
-        'fractionalQuantity',
-        'book',
+        "mrt-row-select", //move the built-in selection column to the end of the table
+        "mrt-row-drag",
+        "order",
+        "name",
+        "description",
+        "price",
+        "mrt-row-expand",
+        "branch",
+        "category",
+        "subCategory",
+        "childSubCategory",
+        "groupOfOptions",
+        "available",
+        "showWeight",
+        "fractionalQuantity",
+        "book",
       ],
     },
     muiDetailPanelProps: () => ({
       sx: (theme) => ({
         backgroundColor:
-          theme.palette.mode === 'dark'
-            ? 'rgba(255,210,244,0.1)'
-            : 'rgba(0,0,0,0.1)',
+          theme.palette.mode === "dark"
+            ? "rgba(255,210,244,0.1)"
+            : "rgba(0,0,0,0.1)",
       }),
     }),
     muiExpandButtonProps: ({ row, table }) => ({
       onClick: () => table.setExpanded({ [row.id]: !row.getIsExpanded() }), //only 1 detail panel open at a time
       sx: {
-        transform: row.getIsExpanded() ? 'rotate(180deg)' : 'rotate(-90deg)',
-        transition: 'transform 0.2s',
+        transform: row.getIsExpanded() ? "rotate(180deg)" : "rotate(-90deg)",
+        transition: "transform 0.2s",
       },
     }),
     renderDetailPanel: ({ row }) =>
@@ -1095,7 +1091,7 @@ const ProductsTable = () => {
     muiRowDragHandleProps: ({ table }) => ({
       onDragEnd: async () => {
         const { draggingRow, hoveredRow } = table.getState();
-        if (hoveredTable === 'table-1') {
+        if (hoveredTable === "table-1") {
           setHoveredTable(null);
           await updateCategoryAvailable.mutateAsync({
             id: draggingRow?.original._id,
@@ -1128,10 +1124,10 @@ const ProductsTable = () => {
         </div>
         <Box
           sx={{
-            display: 'flex',
-            gap: '1rem',
-            p: '4px',
-            justifyContent: 'right',
+            display: "flex",
+            gap: "1rem",
+            p: "4px",
+            justifyContent: "right",
           }}
         >
           <Button
@@ -1174,22 +1170,22 @@ const ProductsTable = () => {
     onEditingRowSave: (originalRow) => handleSaveCategories(originalRow),
     getRowId: (originalRow) => `table-2-${originalRow.name}`,
     muiTablePaperProps: {
-      onDragEnter: () => setHoveredTable('table-2'),
+      onDragEnter: () => setHoveredTable("table-2"),
       sx: {
-        outline: hoveredTable === 'table-2' ? '2px dashed pink' : undefined,
+        outline: hoveredTable === "table-2" ? "2px dashed pink" : undefined,
       },
     },
     displayColumnDefOptions: {
-      'mrt-row-actions': {
+      "mrt-row-actions": {
         muiTableHeadCellProps: {
-          align: 'center', //change head cell props
+          align: "center", //change head cell props
         },
       },
     },
     renderRowActions: ({ row, table }) => (
-      <Box sx={{ display: 'flex', gap: '1rem' }}>
+      <Box sx={{ display: "flex", gap: "1rem" }}>
         <Tooltip title="Edit">
-          <IconButton onClick={() => openAddCategoryModal(row.original._id)}>
+          <IconButton onClick={() => openEditProductModal(row.original)}>
             <EditIcon />
           </IconButton>
         </Tooltip>
@@ -1234,20 +1230,20 @@ const ProductsTable = () => {
     <>
       <Box
         sx={{
-          display: 'grid',
-          gap: '1rem',
-          overflow: 'auto',
-          p: '4px',
+          display: "grid",
+          gap: "1rem",
+          overflow: "auto",
+          p: "4px",
         }}
       >
         <MaterialReactTable table={table1} />
       </Box>
       <Box
         sx={{
-          display: 'grid',
-          gap: '1rem',
-          overflow: 'auto',
-          p: '4px',
+          display: "grid",
+          gap: "1rem",
+          overflow: "auto",
+          p: "4px",
         }}
       >
         <MaterialReactTable table={table2} />
@@ -1261,7 +1257,7 @@ const ProductsTable = () => {
         </Modal.Header>
         <Modal.Body>Are you sure you want to delete this item?</Modal.Body>
         <Modal.Footer>
-          <Box sx={{ display: 'flex', gap: '1rem', p: '4px' }}>
+          <Box sx={{ display: "flex", gap: "1rem", p: "4px" }}>
             <Button color="info" variant="contained" onClick={handleClose}>
               Cancel
             </Button>
@@ -1287,7 +1283,7 @@ const ProductsTable = () => {
           {/* <CategoryProductsTable  id={CategoriesDelete?._id } /> */}
         </Modal.Body>
         <Modal.Footer>
-          <Box sx={{ display: 'flex', gap: '1rem', p: '4px' }}>
+          <Box sx={{ display: "flex", gap: "1rem", p: "4px" }}>
             <Button
               color="info"
               variant="contained"
@@ -1335,7 +1331,7 @@ const ProductsTable = () => {
           </Box>
         </Modal.Body>
         <Modal.Footer>
-          <Box sx={{ display: 'flex', gap: '1rem', p: '4px' }}>
+          <Box sx={{ display: "flex", gap: "1rem", p: "4px" }}>
             <Button
               color="info"
               variant="contained"

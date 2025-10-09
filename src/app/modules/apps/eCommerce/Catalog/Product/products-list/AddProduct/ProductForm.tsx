@@ -1,121 +1,126 @@
-import blankImage from '../../../../../../../../_metronic/assets/images/blank-image.svg';
-import { FC, useEffect, useMemo, useRef, useState } from 'react';
-import * as Yup from 'yup';
-import { useFormik } from 'formik';
-import clsx from 'clsx';
-import { UsersListLoading } from '../components/loading/UsersListLoading';
+import blankImage from "../../../../../../../../_metronic/assets/images/blank-image.svg";
+import { FC, useEffect, useMemo, useRef, useState } from "react";
+import * as Yup from "yup";
+import { useFormik } from "formik";
+import clsx from "clsx";
+import { UsersListLoading } from "../components/loading/UsersListLoading";
 import {
   BranchOfProduct,
   Product,
   ProductFormValues,
   initialProduct,
-} from '../core/_models';
+} from "../core/_models";
 import {
   createProduct,
   getProductById,
   updateProduct,
-} from '../core/_requests';
-import ReactQuill, { Quill } from 'react-quill';
-import { isNotEmpty } from '../../../../../../../../_metronic/helpers';
-import { useActiveBranchesData as branchesData } from '../../../Branch/branches-list/core/QueryResponseProvider';
-import { useActiveCategoriesData as categoriesData } from '../../../Category/categories-list/core/QueryResponseProvider';
-import { useActiveSubCategoriesData as subcategoriesData } from '../../../SubCategory/Subcategories-list/core/QueryResponseProvider';
-import { useActiveChildSubCategoriesData as childSubCategoryData } from '../../../ChildSubCategory/ChildSubcategories-list/core/QueryResponseProvider';
-import { useActiveTypesData as typesData } from '../../../Type/types-list/core/QueryResponseProvider';
-import { useActiveExtrasData as extrasData } from '../../../Extra/extra-list/core/QueryResponseProvider';
-import { useActiveGroupsData as groupsData } from '../../../GroupOfOptions/groupOfOptions-list/core/QueryResponseProvider';
-import Select from 'react-select';
-import BranchesForm from './branchesForm';
-import DescTableForm from './DescTableForm';
-import 'react-quill/dist/quill.snow.css';
-import { useParams } from 'react-router-dom';
-import { uploadToCloudinary } from '../../../../../../../../_metronic/helpers/cloudinaryUpload';
-import Swal from 'sweetalert2';
+} from "../core/_requests";
+import ReactQuill, { Quill } from "react-quill";
+import { isNotEmpty } from "../../../../../../../../_metronic/helpers";
+import { useActiveBranchesData as branchesData } from "../../../Branch/branches-list/core/QueryResponseProvider";
+import {
+  useActiveCategoriesData,
+  useQueryResponseData as useCategoriesResponseData,
+} from "../../../Category/categories-list/core/QueryResponseProvider";
+import { useActiveSubCategoriesData as subcategoriesData } from "../../../SubCategory/Subcategories-list/core/QueryResponseProvider";
+import { useActiveChildSubCategoriesData as childSubCategoryData } from "../../../ChildSubCategory/ChildSubcategories-list/core/QueryResponseProvider";
+import { useActiveTypesData as typesData } from "../../../Type/types-list/core/QueryResponseProvider";
+import { useActiveExtrasData as extrasData } from "../../../Extra/extra-list/core/QueryResponseProvider";
+import { useActiveGroupsData as groupsData } from "../../../GroupOfOptions/groupOfOptions-list/core/QueryResponseProvider";
+import Select from "react-select";
+import BranchesForm from "./branchesForm";
+import DescTableForm from "./DescTableForm";
+import "react-quill/dist/quill.snow.css";
+import { useParams, useLocation } from "react-router-dom";
+import { uploadToCloudinary } from "../../../../../../../../_metronic/helpers/cloudinaryUpload";
+import Swal from "sweetalert2";
+
+import {} from "react-router-dom";
 
 type Props = {
   product?: Product;
 };
 
 const customColors = [
-  '#e60000',
-  '#000000',
-  '#ff9900',
-  '#ffff00',
-  '#008a00',
-  '#0066cc',
-  '#9933ff',
-  '#ffffff',
-  '#facccc',
-  '#ffebcc',
-  '#ffffcc',
-  '#cce8cc',
-  '#cce0f5',
-  '#ebd6ff',
-  '#bbbbbb',
-  '#f06666',
-  '#ffc266',
-  '#ffff66',
-  '#66b966',
-  '#66a3e0',
-  '#c285ff',
-  '#888888',
-  '#a10000',
-  '#b26b00',
-  '#b2b200',
-  '#006100',
-  '#0047b2',
-  '#6b24b2',
-  '#444444',
-  '#5c0000',
-  '#663d00',
-  '#666600',
-  '#003700',
-  '#002966',
-  '#3d1466',
+  "#e60000",
+  "#000000",
+  "#ff9900",
+  "#ffff00",
+  "#008a00",
+  "#0066cc",
+  "#9933ff",
+  "#ffffff",
+  "#facccc",
+  "#ffebcc",
+  "#ffffcc",
+  "#cce8cc",
+  "#cce0f5",
+  "#ebd6ff",
+  "#bbbbbb",
+  "#f06666",
+  "#ffc266",
+  "#ffff66",
+  "#66b966",
+  "#66a3e0",
+  "#c285ff",
+  "#888888",
+  "#a10000",
+  "#b26b00",
+  "#b2b200",
+  "#006100",
+  "#0047b2",
+  "#6b24b2",
+  "#444444",
+  "#5c0000",
+  "#663d00",
+  "#666600",
+  "#003700",
+  "#002966",
+  "#3d1466",
 ];
 const modules = {
   toolbar: [
     [{ header: [1, 2, 3, 4, 5, 6, false] }], // Add all header options
     //   [{ 'font': [] }],
-    [{ list: 'ordered' }, { list: 'bullet' }],
-    ['bold', 'italic', 'underline'],
+    [{ list: "ordered" }, { list: "bullet" }],
+    ["bold", "italic", "underline"],
     [{ color: customColors }, { background: [] }],
-    ['link', 'image'],
-    ['clean'],
+    ["link", "image"],
+    ["clean"],
   ],
 };
 // Define the nested schemas first
 const category = Yup.object().shape({
   category: Yup.string()
-    .matches(/^[0-9a-fA-F]{24}$/, 'Must be a valid hex string of length 24')
+    .matches(/^[0-9a-fA-F]{24}$/, "Must be a valid hex string of length 24")
     .optional(),
   order: Yup.number().min(1).optional(),
 });
 
 const subCategory = Yup.object().shape({
   subCategory: Yup.string()
-    .matches(/^[0-9a-fA-F]{24}$/, 'Must be a valid hex string of length 24')
+    .matches(/^[0-9a-fA-F]{24}$/, "Must be a valid hex string of length 24")
     .optional(),
   order: Yup.number().min(1).optional(),
 });
 
 const childSubCategory = Yup.object().shape({
   childSubCategory: Yup.string()
-    .matches(/^[0-9a-fA-F]{24}$/, 'Must be a valid hex string of length 24')
+    .matches(/^[0-9a-fA-F]{24}$/, "Must be a valid hex string of length 24")
     .optional(),
   order: Yup.number().min(1).optional(),
 });
 
 const groupOfOptions = Yup.object().shape({
   groupOfOptions: Yup.string()
-    .matches(/^[0-9a-fA-F]{24}$/, 'Must be a valid hex string of length 24')
+    .matches(/^[0-9a-fA-F]{24}$/, "Must be a valid hex string of length 24")
     .optional(),
   order: Yup.number().min(1).optional(),
 });
 
 const branch = Yup.object().shape({
   branch: Yup.string()
-    .matches(/^[0-9a-fA-F]{24}$/, 'Must be a valid hex string of length 24')
+    .matches(/^[0-9a-fA-F]{24}$/, "Must be a valid hex string of length 24")
     .optional(),
   price: Yup.number().optional(),
   available: Yup.boolean().optional(),
@@ -128,14 +133,14 @@ const branch = Yup.object().shape({
 
 const extras = Yup.object().shape({
   extra: Yup.string()
-    .matches(/^[0-9a-fA-F]{24}$/, 'Must be a valid hex string of length 24')
+    .matches(/^[0-9a-fA-F]{24}$/, "Must be a valid hex string of length 24")
     .optional(),
   order: Yup.number().min(1).optional(),
 });
 
 const types = Yup.object().shape({
   type: Yup.string()
-    .matches(/^[0-9a-fA-F]{24}$/, 'Must be a valid hex string of length 24')
+    .matches(/^[0-9a-fA-F]{24}$/, "Must be a valid hex string of length 24")
     .optional(),
   order: Yup.number().min(1).optional(),
 });
@@ -148,13 +153,13 @@ const descTable = Yup.object().shape({
 
 // main schema
 const editProductSchema = Yup.object().shape({
-  name: Yup.string().min(2).max(100).required('Name is required'),
+  name: Yup.string().min(2).max(100).required("Name is required"),
   description: Yup.string().optional(),
   shortDesc: Yup.string().optional(),
   metaTags: Yup.array()
     .of(Yup.string())
     .transform((value, originalValue) =>
-      typeof originalValue === 'string' ? [originalValue] : originalValue
+      typeof originalValue === "string" ? [originalValue] : originalValue
     )
     .optional(),
   category: Yup.array()
@@ -230,7 +235,20 @@ const editProductSchema = Yup.object().shape({
 const ProductForm: FC<Props> = ({ product }) => {
   const { id } = useParams();
   const branches = branchesData();
-  const categories = categoriesData();
+
+  // Get both active and archived categories
+  const categoriesResponse = useCategoriesResponseData();
+  const activeCategories = useActiveCategoriesData();
+
+  // Use active categories if available, otherwise combine active + archived
+  const categories =
+    activeCategories.length > 0
+      ? activeCategories
+      : [
+          ...(categoriesResponse.active || []),
+          ...(categoriesResponse.archived || []),
+        ];
+
   const subcategories = subcategoriesData();
   const childSubCategories = childSubCategoryData();
   const extras = extrasData();
@@ -248,15 +266,155 @@ const ProductForm: FC<Props> = ({ product }) => {
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const [updatedBranches, setUpdatedBranches] = useState<BranchOfProduct[]>();
-  const [activeTab, setActiveTab] = useState('general');
+  const [activeTab, setActiveTab] = useState("general");
   const [items, setItems] = useState([]);
 
   const [productForEdit, setProductForEdit] = useState<Product>();
-  const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+
+  const location = useLocation();
+  const productFromState = location.state as { product: Product } | undefined;
+
+  // Extract and enrich branch data by merging separate arrays from backend
+  const extractedBranches = useMemo(() => {
+    const product = productFromState?.product;
+    if (!product) return [];
+
+    // Get all unique branch IDs from all branch arrays
+    const branchIds = new Set<string>();
+
+    product.branchStock?.forEach((b: any) => branchIds.add(b.branch));
+    product.branchAvailable?.forEach((b: any) => branchIds.add(b.branch));
+    product.branchPrice?.forEach((b: any) => branchIds.add(b.branch));
+    product.branchPriceAfterDiscount?.forEach((b: any) =>
+      branchIds.add(b.branch)
+    );
+
+    // Also check legacy branch array if it exists
+    product.branch?.forEach((b: any) => {
+      const branchId = typeof b.branch === "string" ? b.branch : b.branch._id;
+      branchIds.add(branchId);
+    });
+
+    // Build complete branch objects by merging data from all arrays
+    return Array.from(branchIds).map((branchId, index) => {
+      const fullBranch = branches.find((branch) => branch._id === branchId);
+
+      const stockData = product.branchStock?.find(
+        (b: any) => b.branch === branchId
+      );
+      const availableData = product.branchAvailable?.find(
+        (b: any) => b.branch === branchId
+      );
+      const priceData = product.branchPrice?.find(
+        (b: any) => b.branch === branchId
+      );
+      const discountData = product.branchPriceAfterDiscount?.find(
+        (b: any) => b.branch === branchId
+      );
+
+      return {
+        key: index,
+        branch: branchId,
+        name: fullBranch?.name || "Unknown",
+        price: priceData?.price || "",
+        available: availableData?.available ?? true,
+        stock: stockData?.stock || "",
+        priceAfterDiscount: discountData?.priceAfterDiscount || "",
+        priceAfterExpiresAt: "",
+        order: "",
+        sold: "",
+        _id: branchId,
+      };
+    });
+  }, [productFromState, branches]);
+
+  const extractedCategories =
+    productFromState?.product?.category?.map((c: any) => {
+      // If c.category is a string (ID), find the full category object
+      const categoryId =
+        typeof c.category === "string" ? c.category : c.category?._id;
+      const fullCategory = categories.find((cat) => cat._id === categoryId);
+
+      return {
+        value: categoryId,
+        label: fullCategory?.name || "Unknown",
+      };
+    }) || [];
+
+  const extractedSubCategories =
+    productFromState?.product?.subCategory?.map((s: any) => {
+      const subCategoryId =
+        typeof s.subCategory === "string" ? s.subCategory : s.subCategory?._id;
+      const fullSubCategory = subcategories.find(
+        (sub) => sub._id === subCategoryId
+      );
+
+      return {
+        value: subCategoryId,
+        label: fullSubCategory?.name || "Unknown",
+      };
+    }) || [];
+
+  const extractedChildSubCategories =
+    productFromState?.product?.childSubCategory?.map((cs: any) => {
+      const childSubCategoryId =
+        typeof cs.childSubCategory === "string"
+          ? cs.childSubCategory
+          : cs.childSubCategory?._id;
+      const fullChildSubCategory = childSubCategories.find(
+        (child) => child._id === childSubCategoryId
+      );
+
+      return {
+        value: childSubCategoryId,
+        label: fullChildSubCategory?.name || "Unknown",
+      };
+    }) || [];
+  const extractedTypes =
+    productFromState?.product?.types?.map((t: any) => ({
+      value: t._id,
+      label: t.name,
+    })) || [];
+
+  const extractedExtras =
+    productFromState?.product?.extras?.map((e: any) => ({
+      value: e.extra._id,
+      label: e.extra.name,
+    })) || [];
+
+  const extractedGroupOfOptions =
+    productFromState?.product?.groupOfOptions?.map((g: any) => ({
+      value: g.optionGroup._id,
+      label: g.optionGroup.name,
+    })) || [];
+
+  const images = productFromState?.product?.images || [];
+  const imgCover = productFromState?.product?.imgCover?.[0]?.url || "";
 
   const handleTabClick = (tab: string) => {
     setActiveTab(tab);
   };
+
+  // Define initialBranches BEFORE useEffect
+  const initialBranches = useMemo(() => {
+    return branches.map((branch, index) => ({
+      key: index,
+      branch: branch._id,
+      price: "",
+      available: false,
+      stock: "",
+      priceAfterDiscount: "",
+      priceAfterExpiresAt: "",
+      order: "",
+      sold: "",
+      _id: index.toLocaleString(),
+      name: branch.name,
+    }));
+  }, [branches]);
+
+  // Set initialProduct.branch
+  initialProduct.branch = initialBranches;
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -268,15 +426,55 @@ const ProductForm: FC<Props> = ({ product }) => {
           setPreviewUrl(data?.imgCover[0].url);
         formik.setValues(data);
       } catch (error) {
-        console.error('Error fetching product', error);
+        console.error("Error fetching product", error);
       }
     };
-    if (id !== 'new') {
+
+    // If we have product data from navigation state, use it instead of fetching
+    if (productFromState?.product) {
+      const product = productFromState.product;
+
+      // Transform branch data to match the expected format
+      const transformedProduct = {
+        ...product,
+        branch:
+          product.branch?.map((b: any, index: number) => ({
+            key: index,
+            branch: typeof b.branch === "string" ? b.branch : b.branch._id,
+            name: typeof b.branch === "string" ? "" : b.branch.name,
+            price: b.price || "",
+            available: b.available || false,
+            stock: b.stock || "",
+            priceAfterDiscount: b.priceAfterDiscount || "",
+            priceAfterExpiresAt: b.priceAfterExpiresAt || "",
+            order: b.order || "",
+            sold: b.sold || "",
+            _id: b._id || index.toString(),
+          })) || initialBranches,
+      };
+
+      setProductForEdit(transformedProduct);
+
+      // Set preview URL for cover image
+      if (product.imgCover?.[0]?.url) {
+        setPreviewUrl(product.imgCover[0].url);
+      }
+
+      // Set existing gallery images
+      if (product.images && product.images.length > 0) {
+        // Images can be either strings (URLs) or objects with url property
+        const imageUrls = product.images.map((img: any) =>
+          typeof img === "string" ? img : img.url
+        );
+        setExistingGalleryUrls(imageUrls);
+      }
+    } else if (id !== "new") {
+      // Only fetch from API if we don't have data from navigation state
       fetchProduct();
     } else {
       setProductForEdit(initialProduct);
     }
-  }, [id, setProductForEdit]);
+  }, [id, setProductForEdit, productFromState, initialBranches]);
 
   const memoizedCategories = useMemo(
     () =>
@@ -320,37 +518,20 @@ const ProductForm: FC<Props> = ({ product }) => {
     [types]
   );
 
-  const initialBranches = branches.map((branch, index) => {
-    return {
-      key: index,
-      branch: branch._id,
-      price: '',
-      available: false,
-      stock: '',
-      priceAfterDiscount: '',
-      priceAfterExpiresAt: '',
-      order: '',
-      sold: '',
-      _id: index.toLocaleString(),
-      name: branch.name,
-    };
-  });
-  initialProduct.branch = initialBranches;
-
-  const keysToRemove = ['key', 'name', '_id'];
+  const keysToRemove = ["key", "name", "_id"];
 
   const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
 
     // Validate total images won't exceed 10
-    if (galleryFiles.length + files.length > 10) {
-      setError('Maximum 10 images allowed in gallery');
+    if (existingGalleryUrls.length + galleryFiles.length + files.length > 10) {
+      setError("Maximum 10 images allowed in gallery");
       return;
     }
 
     // Validate each file
     const validFiles = files.filter((file) => {
-      if (!file.type.match('image/jpeg|image/png|image/jpg')) {
+      if (!file.type.match("image/jpeg|image/png|image/jpg")) {
         return false;
       }
       if (file.size > 5 * 1024 * 1024) {
@@ -376,15 +557,21 @@ const ProductForm: FC<Props> = ({ product }) => {
     setGalleryPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleRemoveExistingGalleryImage = (index: number) => {
+    setExistingGalleryUrls((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: {
       name: productForEdit ? productForEdit.name : initialProduct.name,
-      _id: productForEdit?._id || '',
-      slug: productForEdit?.slug || '',
-      shortDesc: productForEdit?.shortDesc || '',
-      description: productForEdit?.description || '',
-      imgCover: productForEdit?.imgCover?.[0]?.url || '',
+      _id: productForEdit?._id || "",
+      slug: productForEdit?.slug || "",
+      shortDesc: productForEdit?.shortDesc || "",
+      description: productForEdit?.description || "",
+      // Fix: Add type assertion for imgCover
+      imgCover:
+        (productForEdit?.imgCover as Array<{ url: string }>)?.[0]?.url || "",
       metaTags: productForEdit?.metaTags || [],
       price: productForEdit?.price || initialProduct.price,
       showWeight: productForEdit?.showWeight || initialProduct.showWeight,
@@ -403,42 +590,123 @@ const ProductForm: FC<Props> = ({ product }) => {
       deleted: productForEdit?.deleted ?? initialProduct.deleted,
       order: productForEdit?.order || initialProduct.order,
 
-      // React-Select arrays - provide empty arrays as fallback
-      extras:
-        productForEdit?.extras?.map((option) => ({
-          value: option.extra._id,
-          label: option.extra.name,
-        })) || [],
+      // React-Select arrays - match with memoized options by reference
+      extras: Array.isArray(productForEdit?.extras)
+        ? productForEdit.extras
+            .map((option: any) =>
+              memoizedExtras.find((ext) => ext.value === option.extra._id)
+            )
+            .filter(Boolean)
+        : extractedExtras.length > 0
+        ? extractedExtras
+            .map((extracted) =>
+              memoizedExtras.find((ext) => ext.value === extracted.value)
+            )
+            .filter(Boolean)
+        : [],
+      groupOfOptions: Array.isArray(productForEdit?.groupOfOptions)
+        ? productForEdit.groupOfOptions
+            .map((option: any) =>
+              memoizedGroupsOfOptions.find(
+                (grp) => grp.value === option.optionGroup._id
+              )
+            )
+            .filter(Boolean)
+        : extractedGroupOfOptions.length > 0
+        ? extractedGroupOfOptions
+            .map((extracted) =>
+              memoizedGroupsOfOptions.find(
+                (grp) => grp.value === extracted.value
+              )
+            )
+            .filter(Boolean)
+        : [],
 
-      groupOfOptions:
-        productForEdit?.groupOfOptions?.map((option) => ({
-          value: option.optionGroup._id,
-          label: option.optionGroup.name,
-        })) || [],
+      types: Array.isArray(productForEdit?.types)
+        ? productForEdit.types
+            .map((option: any) =>
+              memoizedTypes.find((type) => type.value === option._id)
+            )
+            .filter(Boolean)
+        : extractedTypes.length > 0
+        ? extractedTypes
+            .map((extracted) =>
+              memoizedTypes.find((type) => type.value === extracted.value)
+            )
+            .filter(Boolean)
+        : [],
 
-      types:
-        productForEdit?.types?.map((option) => ({
-          value: option._id,
-          label: option.name,
-        })) || [],
+      category: (() => {
+        if (Array.isArray(productForEdit?.category)) {
+          return productForEdit.category
+            .map((option: any) => {
+              const categoryId =
+                typeof option.category === "string"
+                  ? option.category
+                  : option.category?._id;
+              return memoizedCategories.find((cat) => cat.value === categoryId);
+            })
+            .filter(Boolean);
+        }
+        if (extractedCategories.length > 0) {
+          return extractedCategories
+            .map((extracted) =>
+              memoizedCategories.find((cat) => cat.value === extracted.value)
+            )
+            .filter(Boolean);
+        }
+        return [];
+      })(),
 
-      category:
-        productForEdit?.category?.map((option) => ({
-          value: option.category._id,
-          label: option.category.name,
-        })) || [],
+      subCategory: (() => {
+        if (Array.isArray(productForEdit?.subCategory)) {
+          return productForEdit.subCategory
+            .map((option: any) => {
+              const subCategoryId =
+                typeof option.subCategory === "string"
+                  ? option.subCategory
+                  : option.subCategory?._id;
+              return memoizedSubCategories.find(
+                (sub) => sub.value === subCategoryId
+              );
+            })
+            .filter(Boolean);
+        }
+        if (extractedSubCategories.length > 0) {
+          return extractedSubCategories
+            .map((extracted) =>
+              memoizedSubCategories.find((sub) => sub.value === extracted.value)
+            )
+            .filter(Boolean);
+        }
+        return [];
+      })(),
 
-      subCategory:
-        productForEdit?.subCategory?.map((option) => ({
-          value: option.subCategory._id,
-          label: option.subCategory.name,
-        })) || [],
-
-      childSubCategory:
-        productForEdit?.childSubCategory?.map((option) => ({
-          value: option.childSubCategory._id,
-          label: option.childSubCategory.name,
-        })) || [],
+      childSubCategory: (() => {
+        if (Array.isArray(productForEdit?.childSubCategory)) {
+          return productForEdit.childSubCategory
+            .map((option: any) => {
+              const childSubCategoryId =
+                typeof option.childSubCategory === "string"
+                  ? option.childSubCategory
+                  : option.childSubCategory?._id;
+              return memoizedChildSubCategories.find(
+                (child) => child.value === childSubCategoryId
+              );
+            })
+            .filter(Boolean);
+        }
+        if (extractedChildSubCategories.length > 0) {
+          return extractedChildSubCategories
+            .map((extracted) =>
+              memoizedChildSubCategories.find(
+                (child) => child.value === extracted.value
+              )
+            )
+            .filter(Boolean);
+        }
+        return [];
+      })(),
     },
     validationSchema: editProductSchema,
     onSubmit: async (values: ProductFormValues, { setSubmitting }) => {
@@ -450,30 +718,68 @@ const ProductForm: FC<Props> = ({ product }) => {
         // Create a new submission object instead of mutating values
         const submissionData: any = { ...values };
 
-        // Process branches
-        if (updatedBranches) {
-          const newArray = updatedBranches
-            ?.filter((obj) => obj.available !== false)
-            .map((obj) => {
-              const newObj = { ...obj };
-              keysToRemove.forEach((key) => delete newObj[key]);
-              return newObj;
+        // Process branches - Transform into separate arrays as backend expects
+        const branchesToProcess = updatedBranches || initialBranches;
+
+        submissionData.branchStock = [];
+        submissionData.branchAvailable = [];
+        submissionData.branchPrice = [];
+        submissionData.branchPriceAfterDiscount = [];
+
+        branchesToProcess.forEach((obj) => {
+          // Add to branchStock array
+          if (
+            obj.stock !== undefined &&
+            obj.stock !== null &&
+            obj.stock !== ""
+          ) {
+            submissionData.branchStock.push({
+              branch: obj.branch,
+              stock: obj.stock,
             });
-          submissionData.branch = newArray;
-        } else {
-          const newArray = initialBranches
-            .filter((obj) => obj.available !== false)
-            .map((obj) => {
-              const newObj = { ...obj };
-              keysToRemove.forEach((key) => delete newObj[key]);
-              return newObj;
+          }
+
+          // Add to branchAvailable array
+          if (obj.available !== undefined) {
+            submissionData.branchAvailable.push({
+              branch: obj.branch,
+              available: obj.available,
             });
-          submissionData.branch = newArray;
-        }
+          }
+
+          // Add to branchPrice array
+          if (
+            obj.price !== undefined &&
+            obj.price !== null &&
+            obj.price !== ""
+          ) {
+            submissionData.branchPrice.push({
+              branch: obj.branch,
+              price: obj.price,
+            });
+          }
+
+          // Add to branchPriceAfterDiscount array
+          if (
+            obj.priceAfterDiscount !== undefined &&
+            obj.priceAfterDiscount !== null &&
+            obj.priceAfterDiscount !== ""
+          ) {
+            submissionData.branchPriceAfterDiscount.push({
+              branch: obj.branch,
+              priceAfterDiscount: obj.priceAfterDiscount,
+            });
+          }
+        });
+
+        // Remove the old branch field if it exists
+        delete submissionData.branch;
 
         // Handle image uploads
         if (imageFile) {
-          submissionData.imgCover = {url: await uploadToCloudinary(imageFile)};
+          submissionData.imgCover = {
+            url: await uploadToCloudinary(imageFile),
+          };
         } else {
           delete submissionData.imgCover;
         }
@@ -523,32 +829,34 @@ const ProductForm: FC<Props> = ({ product }) => {
           })) || [];
 
         delete submissionData._id;
+
         // Use submissionData instead of values
         if (isNotEmpty(values._id)) {
-          await updateProduct(values._id, submissionData);
+          const result = await updateProduct(values._id, submissionData);
           Swal.fire({
-            icon: 'success',
-            title: 'Success!',
-            text: 'Product updated successfully',
+            icon: "success",
+            title: "Success!",
+            text: "Product updated successfully",
             timer: 2000,
             showConfirmButton: false,
           });
         } else {
-          await createProduct(submissionData);
+          const result = await createProduct(submissionData);
           Swal.fire({
-            icon: 'success',
-            title: 'Success!',
-            text: 'Product created successfully',
+            icon: "success",
+            title: "Success!",
+            text: "Product created successfully",
             timer: 2000,
             showConfirmButton: false,
           });
         }
       } catch (ex) {
-        console.error(ex);
+        console.error("🔴🔴🔴 ERROR caught in onSubmit:", ex);
+        console.error("🔴🔴🔴 Error details:", ex.response?.data);
         Swal.fire({
-          icon: 'error',
-          title: 'Error!',
-          text: ex.response?.data?.error || 'An error occurred',
+          icon: "error",
+          title: "Error!",
+          text: ex.response?.data?.error || ex.message || "An error occurred",
           timer: 3000,
           showConfirmButton: false,
         });
@@ -559,19 +867,21 @@ const ProductForm: FC<Props> = ({ product }) => {
     },
   });
 
+  // Debug: Log formik values when they change
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     // Validate file type
-    if (!file.type.match('image/jpeg|image/png|image/jpg')) {
-      setError('Please select a valid image file (PNG, JPG, JPEG)');
+    if (!file.type.match("image/jpeg|image/png|image/jpg")) {
+      setError("Please select a valid image file (PNG, JPG, JPEG)");
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      setError('File size must be less than 5MB');
+      setError("File size must be less than 5MB");
       return;
     }
 
@@ -588,14 +898,14 @@ const ProductForm: FC<Props> = ({ product }) => {
 
   const handleRemoveImage = () => {
     setImageFile(null);
-    setPreviewUrl('');
-    formik.setFieldValue('imgCover', '');
+    setPreviewUrl("");
+    formik.setFieldValue("imgCover", "");
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
-  if (id !== 'new' && productForEdit == undefined) {
+  if (id !== "new" && productForEdit == undefined) {
     return <div>Loading...</div>;
   }
 
@@ -631,7 +941,7 @@ const ProductForm: FC<Props> = ({ product }) => {
                 <span className="indicator-label">Submit</span>
                 {formik.isSubmitting && (
                   <span className="indicator-progress">
-                    Please wait...{' '}
+                    Please wait...{" "}
                     <span className="spinner-border spinner-border-sm align-middle ms-2"></span>
                   </span>
                 )}
@@ -685,9 +995,13 @@ const ProductForm: FC<Props> = ({ product }) => {
                     title="Cancel imgCover"
                     onClick={() => {
                       setImageFile(null);
-                      setPreviewUrl(productForEdit?.imgCover[0].url || '');
+                      setPreviewUrl(
+                        (
+                          productForEdit?.imgCover as Array<{ url: string }>
+                        )?.[0]?.url || ""
+                      );
                       if (fileInputRef.current) {
-                        fileInputRef.current.value = '';
+                        fileInputRef.current.value = "";
                       }
                     }}
                   >
@@ -725,15 +1039,15 @@ const ProductForm: FC<Props> = ({ product }) => {
 
                   {/* begin::Input */}
                   <input
-                    {...formik.getFieldProps('available')}
+                    {...formik.getFieldProps("available")}
                     className={clsx(
-                      ' form-check-input mb-3 mb-lg-0 ms-2 border border-2',
+                      " form-check-input mb-3 mb-lg-0 ms-2 border border-2",
                       {
-                        'is-invalid':
+                        "is-invalid":
                           formik.touched.available && formik.errors.available,
                       },
                       {
-                        'is-valid':
+                        "is-valid":
                           formik.touched.available && !formik.errors.available,
                       }
                     )}
@@ -761,15 +1075,15 @@ const ProductForm: FC<Props> = ({ product }) => {
 
                   {/* begin::Input */}
                   <input
-                    {...formik.getFieldProps('deleted')}
+                    {...formik.getFieldProps("deleted")}
                     className={clsx(
-                      ' form-check-input mb-3 mb-lg-0 ms-2 border border-2',
+                      " form-check-input mb-3 mb-lg-0 ms-2 border border-2",
                       {
-                        'is-invalid':
+                        "is-invalid":
                           formik.touched.deleted && formik.errors.deleted,
                       },
                       {
-                        'is-valid':
+                        "is-valid":
                           formik.touched.deleted && !formik.errors.deleted,
                       }
                     )}
@@ -806,15 +1120,15 @@ const ProductForm: FC<Props> = ({ product }) => {
                   {/* begin::Input */}
                   <input
                     placeholder="order"
-                    {...formik.getFieldProps('order')}
+                    {...formik.getFieldProps("order")}
                     className={clsx(
-                      'form-control form-control-solid mb-3 mb-lg-0 ms-2 border border-2',
+                      "form-control form-control-solid mb-3 mb-lg-0 ms-2 border border-2",
                       {
-                        'is-invalid':
+                        "is-invalid":
                           formik.touched.order && formik.errors.order,
                       },
                       {
-                        'is-valid':
+                        "is-valid":
                           formik.touched.order && !formik.errors.order,
                       }
                     )}
@@ -843,14 +1157,14 @@ const ProductForm: FC<Props> = ({ product }) => {
                     options={memoizedCategories}
                     placeholder="Category"
                     className={clsx(
-                      'form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2',
+                      "form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2",
                       {
-                        'is-invalid':
+                        "is-invalid":
                           (formik.touched as any).category &&
                           (formik.errors as any).category,
                       },
                       {
-                        'is-valid':
+                        "is-valid":
                           (formik.touched as any).category &&
                           !(formik.errors as any).category,
                       }
@@ -860,7 +1174,7 @@ const ProductForm: FC<Props> = ({ product }) => {
                     onChange={(selected) => {
                       // Update Formik state directly
                       formik.setFieldValue(
-                        'category',
+                        "category",
                         selected ? selected : []
                       );
                     }}
@@ -894,14 +1208,14 @@ const ProductForm: FC<Props> = ({ product }) => {
                     options={memoizedSubCategories}
                     placeholder="SubCategory"
                     className={clsx(
-                      'form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2'
+                      "form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2"
                     )}
                     name="subCategory"
                     value={(formik.values as any).subCategory || []}
                     onChange={(selected) => {
                       // Update Formik state directly
                       formik.setFieldValue(
-                        'subCategory',
+                        "subCategory",
                         selected ? selected : []
                       );
                     }}
@@ -934,14 +1248,14 @@ const ProductForm: FC<Props> = ({ product }) => {
                     options={memoizedChildSubCategories}
                     placeholder="ChildSubCategory"
                     className={clsx(
-                      'form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2'
+                      "form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2"
                     )}
                     name="childSubCategory"
                     value={(formik.values as any).childSubCategory || []}
                     onChange={(selected) => {
                       // Update Formik state directly
                       formik.setFieldValue(
-                        'childSubCategory',
+                        "childSubCategory",
                         selected ? selected : []
                       );
                     }}
@@ -966,9 +1280,9 @@ const ProductForm: FC<Props> = ({ product }) => {
                   <button
                     type="button"
                     className={`nav-link ${
-                      activeTab === 'general' ? 'active' : ''
+                      activeTab === "general" ? "active" : ""
                     }`}
-                    onClick={() => handleTabClick('general')}
+                    onClick={() => handleTabClick("general")}
                   >
                     General
                   </button>
@@ -977,9 +1291,9 @@ const ProductForm: FC<Props> = ({ product }) => {
                   <button
                     type="button"
                     className={`nav-link ${
-                      activeTab === 'advanced' ? 'active' : ''
+                      activeTab === "advanced" ? "active" : ""
                     }`}
-                    onClick={() => handleTabClick('advanced')}
+                    onClick={() => handleTabClick("advanced")}
                   >
                     Advanced
                   </button>
@@ -988,9 +1302,9 @@ const ProductForm: FC<Props> = ({ product }) => {
                   <button
                     type="button"
                     className={`nav-link ${
-                      activeTab === 'media' ? 'active' : ''
+                      activeTab === "media" ? "active" : ""
                     }`}
-                    onClick={() => handleTabClick('media')}
+                    onClick={() => handleTabClick("media")}
                   >
                     Media
                   </button>
@@ -999,9 +1313,9 @@ const ProductForm: FC<Props> = ({ product }) => {
                   <button
                     type="button"
                     className={`nav-link ${
-                      activeTab === 'branches' ? 'active' : ''
+                      activeTab === "branches" ? "active" : ""
                     }`}
-                    onClick={() => handleTabClick('branches')}
+                    onClick={() => handleTabClick("branches")}
                   >
                     Branches
                   </button>
@@ -1010,9 +1324,9 @@ const ProductForm: FC<Props> = ({ product }) => {
                   <button
                     type="button"
                     className={`nav-link ${
-                      activeTab === 'descTable' ? 'active' : ''
+                      activeTab === "descTable" ? "active" : ""
                     }`}
-                    onClick={() => handleTabClick('descTable')}
+                    onClick={() => handleTabClick("descTable")}
                   >
                     Description Table
                   </button>
@@ -1023,7 +1337,7 @@ const ProductForm: FC<Props> = ({ product }) => {
               {/* begin:: General group */}
               <div
                 className={`collapse ${
-                  activeTab === 'general' ? 'active show' : ''
+                  activeTab === "general" ? "active show" : ""
                 }`}
                 id="general"
               >
@@ -1043,18 +1357,18 @@ const ProductForm: FC<Props> = ({ product }) => {
                     {/* begin::Input */}
                     <input
                       placeholder="Product Name"
-                      {...formik.getFieldProps('name')}
+                      {...formik.getFieldProps("name")}
                       // value={formik.values?.name}
                       type="text"
                       name="name"
                       className={clsx(
-                        'form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2',
+                        "form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2",
                         {
-                          'is-invalid':
+                          "is-invalid":
                             formik.touched.name && formik.errors.name,
                         },
                         {
-                          'is-valid':
+                          "is-valid":
                             formik.touched.name && !formik.errors.name,
                         }
                       )}
@@ -1088,21 +1402,21 @@ const ProductForm: FC<Props> = ({ product }) => {
                       theme="snow"
                       modules={modules}
                       placeholder="Description"
-                      value={formik.values.description || ''}
+                      value={formik.values.description || ""}
                       onChange={(value) => {
-                        formik.setFieldValue('description', value);
-                        formik.setFieldTouched('description', true, false);
+                        formik.setFieldValue("description", value);
+                        formik.setFieldTouched("description", true, false);
                       }}
                       onBlur={() =>
-                        formik.setFieldTouched('description', true, true)
+                        formik.setFieldTouched("description", true, true)
                       }
                       className={clsx(
-                        'mb-3 ms-2 mb-lg-0 border border-2 rounded',
+                        "mb-3 ms-2 mb-lg-0 border border-2 rounded",
                         {
-                          'border-danger':
+                          "border-danger":
                             formik.touched.description &&
                             formik.errors.description,
-                          'border-success':
+                          "border-success":
                             formik.touched.description &&
                             !formik.errors.description,
                         }
@@ -1137,18 +1451,18 @@ const ProductForm: FC<Props> = ({ product }) => {
                     {/* begin::Input */}
                     <input
                       placeholder="Short Description"
-                      {...formik.getFieldProps('shortDesc')}
+                      {...formik.getFieldProps("shortDesc")}
                       type="text"
                       name="shortDesc"
                       className={clsx(
-                        'form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2',
+                        "form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2",
                         {
-                          'is-invalid':
+                          "is-invalid":
                             (formik.touched as any).shortDesc &&
                             (formik.errors as any).shortDesc,
                         },
                         {
-                          'is-valid':
+                          "is-valid":
                             (formik.touched as any).shortDesc &&
                             !(formik.errors as any).shortDesc,
                         }
@@ -1187,15 +1501,15 @@ const ProductForm: FC<Props> = ({ product }) => {
                     {/* begin::Input */}
                     <input
                       placeholder="Product price"
-                      {...formik.getFieldProps('price')}
+                      {...formik.getFieldProps("price")}
                       className={clsx(
-                        'form-control form-control-solid mb-3 mb-lg-0 ms-2 border border-2',
+                        "form-control form-control-solid mb-3 mb-lg-0 ms-2 border border-2",
                         {
-                          'is-invalid':
+                          "is-invalid":
                             formik.touched.price && formik.errors.price,
                         },
                         {
-                          'is-valid':
+                          "is-valid":
                             formik.touched.price && !formik.errors.price,
                         }
                       )}
@@ -1224,16 +1538,16 @@ const ProductForm: FC<Props> = ({ product }) => {
                   <div className="fv-row mb-7 form-check form-switch form-check-custom form-check-solid">
                     {/* begin::Input */}
                     <input
-                      {...formik.getFieldProps('showWeight')}
+                      {...formik.getFieldProps("showWeight")}
                       className={clsx(
-                        ' form-check-input mb-3 mb-lg-0 ms-2 border border-2',
+                        " form-check-input mb-3 mb-lg-0 ms-2 border border-2",
                         {
-                          'is-invalid':
+                          "is-invalid":
                             formik.touched.showWeight &&
                             formik.errors.showWeight,
                         },
                         {
-                          'is-valid':
+                          "is-valid":
                             formik.touched.showWeight &&
                             !formik.errors.showWeight,
                         }
@@ -1259,16 +1573,16 @@ const ProductForm: FC<Props> = ({ product }) => {
                   <div className="fv-row mb-7 form-check form-switch form-check-custom form-check-solid">
                     {/* begin::Input */}
                     <input
-                      {...formik.getFieldProps('fractionalQuantity')}
+                      {...formik.getFieldProps("fractionalQuantity")}
                       className={clsx(
-                        ' form-check-input mb-3 mb-lg-0 ms-2 border border-2',
+                        " form-check-input mb-3 mb-lg-0 ms-2 border border-2",
                         {
-                          'is-invalid':
+                          "is-invalid":
                             formik.touched.fractionalQuantity &&
                             formik.errors.fractionalQuantity,
                         },
                         {
-                          'is-valid':
+                          "is-valid":
                             formik.touched.fractionalQuantity &&
                             !formik.errors.fractionalQuantity,
                         }
@@ -1279,11 +1593,14 @@ const ProductForm: FC<Props> = ({ product }) => {
                       defaultChecked={productForEdit?.fractionalQuantity}
                     />
                     {/* end::Input */}
-                    {formik.touched.fractionalQuantity && formik.errors.fractionalQuantity && (
-                      <div className="fv-plugins-message-container">
-                        <span role="alert">{formik.errors.fractionalQuantity}</span>
-                      </div>
-                    )}
+                    {formik.touched.fractionalQuantity &&
+                      formik.errors.fractionalQuantity && (
+                        <div className="fv-plugins-message-container">
+                          <span role="alert">
+                            {formik.errors.fractionalQuantity}
+                          </span>
+                        </div>
+                      )}
                     <label className=" fw-semibold fs-6 mb-2 ms-4 pt-2">
                       Fractional Quantity
                     </label>
@@ -1301,15 +1618,15 @@ const ProductForm: FC<Props> = ({ product }) => {
                     {/* begin::Input */}
                     <input
                       placeholder="Weight"
-                      {...formik.getFieldProps('weight')}
+                      {...formik.getFieldProps("weight")}
                       className={clsx(
-                        'form-control form-control-solid mb-3 mb-lg-0 ms-2 border border-2',
+                        "form-control form-control-solid mb-3 mb-lg-0 ms-2 border border-2",
                         {
-                          'is-invalid':
+                          "is-invalid":
                             formik.touched.weight && formik.errors.weight,
                         },
                         {
-                          'is-valid':
+                          "is-valid":
                             formik.touched.weight && !formik.errors.weight,
                         }
                       )}
@@ -1338,16 +1655,16 @@ const ProductForm: FC<Props> = ({ product }) => {
                     {/* begin::Input */}
                     <input
                       placeholder="Dimensions"
-                      {...formik.getFieldProps('dimensions')}
+                      {...formik.getFieldProps("dimensions")}
                       className={clsx(
-                        'form-control form-control-solid mb-3 mb-lg-0 ms-2 border border-2',
+                        "form-control form-control-solid mb-3 mb-lg-0 ms-2 border border-2",
                         {
-                          'is-invalid':
+                          "is-invalid":
                             formik.touched.dimensions &&
                             formik.errors.dimensions,
                         },
                         {
-                          'is-valid':
+                          "is-valid":
                             formik.touched.dimensions &&
                             !formik.errors.dimensions,
                         }
@@ -1374,7 +1691,7 @@ const ProductForm: FC<Props> = ({ product }) => {
               {/* begin:: Advanced group */}
               <div
                 className={`collapse ${
-                  activeTab === 'advanced' ? 'active show' : ''
+                  activeTab === "advanced" ? "active show" : ""
                 }`}
                 id="advanced"
               >
@@ -1394,17 +1711,17 @@ const ProductForm: FC<Props> = ({ product }) => {
                     {/* begin::Input */}
                     <input
                       placeholder="Quantity"
-                      {...formik.getFieldProps('quantity')}
+                      {...formik.getFieldProps("quantity")}
                       type="text"
                       name="quantity"
                       className={clsx(
-                        'form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2',
+                        "form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2",
                         {
-                          'is-invalid':
+                          "is-invalid":
                             formik.touched.quantity && formik.errors.quantity,
                         },
                         {
-                          'is-valid':
+                          "is-valid":
                             formik.touched.quantity && !formik.errors.quantity,
                         }
                       )}
@@ -1433,17 +1750,17 @@ const ProductForm: FC<Props> = ({ product }) => {
                     {/* begin::Input */}
                     <input
                       placeholder="Minimum Qty for order"
-                      {...formik.getFieldProps('minQty')}
+                      {...formik.getFieldProps("minQty")}
                       type="text"
                       name="minQty"
                       className={clsx(
-                        'form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2',
+                        "form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2",
                         {
-                          'is-invalid':
+                          "is-invalid":
                             formik.touched.minQty && formik.errors.minQty,
                         },
                         {
-                          'is-valid':
+                          "is-valid":
                             formik.touched.minQty && !formik.errors.minQty,
                         }
                       )}
@@ -1472,18 +1789,18 @@ const ProductForm: FC<Props> = ({ product }) => {
                     {/* begin::Input */}
                     <input
                       placeholder="Stock"
-                      checked={formik.values.stock === '0'}
+                      checked={formik.values.stock === "0"}
                       onChange={(e) => {
                         if (e.target.checked) {
-                          formik.setFieldValue('stock', '0');
+                          formik.setFieldValue("stock", "0");
                         } else {
-                          formik.setFieldValue('stock', '');
+                          formik.setFieldValue("stock", "");
                         }
                       }}
                       type="checkbox"
                       name="outOfStock"
                       className={clsx(
-                        'form-check-input mb-3 ms-2 mb-lg-0 border border-2'
+                        "form-check-input mb-3 ms-2 mb-lg-0 border border-2"
                       )}
                       autoComplete="off"
                       disabled={formik.isSubmitting}
@@ -1493,7 +1810,7 @@ const ProductForm: FC<Props> = ({ product }) => {
                   {/* end:: stock switch group */}
 
                   {/* begin:: stock Input group - Only show if not out of stock */}
-                  {formik.values.stock !== '0' && (
+                  {formik.values.stock !== "0" && (
                     <div className="fv-row mb-7">
                       {/* begin::Label */}
                       <label className=" fw-semibold fs-7 ps-4 mb-2">
@@ -1504,17 +1821,17 @@ const ProductForm: FC<Props> = ({ product }) => {
                       {/* begin::Input */}
                       <input
                         placeholder="Stock"
-                        {...formik.getFieldProps('stock')}
+                        {...formik.getFieldProps("stock")}
                         type="text"
                         name="stock"
                         className={clsx(
-                          'form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2',
+                          "form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2",
                           {
-                            'is-invalid':
+                            "is-invalid":
                               formik.touched.stock && formik.errors.stock,
                           },
                           {
-                            'is-valid':
+                            "is-valid":
                               formik.touched.stock && !formik.errors.stock,
                           }
                         )}
@@ -1542,17 +1859,17 @@ const ProductForm: FC<Props> = ({ product }) => {
                     {/* begin::Input */}
                     <input
                       placeholder="Sold"
-                      {...formik.getFieldProps('sold')}
+                      {...formik.getFieldProps("sold")}
                       type="text"
                       name="sold"
                       className={clsx(
-                        'form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2',
+                        "form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2",
                         {
-                          'is-invalid':
+                          "is-invalid":
                             formik.touched.sold && formik.errors.sold,
                         },
                         {
-                          'is-valid':
+                          "is-valid":
                             formik.touched.sold && !formik.errors.sold,
                         }
                       )}
@@ -1586,16 +1903,16 @@ const ProductForm: FC<Props> = ({ product }) => {
 
                     {/* begin::Input */}
                     <select
-                      {...formik.getFieldProps('book')}
+                      {...formik.getFieldProps("book")}
                       name="book"
                       className={clsx(
-                        'form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2',
+                        "form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2",
                         {
-                          'is-invalid':
+                          "is-invalid":
                             formik.touched.book && formik.errors.book,
                         },
                         {
-                          'is-valid':
+                          "is-valid":
                             formik.touched.book && !formik.errors.book,
                         }
                       )}
@@ -1637,14 +1954,14 @@ const ProductForm: FC<Props> = ({ product }) => {
                       options={memoizedGroupsOfOptions}
                       placeholder="Group Of Options"
                       className={clsx(
-                        'form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2'
+                        "form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2"
                       )}
                       name="groupOfOptions"
                       value={(formik.values as any).groupOfOptions || []}
                       onChange={(selected) => {
                         // Update Formik state directly
                         formik.setFieldValue(
-                          'groupOfOptions',
+                          "groupOfOptions",
                           selected ? selected : []
                         );
                       }}
@@ -1677,14 +1994,14 @@ const ProductForm: FC<Props> = ({ product }) => {
                       options={memoizedExtras}
                       placeholder="Extras"
                       className={clsx(
-                        'form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2'
+                        "form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2"
                       )}
                       name="extras"
                       value={(formik.values as any).extras || []}
                       onChange={(selected) => {
                         // Update Formik state directly
                         formik.setFieldValue(
-                          'extras',
+                          "extras",
                           selected ? selected : []
                         );
                       }}
@@ -1714,13 +2031,13 @@ const ProductForm: FC<Props> = ({ product }) => {
                       options={memoizedTypes}
                       placeholder="Types"
                       className={clsx(
-                        'form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2'
+                        "form-control form-control-solid react-select react-select-styled mb-3 mb-lg-0 ms-2 border border-2"
                       )}
                       name="types"
                       value={formik.values.types || []}
                       onChange={(selected) => {
                         // Update Formik state directly
-                        formik.setFieldValue('types', selected ? selected : []);
+                        formik.setFieldValue("types", selected ? selected : []);
                       }}
                     />
                     {/* end::Input */}
@@ -1748,15 +2065,15 @@ const ProductForm: FC<Props> = ({ product }) => {
                     {/* begin::Input */}
                     <input
                       placeholder="MetaTags"
-                      {...formik.getFieldProps('metaTags')}
+                      {...formik.getFieldProps("metaTags")}
                       className={clsx(
-                        'form-control form-control-solid mb-3 mb-lg-0 ms-2 border border-2',
+                        "form-control form-control-solid mb-3 mb-lg-0 ms-2 border border-2",
                         {
-                          'is-invalid':
+                          "is-invalid":
                             formik.touched.metaTags && formik.errors.metaTags,
                         },
                         {
-                          'is-valid':
+                          "is-valid":
                             formik.touched.metaTags && !formik.errors.metaTags,
                         }
                       )}
@@ -1785,7 +2102,7 @@ const ProductForm: FC<Props> = ({ product }) => {
               {/* begin:: Media group */}
               <div
                 className={`collapse ${
-                  activeTab === 'media' ? 'active show' : ''
+                  activeTab === "media" ? "active show" : ""
                 }`}
                 id="media"
               >
@@ -1800,24 +2117,58 @@ const ProductForm: FC<Props> = ({ product }) => {
 
                     {/* Current images display */}
                     <div className="d-flex flex-wrap gap-3 mb-4 p-3 bg-light rounded">
-                      {galleryPreviews.map((preview, index) => (
-                        <div key={index} className="position-relative">
+                      {/* Display existing images from product */}
+                      {existingGalleryUrls.map((url, index) => (
+                        <div
+                          key={`existing-${index}`}
+                          className="position-relative"
+                        >
                           <img
-                            src={preview}
+                            src={url}
                             alt={`Gallery ${index + 1}`}
                             className="rounded shadow-sm"
                             style={{
-                              width: '100px',
-                              height: '100px',
-                              objectFit: 'cover',
+                              width: "100px",
+                              height: "100px",
+                              objectFit: "cover",
                             }}
                           />
                           <button
                             type="button"
                             className="btn btn-sm btn-danger position-absolute top-0 end-0 rounded-circle"
                             style={{
-                              width: '24px',
-                              height: '24px',
+                              width: "24px",
+                              height: "24px",
+                              padding: 0,
+                            }}
+                            onClick={() =>
+                              handleRemoveExistingGalleryImage(index)
+                            }
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+
+                      {/* Display new image previews */}
+                      {galleryPreviews.map((preview, index) => (
+                        <div key={`new-${index}`} className="position-relative">
+                          <img
+                            src={preview}
+                            alt={`New Gallery ${index + 1}`}
+                            className="rounded shadow-sm"
+                            style={{
+                              width: "100px",
+                              height: "100px",
+                              objectFit: "cover",
+                            }}
+                          />
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-danger position-absolute top-0 end-0 rounded-circle"
+                            style={{
+                              width: "24px",
+                              height: "24px",
                               padding: 0,
                             }}
                             onClick={() => handleRemoveGalleryImage(index)}
@@ -1827,11 +2178,12 @@ const ProductForm: FC<Props> = ({ product }) => {
                         </div>
                       ))}
 
-                      {galleryPreviews.length === 0 && (
-                        <div className="text-muted text-center w-100">
-                          No gallery images added yet
-                        </div>
-                      )}
+                      {existingGalleryUrls.length === 0 &&
+                        galleryPreviews.length === 0 && (
+                          <div className="text-muted text-center w-100">
+                            No gallery images added yet
+                          </div>
+                        )}
                     </div>
 
                     {/* Upload controls */}
@@ -1840,14 +2192,17 @@ const ProductForm: FC<Props> = ({ product }) => {
                         type="button"
                         className="btn btn-light-primary"
                         onClick={() => galleryInputRef.current?.click()}
-                        disabled={galleryFiles.length >= 10}
+                        disabled={
+                          existingGalleryUrls.length + galleryFiles.length >= 10
+                        }
                       >
                         <i className="bi bi-cloud-upload me-2"></i>
                         Add Gallery Images
                       </button>
 
                       <span className="text-muted small">
-                        {galleryFiles.length} / 10 images selected
+                        {existingGalleryUrls.length + galleryFiles.length} / 10
+                        images selected
                       </span>
                     </div>
 
@@ -1857,7 +2212,7 @@ const ProductForm: FC<Props> = ({ product }) => {
                       multiple
                       accept=".png, .jpg, .jpeg"
                       onChange={handleGalleryChange}
-                      style={{ display: 'none' }}
+                      style={{ display: "none" }}
                     />
 
                     <div className="form-text mt-2">
@@ -1872,7 +2227,7 @@ const ProductForm: FC<Props> = ({ product }) => {
               {/* begin:: branches group */}
               <div
                 className={`collapse ${
-                  activeTab === 'branches' ? 'active show' : ''
+                  activeTab === "branches" ? "active show" : ""
                 }`}
                 id="branches"
               >
@@ -1885,19 +2240,25 @@ const ProductForm: FC<Props> = ({ product }) => {
                     </label>
                     {/* end::Label */}
 
-                    <BranchesForm
-                      setUpdatedBranches={setUpdatedBranches}
-                      formik={formik}
-                      branchees={
+                    {(() => {
+                      const branchData =
                         updatedBranches === undefined
                           ? productForEdit !== undefined
                             ? productForEdit.branch
                             : (initialBranches as BranchOfProduct[])
-                          : (updatedBranches as BranchOfProduct[])
-                      }
-                    />
+                          : (updatedBranches as BranchOfProduct[]);
+
+                      return (
+                        <BranchesForm
+                          setUpdatedBranches={setUpdatedBranches}
+                          formik={formik}
+                          branchees={branchData}
+                        />
+                      );
+                    })()}
                   </div>
                 </div>
+
                 {/* end:: Branch Input group */}
               </div>
               {/* end:: branches group */}
@@ -1905,7 +2266,7 @@ const ProductForm: FC<Props> = ({ product }) => {
               {/* begin:: descTable group */}
               <div
                 className={`collapse ${
-                  activeTab === 'descTable' ? 'active show' : ''
+                  activeTab === "descTable" ? "active show" : ""
                 }`}
                 id="descTable"
               >
@@ -1933,21 +2294,21 @@ const ProductForm: FC<Props> = ({ product }) => {
                         type="text"
                         name="descTableName"
                         className={clsx(
-                          'form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2',
+                          "form-control form-control-solid mb-3 ms-2 mb-lg-0 border border-2",
                           {
-                            'is-invalid':
+                            "is-invalid":
                               formik.touched.descTableName &&
                               formik.errors.descTableName,
                           },
                           {
-                            'is-valid':
+                            "is-valid":
                               formik.touched.descTableName &&
                               !formik.errors.descTableName,
                           }
                         )}
                         autoComplete="off"
                         disabled={formik.isSubmitting}
-                        value={formik.values.descTableName || ''}
+                        value={formik.values.descTableName || ""}
                       />
                       {formik.touched.descTableName &&
                         formik.errors.descTableName && (
