@@ -41,18 +41,23 @@ const SubCategoriesTable = () => {
     Record<string, string | undefined>
   >({});
   const { active, archived } = useQueryResponseData();
-  const branches= branchesData();
-  const categories =
-    categoriesData();
+  const branches = branchesData();
+  const categories = categoriesData();
 
   const refetch = useQueryRefetch();
-  const [trigger, setTrigger] = useState(false);
   const [activeCategorieses, setActiveCategorieses] =
     useState<SubCategories[]>(active);
   const [archivedCategorieses, setArchivedCategorieses] = useState<
     SubCategories[]
-    >(() => archived);
-  
+  >(() => archived);
+  // keep local DnD working copies in sync with provider data
+  useEffect(() => {
+    setActiveCategorieses(active ?? []);
+  }, [active]);
+  useEffect(() => {
+    setArchivedCategorieses(archived ?? []);
+  }, [archived]);
+
   const [hoveredTable, setHoveredTable] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [showProductsModal, setShowProductsModal] = useState(false);
@@ -61,13 +66,13 @@ const SubCategoriesTable = () => {
 
   const [editBranch, setEditBranch] = useState();
   const [editCategory, setEditCategory] = useState();
-  
+
   const isActiveLoading = useActiveSubCategoriesLoading();
   const isArchivedLoading = useArchivedSubCategoriesLoading();
 
   const memoizedBranches = useMemo(
     () => branches.map((branch) => ({ value: branch._id, label: branch.name })),
-    [branches],
+    [branches]
   );
   const memoizedCategories = useMemo(
     () =>
@@ -75,7 +80,7 @@ const SubCategoriesTable = () => {
         value: category._id,
         label: category.name,
       })),
-    [categories],
+    [categories]
   );
 
   const columns = useMemo<MRT_ColumnDef<SubCategories>[]>(
@@ -250,11 +255,7 @@ const SubCategoriesTable = () => {
         },
       },
     ],
-    [
-      memoizedBranches,
-      memoizedCategories,
-      validationErrors,
-    ],
+    [memoizedBranches, memoizedCategories, validationErrors]
   );
 
   const editSubCategoriesSchema = Yup.object().shape({
@@ -276,11 +277,14 @@ const SubCategoriesTable = () => {
       .validate(originalRow.row.original)
       .catch((err) => setValidationErrors(err.message));
     setValidationErrors({});
-    const updatedRowValues = (editBranch && editCategory) ? {
-      ...originalRow.values,
-      branch: (editBranch as any)?.map((str) => ({ branch: str })), // assuming branch is an array of objects with value and label
-      category: (editCategory as any)?.map((str) => ({ category: str })), // assuming branch is an array of objects with value and label
-    } : originalRow.values;
+    const updatedRowValues =
+      editBranch && editCategory
+        ? {
+            ...originalRow.values,
+            branch: (editBranch as any)?.map((str) => ({ branch: str })), // assuming branch is an array of objects with value and label
+            category: (editCategory as any)?.map((str) => ({ category: str })), // assuming branch is an array of objects with value and label
+          }
+        : originalRow.values;
 
     await updateCategoryAvailable.mutateAsync({
       id: originalRow.row.original._id,
@@ -322,13 +326,14 @@ const SubCategoriesTable = () => {
     {
       onSuccess: () => {
         // ✅ update detail view directly
-        queryClient.invalidateQueries([`${QUERIES.CATEGORIES_LIST}`]);
-        queryClient.invalidateQueries([`${QUERIES.ARCHIVED_CATEGORIES_LIST}`]);
-        queryClient.refetchQueries([`${QUERIES.CATEGORIES_LIST}`]);
-        queryClient.refetchQueries([`${QUERIES.ARCHIVED_CATEGORIES_LIST}`]);
-        setTrigger(true);
+        queryClient.invalidateQueries([`${QUERIES.SUB_CATEGORIES_LIST}`]);
+        queryClient.invalidateQueries([
+          `${QUERIES.ARCHIVED_SUB_CATEGORIES_LIST}`,
+        ]);
+        queryClient.refetchQueries([`${QUERIES.SUB_CATEGORIES_LIST}`]);
+        queryClient.refetchQueries([`${QUERIES.ARCHIVED_SUB_CATEGORIES_LIST}`]);
       },
-    },
+    }
   );
 
   const deleteSelectedItems = useMutation(
@@ -336,24 +341,24 @@ const SubCategoriesTable = () => {
     {
       onSuccess: () => {
         // ✅ update detail view directly
-        queryClient.invalidateQueries([`${QUERIES.CATEGORIES_LIST}`]);
-        queryClient.invalidateQueries([`${QUERIES.ARCHIVED_CATEGORIES_LIST}`]);
+        queryClient.invalidateQueries([`${QUERIES.SUB_CATEGORIES_LIST}`]);
+        queryClient.invalidateQueries([
+          `${QUERIES.ARCHIVED_SUB_CATEGORIES_LIST}`,
+        ]);
         refetch();
-
-        setTrigger(true);
         clearSelected();
       },
-    },
+    }
   );
 
   const updateCategoryAvailable = useMutation(
-    ({ id, update }: { id: string; update: Partial<SubCategories> }) => updateSubCategory(id, update),
+    ({ id, update }: { id: string; update: Partial<SubCategories> }) =>
+      updateSubCategory(id, update),
     {
       onSuccess: () => {
         refetch();
-        setTrigger(true);
       },
-    },
+    }
   );
 
   const commonTableProps: Partial<MRT_TableOptions<SubCategories>> & {
@@ -423,11 +428,17 @@ const SubCategoriesTable = () => {
             ))}
           </div>
           <div>
-            {row.original.category.map((category, index) => (
-              <span key={index} className="badge badge-warning me-1">
-                {category.category}
-              </span>
-            ))}
+            {row.original.category.map((category, index) => {
+              const label =
+                typeof category.category === "string"
+                  ? category.category
+                  : category.category?.name;
+              return (
+                <span key={index} className="badge badge-warning me-1">
+                  {label}
+                </span>
+              );
+            })}
           </div>
         </div>
       ) : null,
@@ -446,7 +457,7 @@ const SubCategoriesTable = () => {
             draggingRow!.original,
           ]);
           setActiveCategorieses((activeCategorieses) =>
-            activeCategorieses.filter((d) => d !== draggingRow!.original),
+            activeCategorieses.filter((d) => d !== draggingRow!.original)
           );
         } else if (hoveredRow && draggingRow) {
           await updateCategoryAvailable.mutateAsync({
@@ -514,7 +525,7 @@ const SubCategoriesTable = () => {
     data: activeCategorieses,
     onEditingRowCancel: () => setValidationErrors({}),
     onEditingRowSave: (originalRow) => handleSaveCategories(originalRow),
-    getRowId: (originalRow) => `table-1-${originalRow.name}`,
+    getRowId: (originalRow) => `table-1-${originalRow._id}`,
     muiTablePaperProps: {
       onDragEnter: () => setHoveredTable("table-1"),
       sx: {
@@ -629,11 +640,17 @@ const SubCategoriesTable = () => {
             ))}
           </div>
           <div>
-            {row.original.category.map((category, index) => (
-              <span key={index} className="badge badge-warning me-1">
-                {category.category}
-              </span>
-            ))}
+            {row.original.category.map((category, index) => {
+              const label =
+                typeof category.category === "string"
+                  ? category.category
+                  : category.category?.name;
+              return (
+                <span key={index} className="badge badge-warning me-1">
+                  {label}
+                </span>
+              );
+            })}
           </div>
         </div>
       ) : null,
@@ -653,7 +670,7 @@ const SubCategoriesTable = () => {
             draggingRow!.original,
           ]);
           setActiveCategorieses((activeCategorieses) =>
-            activeCategorieses.filter((d) => d !== draggingRow!.original),
+            activeCategorieses.filter((d) => d !== draggingRow!.original)
           );
         } else if (hoveredRow && draggingRow) {
           await updateCategoryAvailable.mutateAsync({
@@ -718,7 +735,7 @@ const SubCategoriesTable = () => {
     },
     onEditingRowCancel: () => setValidationErrors({}),
     onEditingRowSave: (originalRow) => handleSaveCategories(originalRow),
-    getRowId: (originalRow) => `table-2-${originalRow.name}`,
+    getRowId: (originalRow) => `table-2-${originalRow._id}`,
     muiTablePaperProps: {
       onDragEnter: () => setHoveredTable("table-2"),
       sx: {
@@ -743,10 +760,10 @@ const SubCategoriesTable = () => {
           <IconButton
             color="error"
             onClick={async () => {
-                await updateCategoryAvailable.mutateAsync({
-                  id: row.original._id,
-                  update: { deleted: false },
-                });
+              await updateCategoryAvailable.mutateAsync({
+                id: row.original._id,
+                update: { deleted: false },
+              });
             }}
           >
             <RestoreFromTrashIcon />
@@ -823,43 +840,49 @@ const SubCategoriesTable = () => {
       </Modal>
 
       {/* Arrange Products Modal */}
-      {CategoriesDelete &&
-      <Modal show={showProductsModal} onHide={handleCloseProductsModal}>
-        <Modal.Header closeButton>
-          <Modal.Title>
-            Arrange Procusts Order in {(CategoriesDelete as any)?.name} SubCategory
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <SubCategoryProductsTable id={(CategoriesDelete as any)?._id as string} />
-        </Modal.Body>
-        <Modal.Footer>
-          <Box sx={{ display: "flex", gap: "1rem", p: "4px" }}>
-            <Button
-              color="info"
-              variant="contained"
-              onClick={handleCloseProductsModal}
+      {CategoriesDelete && (
+        <Modal show={showProductsModal} onHide={handleCloseProductsModal}>
+          <Modal.Header closeButton>
+            <Modal.Title>
+              Arrange Procusts Order in {(CategoriesDelete as any)?.name}{" "}
+              SubCategory
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <SubCategoryProductsTable
+              id={(CategoriesDelete as any)?._id as string}
+            />
+          </Modal.Body>
+          <Modal.Footer>
+            <Box sx={{ display: "flex", gap: "1rem", p: "4px" }}>
+              <Button
+                color="info"
+                variant="contained"
+                onClick={handleCloseProductsModal}
               >
-              Close
-            </Button>
-          </Box>
-        </Modal.Footer>
-      </Modal>
-      }
+                Close
+              </Button>
+            </Box>
+          </Modal.Footer>
+        </Modal>
+      )}
 
       {/* Arrange SubCategories Modal */}
-      {CategoriesDelete &&
+      {CategoriesDelete && (
         <Modal
-        show={showSubCategoriesModal}
+          show={showSubCategoriesModal}
           onHide={handleCloseSubCategoriesModal}
         >
           <Modal.Header closeButton>
             <Modal.Title>
-              Arrange SubCategories Order in {(CategoriesDelete as any)?.name} Category
+              Arrange SubCategories Order in {(CategoriesDelete as any)?.name}{" "}
+              Category
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <SubCategoryChildsTable id={(CategoriesDelete as any)?._id as string} />
+            <SubCategoryChildsTable
+              id={(CategoriesDelete as any)?._id as string}
+            />
           </Modal.Body>
           <Modal.Footer>
             <Box sx={{ display: "flex", gap: "1rem", p: "4px" }}>
@@ -873,7 +896,7 @@ const SubCategoriesTable = () => {
             </Box>
           </Modal.Footer>
         </Modal>
-      }
+      )}
     </>
   );
 };

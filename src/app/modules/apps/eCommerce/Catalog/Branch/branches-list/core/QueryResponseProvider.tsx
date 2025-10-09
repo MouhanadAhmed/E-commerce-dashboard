@@ -29,7 +29,10 @@ const ArchivedBranchesContext =
   createResponseContext<Branch>(initialQueryResponse);
 
 // Active Branches Provider
-const ActiveBranchesProvider: FC<WithChildren> = ({ children }) => {
+const ActiveBranchesProvider: FC<WithChildren & { fields?: string }> = ({
+  children,
+  fields,
+}) => {
   const { state } = useQueryRequest();
   const [query, setQuery] = useState<string>(stringifyRequestQuery(state));
   const updatedQuery = useMemo(() => stringifyRequestQuery(state), [state]);
@@ -41,16 +44,27 @@ const ActiveBranchesProvider: FC<WithChildren> = ({ children }) => {
       setQuery(decodeURIComponent(updatedQuery));
     }
   }, [updatedQuery]);
-  
+
   const {
     isFetching,
     refetch,
     data: response,
-  } = useQuery(`${QUERIES.BRNACHES_LIST}-${query}`, () => getBranches(query), {
-    cacheTime: 0,
-    keepPreviousData: true,
-    refetchOnWindowFocus: false,
-  });
+  } = useQuery(
+    `${QUERIES.BRNACHES_LIST}-${query}`,
+    () => {
+      const effectiveQuery = fields
+        ? [decodeURIComponent(query), `fields=${fields}`]
+            .filter(Boolean)
+            .join("&")
+        : decodeURIComponent(query);
+      return getBranches(effectiveQuery);
+    },
+    {
+      cacheTime: 0,
+      keepPreviousData: true,
+      refetchOnWindowFocus: false,
+    }
+  );
 
   return (
     <ActiveBranchesContext.Provider
@@ -67,7 +81,10 @@ const ActiveBranchesProvider: FC<WithChildren> = ({ children }) => {
 };
 
 // Archived Branches Provider
-const ArchivedBranchesProvider: FC<WithChildren> = ({ children }) => {
+const ArchivedBranchesProvider: FC<WithChildren & { fields?: string }> = ({
+  children,
+  fields,
+}) => {
   const { state } = useQueryRequest();
   const [query, setQuery] = useState<string>(stringifyRequestQuery(state));
   const updatedQuery = useMemo(() => stringifyRequestQuery(state), [state]);
@@ -87,12 +104,19 @@ const ArchivedBranchesProvider: FC<WithChildren> = ({ children }) => {
     data: response,
   } = useQuery(
     `${QUERIES.ARCHIVED_BRNACHES_LIST}-${query}`,
-    () => getArchivedBranches(query),
+    () => {
+      const effectiveQuery = fields
+        ? [decodeURIComponent(query), `fields=${fields}`]
+            .filter(Boolean)
+            .join("&")
+        : decodeURIComponent(query);
+      return getArchivedBranches(effectiveQuery);
+    },
     {
       cacheTime: 0,
       keepPreviousData: true,
       refetchOnWindowFocus: false,
-    },
+    }
   );
 
   return (
@@ -110,10 +134,18 @@ const ArchivedBranchesProvider: FC<WithChildren> = ({ children }) => {
 };
 
 // Main Query Response Provider (combines both)
-const QueryResponseProvider: FC<WithChildren> = ({ children }) => {
+const QueryResponseProvider: FC<
+  WithChildren & { includeArchived?: boolean; fields?: string }
+> = ({ children, includeArchived = true, fields }) => {
   return (
-    <ActiveBranchesProvider>
-      <ArchivedBranchesProvider>{children}</ArchivedBranchesProvider>
+    <ActiveBranchesProvider fields={fields}>
+      {includeArchived ? (
+        <ArchivedBranchesProvider fields={fields}>
+          {children}
+        </ArchivedBranchesProvider>
+      ) : (
+        children
+      )}
     </ActiveBranchesProvider>
   );
 };

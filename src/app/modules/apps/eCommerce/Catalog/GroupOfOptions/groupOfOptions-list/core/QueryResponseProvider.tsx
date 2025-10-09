@@ -7,8 +7,8 @@ import {
   useEffect,
   useMemo,
   createContext,
-} from 'react';
-import { useQuery } from 'react-query';
+} from "react";
+import { useQuery } from "react-query";
 import {
   createResponseContext,
   initialQueryResponse,
@@ -17,10 +17,10 @@ import {
   QUERIES,
   stringifyRequestQuery,
   WithChildren,
-} from '../../../../../../../../_metronic/helpers';
-import { useQueryRequest } from './QueryRequestProvider';
-import { getGroups, getArchivedGroups } from './_requests';
-import { GroupOfOptions } from './_models';
+} from "../../../../../../../../_metronic/helpers";
+import { useQueryRequest } from "./QueryRequestProvider";
+import { getGroups, getArchivedGroups } from "./_requests";
+import { GroupOfOptions } from "./_models";
 
 // Create separate contexts for active and archived groups
 const ActiveGroupsContext =
@@ -29,7 +29,10 @@ const ArchivedGroupsContext =
   createResponseContext<GroupOfOptions>(initialQueryResponse);
 
 // Active Groups Provider
-const ActiveGroupsProvider: FC<WithChildren> = ({ children }) => {
+const ActiveGroupsProvider: FC<WithChildren & { fields?: string }> = ({
+  children,
+  fields,
+}) => {
   const { state } = useQueryRequest();
   const [query, setQuery] = useState<string>(stringifyRequestQuery(state));
   const updatedQuery = useMemo(() => stringifyRequestQuery(state), [state]);
@@ -37,7 +40,7 @@ const ActiveGroupsProvider: FC<WithChildren> = ({ children }) => {
   useEffect(() => {
     if (query !== updatedQuery) {
       if (query.match(/search=([^&]*)/)) {
-        setQuery(query.replace(/search=/, 'keyword='));
+        setQuery(query.replace(/search=/, "keyword="));
       }
       setQuery(decodeURIComponent(updatedQuery));
     }
@@ -47,11 +50,22 @@ const ActiveGroupsProvider: FC<WithChildren> = ({ children }) => {
     isFetching,
     refetch,
     data: response,
-  } = useQuery(`${QUERIES.GROUPS_LIST}-${query}`, () => getGroups(query), {
-    cacheTime: 0,
-    keepPreviousData: true,
-    refetchOnWindowFocus: false,
-  });
+  } = useQuery(
+    `${QUERIES.GROUPS_LIST}-${query}`,
+    () => {
+      const effectiveQuery = fields
+        ? [decodeURIComponent(query), `fields=${fields}`]
+            .filter(Boolean)
+            .join("&")
+        : decodeURIComponent(query);
+      return getGroups(effectiveQuery);
+    },
+    {
+      cacheTime: 0,
+      keepPreviousData: true,
+      refetchOnWindowFocus: false,
+    }
+  );
 
   return (
     <ActiveGroupsContext.Provider
@@ -68,7 +82,10 @@ const ActiveGroupsProvider: FC<WithChildren> = ({ children }) => {
 };
 
 // Archived Groups Provider
-const ArchivedGroupsProvider: FC<WithChildren> = ({ children }) => {
+const ArchivedGroupsProvider: FC<WithChildren & { fields?: string }> = ({
+  children,
+  fields,
+}) => {
   const { state } = useQueryRequest();
   const [query, setQuery] = useState<string>(stringifyRequestQuery(state));
   const updatedQuery = useMemo(() => stringifyRequestQuery(state), [state]);
@@ -76,7 +93,7 @@ const ArchivedGroupsProvider: FC<WithChildren> = ({ children }) => {
   useEffect(() => {
     if (query !== updatedQuery) {
       if (query.match(/search=([^&]*)/)) {
-        setQuery(query.replace(/search=/, 'keyword='));
+        setQuery(query.replace(/search=/, "keyword="));
       }
       setQuery(decodeURIComponent(updatedQuery));
     }
@@ -88,7 +105,14 @@ const ArchivedGroupsProvider: FC<WithChildren> = ({ children }) => {
     data: response,
   } = useQuery(
     `${QUERIES.ARCHIVED_GROUPS_LIST}-${query}`,
-    () => getArchivedGroups(query),
+    () => {
+      const effectiveQuery = fields
+        ? [decodeURIComponent(query), `fields=${fields}`]
+            .filter(Boolean)
+            .join("&")
+        : decodeURIComponent(query);
+      return getArchivedGroups(effectiveQuery);
+    },
     {
       cacheTime: 0,
       keepPreviousData: true,
@@ -111,10 +135,18 @@ const ArchivedGroupsProvider: FC<WithChildren> = ({ children }) => {
 };
 
 // Main Query Response Provider (combines both)
-const QueryResponseProvider: FC<WithChildren> = ({ children }) => {
+const QueryResponseProvider: FC<
+  WithChildren & { includeArchived?: boolean; fields?: string }
+> = ({ children, includeArchived = true, fields }) => {
   return (
-    <ActiveGroupsProvider>
-      <ArchivedGroupsProvider>{children}</ArchivedGroupsProvider>
+    <ActiveGroupsProvider fields={fields}>
+      {includeArchived ? (
+        <ArchivedGroupsProvider fields={fields}>
+          {children}
+        </ArchivedGroupsProvider>
+      ) : (
+        children
+      )}
     </ActiveGroupsProvider>
   );
 };

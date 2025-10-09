@@ -7,8 +7,8 @@ import {
   useEffect,
   useMemo,
   createContext,
-} from 'react';
-import { useQuery } from 'react-query';
+} from "react";
+import { useQuery } from "react-query";
 import {
   createResponseContext,
   initialQueryResponse,
@@ -17,17 +17,20 @@ import {
   QUERIES,
   stringifyRequestQuery,
   WithChildren,
-} from '../../../../../../../../_metronic/helpers';
-import { useQueryRequest } from './QueryRequestProvider';
-import { getArchivedTypes, getTypes } from './_requests';
-import { Types } from './_models';
+} from "../../../../../../../../_metronic/helpers";
+import { useQueryRequest } from "./QueryRequestProvider";
+import { getArchivedTypes, getTypes } from "./_requests";
+import { Types } from "./_models";
 
 // Create separate contexts for active and archived types
 const ActiveTypesContext = createResponseContext<Types>(initialQueryResponse);
 const ArchivedTypesContext = createResponseContext<Types>(initialQueryResponse);
 
 // Active Types Provider
-const ActiveTypesProvider: FC<WithChildren> = ({ children }) => {
+const ActiveTypesProvider: FC<WithChildren & { fields?: string }> = ({
+  children,
+  fields,
+}) => {
   const { state } = useQueryRequest();
   const [query, setQuery] = useState<string>(stringifyRequestQuery(state));
   const updatedQuery = useMemo(() => stringifyRequestQuery(state), [state]);
@@ -35,7 +38,7 @@ const ActiveTypesProvider: FC<WithChildren> = ({ children }) => {
   useEffect(() => {
     if (query !== updatedQuery) {
       if (query.match(/search=([^&]*)/)) {
-        setQuery(query.replace(/search=/, 'keyword='));
+        setQuery(query.replace(/search=/, "keyword="));
       }
       setQuery(decodeURIComponent(updatedQuery));
     }
@@ -45,11 +48,22 @@ const ActiveTypesProvider: FC<WithChildren> = ({ children }) => {
     isFetching,
     refetch,
     data: response,
-  } = useQuery(`${QUERIES.TYPES_LIST}-${query}`, () => getTypes(query), {
-    cacheTime: 0,
-    keepPreviousData: true,
-    refetchOnWindowFocus: false,
-  });
+  } = useQuery(
+    `${QUERIES.TYPES_LIST}-${query}`,
+    () => {
+      const effectiveQuery = fields
+        ? [decodeURIComponent(query), `fields=${fields}`]
+            .filter(Boolean)
+            .join("&")
+        : decodeURIComponent(query);
+      return getTypes(effectiveQuery);
+    },
+    {
+      cacheTime: 0,
+      keepPreviousData: true,
+      refetchOnWindowFocus: false,
+    }
+  );
 
   return (
     <ActiveTypesContext.Provider
@@ -66,7 +80,10 @@ const ActiveTypesProvider: FC<WithChildren> = ({ children }) => {
 };
 
 // Archived Types Provider
-const ArchivedTypesProvider: FC<WithChildren> = ({ children }) => {
+const ArchivedTypesProvider: FC<WithChildren & { fields?: string }> = ({
+  children,
+  fields,
+}) => {
   const { state } = useQueryRequest();
   const [query, setQuery] = useState<string>(stringifyRequestQuery(state));
   const updatedQuery = useMemo(() => stringifyRequestQuery(state), [state]);
@@ -74,7 +91,7 @@ const ArchivedTypesProvider: FC<WithChildren> = ({ children }) => {
   useEffect(() => {
     if (query !== updatedQuery) {
       if (query.match(/search=([^&]*)/)) {
-        setQuery(query.replace(/search=/, 'keyword='));
+        setQuery(query.replace(/search=/, "keyword="));
       }
       setQuery(decodeURIComponent(updatedQuery));
     }
@@ -86,7 +103,14 @@ const ArchivedTypesProvider: FC<WithChildren> = ({ children }) => {
     data: response,
   } = useQuery(
     `${QUERIES.ARCHIVED_TYPES_LIST}-${query}`,
-    () => getArchivedTypes(),
+    () => {
+      const effectiveQuery = fields
+        ? [decodeURIComponent(query), `fields=${fields}`]
+            .filter(Boolean)
+            .join("&")
+        : decodeURIComponent(query);
+      return getArchivedTypes(effectiveQuery);
+    },
     {
       cacheTime: 0,
       keepPreviousData: true,
@@ -109,10 +133,18 @@ const ArchivedTypesProvider: FC<WithChildren> = ({ children }) => {
 };
 
 // Main Query Response Provider (combines both)
-const QueryResponseProvider: FC<WithChildren> = ({ children }) => {
+const QueryResponseProvider: FC<
+  WithChildren & { includeArchived?: boolean; fields?: string }
+> = ({ children, includeArchived = true, fields }) => {
   return (
-    <ActiveTypesProvider>
-      <ArchivedTypesProvider>{children}</ArchivedTypesProvider>
+    <ActiveTypesProvider fields={fields}>
+      {includeArchived ? (
+        <ArchivedTypesProvider fields={fields}>
+          {children}
+        </ArchivedTypesProvider>
+      ) : (
+        children
+      )}
     </ActiveTypesProvider>
   );
 };

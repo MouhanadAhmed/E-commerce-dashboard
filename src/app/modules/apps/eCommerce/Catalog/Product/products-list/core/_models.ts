@@ -1,10 +1,10 @@
-import { Branch } from '../../../Branch/branches-list/core/_models';
-import { Categories } from '../../../Category/categories-list/core/_models';
-import { ChildSubCategories } from '../../../ChildSubCategory/ChildSubcategories-list/core/_models';
-import { Extras } from '../../../Extra/extra-list/core/_models';
-import { GroupOfOptions } from '../../../GroupOfOptions/groupOfOptions-list/core/_models';
-import { SubCategories } from '../../../SubCategory/Subcategories-list/core/_models';
-import { Types } from '../../../Type/types-list/core/_models';
+import { Branch } from "../../../Branch/branches-list/core/_models";
+import { Categories } from "../../../Category/categories-list/core/_models";
+import { ChildSubCategories } from "../../../ChildSubCategory/ChildSubcategories-list/core/_models";
+import { Extras } from "../../../Extra/extra-list/core/_models";
+import { GroupOfOptions } from "../../../GroupOfOptions/groupOfOptions-list/core/_models";
+import { SubCategories } from "../../../SubCategory/Subcategories-list/core/_models";
+import { Types } from "../../../Type/types-list/core/_models";
 
 export type Product = {
   imgCover?: { _id?: string; url: string }[];
@@ -23,6 +23,11 @@ export type Product = {
   order?: string;
   branch?: BranchOfProduct[];
   priceAfterDiscount?: string;
+  // Per-branch derived arrays from backend (used to prefill form)
+  branchStock?: { branch: string; stock?: string }[];
+  branchAvailable?: { branch: string; available?: boolean }[];
+  branchPrice?: { branch: string; price?: string }[];
+  branchPriceAfterDiscount?: { branch: string; priceAfterDiscount?: string }[];
   extras?: {
     _id?: string;
     id?: string;
@@ -148,26 +153,26 @@ export interface ProductFormValues {
 }
 
 export const initialProduct: Product = {
-  name: '',
-  description: '',
-  shortDesc: '',
+  name: "",
+  description: "",
+  shortDesc: "",
 
-  stock: 'null',
+  stock: "null",
   available: true,
-  price: '',
+  price: "",
 
-  priceAfterDiscount: '',
+  priceAfterDiscount: "",
 
-  descTableName: '',
+  descTableName: "",
   fractionalQuantity: false,
-  weight: '',
+  weight: "",
   showWeight: false,
-  book: '',
+  book: "",
 
-  minQty: '',
-  dimensions: '',
-  rewardPoint: '',
-  sold: '',
+  minQty: "",
+  dimensions: "",
+  rewardPoint: "",
+  sold: "",
   deleted: false,
   parentAvailable: true,
 };

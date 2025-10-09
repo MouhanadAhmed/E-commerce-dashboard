@@ -237,17 +237,10 @@ const ProductForm: FC<Props> = ({ product }) => {
   const branches = branchesData();
 
   // Get both active and archived categories
-  const categoriesResponse = useCategoriesResponseData();
   const activeCategories = useActiveCategoriesData();
 
   // Use active categories if available, otherwise combine active + archived
-  const categories =
-    activeCategories.length > 0
-      ? activeCategories
-      : [
-          ...(categoriesResponse.active || []),
-          ...(categoriesResponse.archived || []),
-        ];
+  const categories = activeCategories;
 
   const subcategories = subcategoriesData();
   const childSubCategories = childSubCategoryData();

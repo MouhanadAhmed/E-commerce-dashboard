@@ -8,13 +8,12 @@ export type SubCategories = {
   slug?: string;
   description?: string;
   order?: number;
-  branch?:
-    {
-      _id?: string;
-      branch: Branch;
-      available: boolean;
-      order: number;
-    }[];
+  branch?: {
+    _id?: string;
+    branch: Branch;
+    available: boolean;
+    order: number;
+  }[];
   available?: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -22,10 +21,10 @@ export type SubCategories = {
   __v?: number;
   category: [
     {
-      category?: string;
+      category?: string | { _id?: string; name?: string };
       available: boolean;
       order: number;
-    },
+    }
   ];
 };
 

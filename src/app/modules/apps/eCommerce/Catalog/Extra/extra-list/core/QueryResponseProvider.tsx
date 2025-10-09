@@ -7,8 +7,8 @@ import {
   useEffect,
   useMemo,
   createContext,
-} from 'react';
-import { useQuery } from 'react-query';
+} from "react";
+import { useQuery } from "react-query";
 import {
   createResponseContext,
   initialQueryResponse,
@@ -17,10 +17,10 @@ import {
   QUERIES,
   stringifyRequestQuery,
   WithChildren,
-} from '../../../../../../../../_metronic/helpers';
-import { useQueryRequest } from './QueryRequestProvider';
-import { getArchivedExtras, getExtras } from './_requests';
-import { Extras } from './_models';
+} from "../../../../../../../../_metronic/helpers";
+import { useQueryRequest } from "./QueryRequestProvider";
+import { getArchivedExtras, getExtras } from "./_requests";
+import { Extras } from "./_models";
 
 // Create separate contexts for active and archived extras
 const ActiveExtrasContext = createResponseContext<Extras>(initialQueryResponse);
@@ -28,7 +28,10 @@ const ArchivedExtrasContext =
   createResponseContext<Extras>(initialQueryResponse);
 
 // Active Extras Provider
-const ActiveExtrasProvider: FC<WithChildren> = ({ children }) => {
+const ActiveExtrasProvider: FC<WithChildren & { fields?: string }> = ({
+  children,
+  fields,
+}) => {
   const { state } = useQueryRequest();
   const [query, setQuery] = useState<string>(stringifyRequestQuery(state));
   const updatedQuery = useMemo(() => stringifyRequestQuery(state), [state]);
@@ -36,7 +39,7 @@ const ActiveExtrasProvider: FC<WithChildren> = ({ children }) => {
   useEffect(() => {
     if (query !== updatedQuery) {
       if (query.match(/search=([^&]*)/)) {
-        setQuery(query.replace(/search=/, 'keyword='));
+        setQuery(query.replace(/search=/, "keyword="));
       }
       setQuery(decodeURIComponent(updatedQuery));
     }
@@ -46,11 +49,22 @@ const ActiveExtrasProvider: FC<WithChildren> = ({ children }) => {
     isFetching,
     refetch,
     data: response,
-  } = useQuery(`${QUERIES.EXTRAS_LIST}-${query}`, () => getExtras(query), {
-    cacheTime: 0,
-    keepPreviousData: true,
-    refetchOnWindowFocus: false,
-  });
+  } = useQuery(
+    `${QUERIES.EXTRAS_LIST}-${query}`,
+    () => {
+      const effectiveQuery = fields
+        ? [decodeURIComponent(query), `fields=${fields}`]
+            .filter(Boolean)
+            .join("&")
+        : decodeURIComponent(query);
+      return getExtras(effectiveQuery);
+    },
+    {
+      cacheTime: 0,
+      keepPreviousData: true,
+      refetchOnWindowFocus: false,
+    }
+  );
 
   return (
     <ActiveExtrasContext.Provider
@@ -67,7 +81,10 @@ const ActiveExtrasProvider: FC<WithChildren> = ({ children }) => {
 };
 
 // Archived Extras Provider
-const ArchivedExtrasProvider: FC<WithChildren> = ({ children }) => {
+const ArchivedExtrasProvider: FC<WithChildren & { fields?: string }> = ({
+  children,
+  fields,
+}) => {
   const { state } = useQueryRequest();
   const [query, setQuery] = useState<string>(stringifyRequestQuery(state));
   const updatedQuery = useMemo(() => stringifyRequestQuery(state), [state]);
@@ -75,7 +92,7 @@ const ArchivedExtrasProvider: FC<WithChildren> = ({ children }) => {
   useEffect(() => {
     if (query !== updatedQuery) {
       if (query.match(/search=([^&]*)/)) {
-        setQuery(query.replace(/search=/, 'keyword='));
+        setQuery(query.replace(/search=/, "keyword="));
       }
       setQuery(decodeURIComponent(updatedQuery));
     }
@@ -87,7 +104,14 @@ const ArchivedExtrasProvider: FC<WithChildren> = ({ children }) => {
     data: response,
   } = useQuery(
     `${QUERIES.ARCHIVED_EXTRAS_LIST}-${query}`,
-    () => getArchivedExtras(query),
+    () => {
+      const effectiveQuery = fields
+        ? [decodeURIComponent(query), `fields=${fields}`]
+            .filter(Boolean)
+            .join("&")
+        : decodeURIComponent(query);
+      return getArchivedExtras(effectiveQuery);
+    },
     {
       cacheTime: 0,
       keepPreviousData: true,
@@ -110,10 +134,18 @@ const ArchivedExtrasProvider: FC<WithChildren> = ({ children }) => {
 };
 
 // Main Query Response Provider (combines both)
-const QueryResponseProvider: FC<WithChildren> = ({ children }) => {
+const QueryResponseProvider: FC<
+  WithChildren & { includeArchived?: boolean; fields?: string }
+> = ({ children, includeArchived = true, fields }) => {
   return (
-    <ActiveExtrasProvider>
-      <ArchivedExtrasProvider>{children}</ArchivedExtrasProvider>
+    <ActiveExtrasProvider fields={fields}>
+      {includeArchived ? (
+        <ArchivedExtrasProvider fields={fields}>
+          {children}
+        </ArchivedExtrasProvider>
+      ) : (
+        children
+      )}
     </ActiveExtrasProvider>
   );
 };

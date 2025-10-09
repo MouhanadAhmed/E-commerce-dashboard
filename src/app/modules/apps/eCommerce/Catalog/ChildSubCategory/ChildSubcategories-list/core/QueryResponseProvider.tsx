@@ -7,8 +7,8 @@ import {
   useEffect,
   useMemo,
   createContext,
-} from 'react';
-import { useQuery } from 'react-query';
+} from "react";
+import { useQuery } from "react-query";
 import {
   createResponseContext,
   initialQueryResponse,
@@ -17,13 +17,13 @@ import {
   QUERIES,
   stringifyRequestQuery,
   WithChildren,
-} from '../../../../../../../../_metronic/helpers';
-import { useQueryRequest } from './QueryRequestProvider';
+} from "../../../../../../../../_metronic/helpers";
+import { useQueryRequest } from "./QueryRequestProvider";
 import {
   getChildSubCategories,
   getArchivedChildSubCategories,
-} from './_requests';
-import { ChildSubCategories } from './_models';
+} from "./_requests";
+import { ChildSubCategories } from "./_models";
 
 // Create separate contexts for active and archived child sub categories
 const ActiveChildSubCategoriesContext =
@@ -32,7 +32,9 @@ const ArchivedChildSubCategoriesContext =
   createResponseContext<ChildSubCategories>(initialQueryResponse);
 
 // Active Child Sub Categories Provider
-const ActiveChildSubCategoriesProvider: FC<WithChildren> = ({ children }) => {
+const ActiveChildSubCategoriesProvider: FC<
+  WithChildren & { fields?: string }
+> = ({ children, fields }) => {
   const { state } = useQueryRequest();
   const [query, setQuery] = useState<string>(stringifyRequestQuery(state));
   const updatedQuery = useMemo(() => stringifyRequestQuery(state), [state]);
@@ -40,7 +42,7 @@ const ActiveChildSubCategoriesProvider: FC<WithChildren> = ({ children }) => {
   useEffect(() => {
     if (query !== updatedQuery) {
       if (query.match(/search=([^&]*)/)) {
-        setQuery(query.replace(/search=/, 'keyword='));
+        setQuery(query.replace(/search=/, "keyword="));
       }
       setQuery(decodeURIComponent(updatedQuery));
     }
@@ -52,7 +54,14 @@ const ActiveChildSubCategoriesProvider: FC<WithChildren> = ({ children }) => {
     data: response,
   } = useQuery(
     `${QUERIES.CHILD_SUB_CATEGORIES_LIST}-${query}`,
-    () => getChildSubCategories(query),
+    () => {
+      const effectiveQuery = fields
+        ? [decodeURIComponent(query), `fields=${fields}`]
+            .filter(Boolean)
+            .join("&")
+        : decodeURIComponent(query);
+      return getChildSubCategories(effectiveQuery);
+    },
     {
       cacheTime: 0,
       keepPreviousData: true,
@@ -75,7 +84,9 @@ const ActiveChildSubCategoriesProvider: FC<WithChildren> = ({ children }) => {
 };
 
 // Archived Child Sub Categories Provider
-const ArchivedChildSubCategoriesProvider: FC<WithChildren> = ({ children }) => {
+const ArchivedChildSubCategoriesProvider: FC<
+  WithChildren & { fields?: string }
+> = ({ children, fields }) => {
   const { state } = useQueryRequest();
   const [query, setQuery] = useState<string>(stringifyRequestQuery(state));
   const updatedQuery = useMemo(() => stringifyRequestQuery(state), [state]);
@@ -83,7 +94,7 @@ const ArchivedChildSubCategoriesProvider: FC<WithChildren> = ({ children }) => {
   useEffect(() => {
     if (query !== updatedQuery) {
       if (query.match(/search=([^&]*)/)) {
-        setQuery(query.replace(/search=/, 'keyword='));
+        setQuery(query.replace(/search=/, "keyword="));
       }
       setQuery(decodeURIComponent(updatedQuery));
     }
@@ -95,7 +106,14 @@ const ArchivedChildSubCategoriesProvider: FC<WithChildren> = ({ children }) => {
     data: response,
   } = useQuery(
     `${QUERIES.ARCHIVED_CHILD_SUB_CATEGORIES_LIST}-${query}`,
-    () => getArchivedChildSubCategories(query),
+    () => {
+      const effectiveQuery = fields
+        ? [decodeURIComponent(query), `fields=${fields}`]
+            .filter(Boolean)
+            .join("&")
+        : decodeURIComponent(query);
+      return getArchivedChildSubCategories(effectiveQuery);
+    },
     {
       cacheTime: 0,
       keepPreviousData: true,
@@ -118,12 +136,18 @@ const ArchivedChildSubCategoriesProvider: FC<WithChildren> = ({ children }) => {
 };
 
 // Main Query Response Provider (combines both)
-const QueryResponseProvider: FC<WithChildren> = ({ children }) => {
+const QueryResponseProvider: FC<
+  WithChildren & { includeArchived?: boolean; fields?: string }
+> = ({ children, includeArchived = true, fields }) => {
   return (
-    <ActiveChildSubCategoriesProvider>
-      <ArchivedChildSubCategoriesProvider>
-        {children}
-      </ArchivedChildSubCategoriesProvider>
+    <ActiveChildSubCategoriesProvider fields={fields}>
+      {includeArchived ? (
+        <ArchivedChildSubCategoriesProvider fields={fields}>
+          {children}
+        </ArchivedChildSubCategoriesProvider>
+      ) : (
+        children
+      )}
     </ActiveChildSubCategoriesProvider>
   );
 };
