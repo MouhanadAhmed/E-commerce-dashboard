@@ -159,7 +159,7 @@ const SubCategoriesTable = () => {
         Edit: ({ cell, row, table }) => {
           const categories =
             cell.getValue<{ category: { name: string; _id: string } }[]>();
-          let defV = [];
+          const defV = [];
           categories.map((category) => {
             defV.push({
               value: category?.category?._id,
@@ -215,7 +215,7 @@ const SubCategoriesTable = () => {
         Edit: ({ cell, row, table }) => {
           const branchs =
             cell.getValue<{ branch: { name: string; _id: string } }[]>();
-          let defV = [];
+          const defV = [];
           branchs.map((branch) => {
             defV.push({ value: branch.branch._id, label: branch.branch.name });
           });
@@ -508,7 +508,7 @@ const SubCategoriesTable = () => {
           <Button
             color="error"
             onClick={async () => {
-              let selcetedIDs = [];
+              const selcetedIDs = [];
               table
                 .getSelectedRowModel()
                 .rows.map((item) => selcetedIDs.push(item.original._id));

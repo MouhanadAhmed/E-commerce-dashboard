@@ -604,7 +604,7 @@ const GroupTable = () => {
             color="error"
             disabled={!table.getIsSomeRowsSelected()}
             onClick={async () => {
-              let selectedIDs: string[] = [];
+              const selectedIDs: string[] = [];
               table.getSelectedRowModel().rows.forEach((item) => {
                 if (item.original._id) {
                   selectedIDs.push(item.original._id);

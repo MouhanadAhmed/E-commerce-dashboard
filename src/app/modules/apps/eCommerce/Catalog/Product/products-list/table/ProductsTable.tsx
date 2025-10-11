@@ -30,11 +30,10 @@ import { useMutation, useQueryClient } from "react-query";
 import { QUERIES } from "../../../../../../../../_metronic/helpers";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import SettingsIcon from "@mui/icons-material/Settings";
 import * as Yup from "yup";
 import { Modal } from "react-bootstrap";
 import { useListView } from "../core/ListViewProvider";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useQueryRequest } from "../core/QueryRequestProvider";
 
 const ProductsTable = () => {
@@ -80,7 +79,6 @@ const ProductsTable = () => {
     any[] | undefined
   >();
   const [editGroups, setEditGroups] = useState<any[] | undefined>();
-  const [book, setBook] = useState<any | undefined>();
 
   const memoizedBranches = useMemo(
     () => branches.map((branch) => ({ value: branch._id, label: branch.name })),
@@ -127,8 +125,56 @@ const ProductsTable = () => {
     [types]
   );
 
+  const getLabel = (
+    maybe: any,
+    lookup?: { value: string; label: string }[]
+  ) => {
+    if (maybe == null) return "";
+
+    const isHex24 = (s: string) => /^[0-9a-fA-F]{24}$/.test(s);
+
+    // If it's already a string, try to find in lookup or return as is (but avoid raw ids)
+    if (typeof maybe === "string") {
+      if (lookup) {
+        const found = lookup.find((l) => l.value === maybe);
+        return found ? found.label : isHex24(maybe) ? "" : maybe;
+      }
+      return isHex24(maybe) ? "" : maybe;
+    }
+
+    // If it's an object with name property
+    if (typeof maybe === "object") {
+      // Handle nested objects like {branch: {_id: "...", name: "..."}}
+      if (maybe.name && typeof maybe.name === "string") {
+        return maybe.name;
+      }
+
+      // localized name object
+      if (maybe.name && typeof maybe.name === "object") {
+        if (maybe.name.en) return maybe.name.en;
+        if (maybe.name.ar) return maybe.name.ar;
+        const first = Object.values(maybe.name).find(
+          (v) => typeof v === "string"
+        );
+        if (first) return first as string;
+      }
+
+      // Handle objects with _id - check lookup first, avoid showing raw _id
+      if (maybe._id && lookup) {
+        const found = lookup.find((l) => l.value === maybe._id);
+        if (found) return found.label;
+      }
+
+      if (maybe._id) return ""; // avoid exposing raw IDs
+
+      // Final fallback
+      return String(maybe);
+    }
+
+    return String(maybe);
+  };
+
   const columns = useMemo<MRT_ColumnDef<Product>[]>(
-    //column definitions...
     () => [
       {
         accessorKey: "name",
@@ -192,6 +238,32 @@ const ProductsTable = () => {
         },
       },
       {
+        accessorKey: "types",
+        header: "Types",
+        size: 120,
+        Cell: ({ cell }) => {
+          const val = cell.getValue() as any[] | undefined;
+          if (!val || val.length === 0) return <span>-</span>;
+          const labels = val.map((t) => t?.name).filter(Boolean);
+          return (
+            <span>
+              {labels.slice(0, 2).join(", ")}
+              {labels.length > 2 ? "..." : ""}
+            </span>
+          );
+        },
+      },
+      {
+        accessorKey: "weight",
+        header: "Weight",
+        size: 80,
+      },
+      {
+        accessorKey: "dimensions",
+        header: "Dims",
+        size: 80,
+      },
+      {
         accessorKey: "available",
         header: "Available",
         size: 100,
@@ -246,35 +318,6 @@ const ProductsTable = () => {
         ),
       },
       {
-        accessorKey: "fractionalQuantity",
-        header: "Fractional Quantity",
-        size: 100,
-        muiTableBodyCellProps: {
-          align: "right",
-        },
-        muiTableHeadCellProps: {
-          align: "left",
-        },
-        Cell: ({ cell }) => (
-          <div className="form-check form-switch form-check-custom form-check-solid">
-            <input
-              className="form-check-input cursor-pointer"
-              type="checkbox"
-              checked={cell.getValue<boolean>()}
-              onChange={() =>
-                updateCategoryAvailable.mutateAsync({
-                  id: cell.row.original._id,
-                  update: {
-                    fractionalQuantity: !cell.row.original.fractionalQuantity,
-                  },
-                })
-              }
-              id={cell.row.original._id}
-            />
-          </div>
-        ),
-      },
-      {
         accessorKey: "branch",
         header: "Branch",
         editVariant: "select",
@@ -289,7 +332,7 @@ const ProductsTable = () => {
         Edit: ({ cell, row, table }) => {
           const branchs =
             cell.getValue<{ branch: { name: string; _id: string } }[]>();
-          let defV = [];
+          const defV = [];
           branchs.map((branch) => {
             defV.push({
               value: branch?.branch?._id,
@@ -318,14 +361,19 @@ const ProductsTable = () => {
           );
         },
         Cell: ({ cell }) => {
-          const branchs = cell.getValue<{ branch: { name: string } }[]>();
+          const branchs = cell.getValue<any[]>();
+          if (!branchs || branchs.length === 0) return <span>-</span>;
           return (
             <>
-              {branchs.map((branch, index) => (
-                <span key={index} className="badge badge-secondary me-1">
-                  {branch?.branch?.name}
-                </span>
-              ))}
+              {branchs.map((branch, index) => {
+                const maybe = branch?.branch ?? branch;
+                const label = getLabel(maybe, memoizedBranches);
+                return (
+                  <span key={index} className="badge badge-secondary me-1">
+                    {label}
+                  </span>
+                );
+              })}
             </>
           );
         },
@@ -345,13 +393,11 @@ const ProductsTable = () => {
         Edit: ({ cell, row, table }) => {
           const categories =
             cell.getValue<{ category: { name: string; _id: string } }[]>();
-          let defV = [];
-          categories.map((category) => {
-            defV.push({
-              value: category?.category?._id,
-              label: category?.category?.name,
-            });
-          });
+          const defV = extractDefaultOptions(
+            categories,
+            "category",
+            memoizedCategories
+          );
 
           return (
             <Select
@@ -374,15 +420,26 @@ const ProductsTable = () => {
           );
         },
         Cell: ({ cell }) => {
-          const categoriess = cell.getValue<{ category: { name: string } }[]>();
+          const categoriess = cell.getValue<any[]>();
+          if (!categoriess || categoriess.length === 0) return <span>-</span>;
+          const labels = categoriess
+            .map((c) => getLabel(c?.category ?? c, memoizedCategories))
+            .filter(Boolean) as string[];
+          const visible = labels.slice(0, 3);
+          const overflow = labels.length - visible.length;
           return (
-            <>
-              {categoriess?.map((category, index) => (
-                <span key={index} className="badge badge-warning me-1">
-                  {category.category?.name}
-                </span>
-              ))}
-            </>
+            <Tooltip title={labels.join(", ")}>
+              <div>
+                {visible.map((label, idx) => (
+                  <span key={idx} className="badge badge-secondary me-1">
+                    {label}
+                  </span>
+                ))}
+                {overflow > 0 && (
+                  <span className="badge badge-secondary">+{overflow}</span>
+                )}
+              </div>
+            </Tooltip>
           );
         },
       },
@@ -401,13 +458,11 @@ const ProductsTable = () => {
         Edit: ({ cell, row, table }) => {
           const subcategories =
             cell.getValue<{ subCategory: { name: string; _id: string } }[]>();
-          let defV = [];
-          subcategories.map((subCategory) => {
-            defV.push({
-              value: subCategory?.subCategory?._id,
-              label: subCategory?.subCategory?.name,
-            });
-          });
+          const defV = extractDefaultOptions(
+            subcategories,
+            "subCategory",
+            memoizedSubCategories
+          );
 
           return (
             <Select
@@ -430,16 +485,26 @@ const ProductsTable = () => {
           );
         },
         Cell: ({ cell }) => {
-          const categoriess =
-            cell.getValue<{ subCategory: { name: string } }[]>();
+          const categoriess = cell.getValue<any[]>();
+          if (!categoriess || categoriess.length === 0) return <span>-</span>;
+          const labels = categoriess
+            .map((s) => getLabel(s?.subCategory ?? s, memoizedSubCategories))
+            .filter(Boolean) as string[];
+          const visible = labels.slice(0, 3);
+          const overflow = labels.length - visible.length;
           return (
-            <>
-              {categoriess?.map((subCategory, index) => (
-                <span key={index} className="badge badge-primary me-1">
-                  {subCategory?.subCategory?.name}
-                </span>
-              ))}
-            </>
+            <Tooltip title={labels.join(", ")}>
+              <div>
+                {visible.map((label, idx) => (
+                  <span key={idx} className="badge badge-secondary me-1">
+                    {label}
+                  </span>
+                ))}
+                {overflow > 0 && (
+                  <span className="badge badge-secondary">+{overflow}</span>
+                )}
+              </div>
+            </Tooltip>
           );
         },
       },
@@ -460,13 +525,11 @@ const ProductsTable = () => {
             cell.getValue<
               { childSubCategory: { name: string; _id: string } }[]
             >();
-          let defV = [];
-          childsubcategories.map((childSubCategory) => {
-            defV.push({
-              value: childSubCategory?.childSubCategory?._id,
-              label: childSubCategory?.childSubCategory?.name,
-            });
-          });
+          const defV = extractDefaultOptions(
+            childsubcategories,
+            "childSubCategory",
+            memoizedChildSubCategories
+          );
 
           return (
             <Select
@@ -489,16 +552,28 @@ const ProductsTable = () => {
           );
         },
         Cell: ({ cell }) => {
-          const categoriess =
-            cell.getValue<{ childSubCategory: { name: string } }[]>();
+          const categoriess = cell.getValue<any[]>();
+          if (!categoriess || categoriess.length === 0) return <span>-</span>;
+          const labels = categoriess
+            .map((cs) =>
+              getLabel(cs?.childSubCategory ?? cs, memoizedChildSubCategories)
+            )
+            .filter(Boolean) as string[];
+          const visible = labels.slice(0, 3);
+          const overflow = labels.length - visible.length;
           return (
-            <>
-              {categoriess?.map((childSubCategory, index) => (
-                <span key={index} className="badge badge-primary me-1">
-                  {childSubCategory?.childSubCategory?.name}
-                </span>
-              ))}
-            </>
+            <Tooltip title={labels.join(", ")}>
+              <div>
+                {visible.map((label, idx) => (
+                  <span key={idx} className="badge badge-secondary me-1">
+                    {label}
+                  </span>
+                ))}
+                {overflow > 0 && (
+                  <span className="badge badge-secondary">+{overflow}</span>
+                )}
+              </div>
+            </Tooltip>
           );
         },
       },
@@ -515,17 +590,18 @@ const ProductsTable = () => {
           align: "center",
         },
         Edit: ({ cell, row, table }) => {
-          const groupOfOptions =
-            cell.getValue<
-              { groupOfOptions: { name: string; _id: string } }[]
-            >();
-          let defV = [];
-          groupOfOptions.map((group) => {
-            defV.push({
-              value: group?.groupOfOptions?._id,
-              label: group?.groupOfOptions?.name,
-            });
-          });
+          const groupOfOptions = cell.getValue<
+            {
+              optionGroup?: { name: string; _id: string };
+              groupOfOptions?: any;
+            }[]
+          >();
+          // support nested shapes that use `optionGroup` inside the array items
+          const defV = extractDefaultOptions(
+            groupOfOptions,
+            "optionGroup",
+            memoizedGroupsOfOptions
+          );
 
           return (
             <Select
@@ -548,16 +624,29 @@ const ProductsTable = () => {
           );
         },
         Cell: ({ cell }) => {
-          const groups =
-            cell.getValue<{ groupsOfOptions: { name: string } }[]>();
+          const groups = cell.getValue<any[]>();
+          if (!groups || groups.length === 0) return <span>-</span>;
+          const labels = groups
+            .map((g) => {
+              const item = g?.optionGroup;
+              return getLabel(item, memoizedGroupsOfOptions);
+            })
+            .filter(Boolean) as string[];
+          const visible = labels.slice(0, 3);
+          const overflow = labels.length - visible.length;
           return (
-            <>
-              {groups?.map((group, index) => (
-                <span key={index} className="badge badge-primary me-1">
-                  {group?.groupsOfOptions?.name}
-                </span>
-              ))}
-            </>
+            <Tooltip title={labels.join(", ")}>
+              <div>
+                {visible.map((label, idx) => (
+                  <span key={idx} className="badge badge-secondary me-1">
+                    {label}
+                  </span>
+                ))}
+                {overflow > 0 && (
+                  <span className="badge badge-secondary">+{overflow}</span>
+                )}
+              </div>
+            </Tooltip>
           );
         },
       },
@@ -583,7 +672,6 @@ const ProductsTable = () => {
             <Select
               className="react-select-styled"
               classNamePrefix="react-select"
-              // isMulti
               options={[
                 { value: "regular", label: "regular" },
                 { value: "book", label: "book" },
@@ -595,10 +683,15 @@ const ProductsTable = () => {
                 menuPortal: (base) => ({ ...base, zIndex: 9999 }),
               }}
               onChange={(selected) => {
-                setBook(selected);
+                // selection handled on save; noop here to avoid unused state
+                void selected;
               }}
             />
           );
+        },
+        Cell: ({ cell }) => {
+          const v = cell.getValue() as string | undefined;
+          return <span>{v ?? "-"}</span>;
         },
       },
     ],
@@ -610,6 +703,7 @@ const ProductsTable = () => {
       memoizedChildSubCategories,
       memoizedExtras,
       memoizedTypes,
+      memoizedGroupsOfOptions,
     ]
   );
 
@@ -622,7 +716,7 @@ const ProductsTable = () => {
     available: Yup.boolean().optional(),
     deleted: Yup.boolean().optional(),
   });
-  //UPDATE Product
+
   const handleSaveCategories = async (originalRow) => {
     editCategoriesSchema
       .validate(originalRow.row.original)
@@ -630,9 +724,9 @@ const ProductsTable = () => {
     setValidationErrors({});
     const updatedRowValues = {
       ...originalRow.values,
-      branch: editBranch?.map((str) => ({ branch: str })), // assuming branch is an array of objects with value and label
-      category: editCategory?.map((str) => ({ category: str })), // assuming branch is an array of objects with value and label
-      subCategory: editSubCategory?.map((str) => ({ subCategory: str })), // assuming branch is an array of objects with value and label
+      branch: editBranch?.map((str) => ({ branch: str })),
+      category: editCategory?.map((str) => ({ category: str })),
+      subCategory: editSubCategory?.map((str) => ({ subCategory: str })),
       childSubCategory: editChildSubCategory?.map((str) => ({
         childSubCategory: str,
       })),
@@ -642,24 +736,21 @@ const ProductsTable = () => {
       id: originalRow.row.original._id,
       update: updatedRowValues,
     });
-    table1.setEditingRow(null); //exit editing mode
+    table1.setEditingRow(null);
   };
 
-  //Arrange products action
   const handleArrangeProductsClick = () => {
     setShowProductsModal(true);
   };
   const handleCloseProductsModal = () => {
     setShowProductsModal(false);
   };
-  //Arrange SubCategories action
   const handleArrangeSubsClick = () => {
     setShowSubCategoriesModal(true);
   };
   const handleCloseSubCategoriesModal = () => {
     setShowSubCategoriesModal(false);
   };
-  //DELETE action
   const handleDeleteClick = () => {
     setShowModal(true);
   };
@@ -668,8 +759,6 @@ const ProductsTable = () => {
     setShowModal(false);
   };
   const openEditProductModal = (product: Product) => {
-    console.log("Product being passed:", product);
-    // Pass the full product data via route state
     navigate(`/apps/eCommerce/productForm/${product._id}`, {
       state: { product },
     });
@@ -685,9 +774,7 @@ const ProductsTable = () => {
     setShowModal(false);
   };
   const deleteItem = useMutation(() => deleteProduct(CategoriesDelete as any), {
-    // 💡 response of the mutation is passed to onSuccess
     onSuccess: () => {
-      // ✅ update detail view directly
       queryClient.invalidateQueries([`${QUERIES.CATEGORIES_LIST}`]);
       queryClient.invalidateQueries([`${QUERIES.ARCHIVED_CATEGORIES_LIST}`]);
       queryClient.refetchQueries([`${QUERIES.CATEGORIES_LIST}`]);
@@ -702,9 +789,7 @@ const ProductsTable = () => {
         Number(duplicateRef?.current?.value)
       ),
     {
-      // 💡 response of the mutation is passed to onSuccess
       onSuccess: () => {
-        // ✅ update detail view directly
         queryClient.invalidateQueries([`${QUERIES.PRODUCTS_LIST}`]);
         queryClient.invalidateQueries([`${QUERIES.ARCHIVED_PRODUCTS_LIST}`]);
         refetch();
@@ -717,13 +802,10 @@ const ProductsTable = () => {
   const deleteSelectedItems = useMutation(
     (ids: string[]) => deleteSelectedProducts(ids),
     {
-      // 💡 response of the mutation is passed to onSuccess
       onSuccess: () => {
-        // ✅ update detail view directly
         queryClient.invalidateQueries([`${QUERIES.CATEGORIES_LIST}`]);
         queryClient.invalidateQueries([`${QUERIES.ARCHIVED_CATEGORIES_LIST}`]);
         refetch();
-
         setTrigger(true);
         clearSelected();
       },
@@ -733,7 +815,6 @@ const ProductsTable = () => {
   const updateCategoryAvailable = useMutation(
     ({ id, update }: { id: string; update: any }) => updateProduct(id, update),
     {
-      // 💡 response of the mutation is passed to onSuccess
       onSuccess: () => {
         refetch();
         setTrigger(true);
@@ -754,7 +835,6 @@ const ProductsTable = () => {
     },
   };
   useEffect(() => {
-    // Access the data property from the response objects
     setActiveProducts(active.data || []);
     setArchivedProducts(archived.data || []);
   }, [active.data, archived.data, trigger]);
@@ -777,12 +857,15 @@ const ProductsTable = () => {
     enablePagination: true,
     state: {
       columnOrder: [
-        "mrt-row-select", //move the built-in selection column to the end of the table
+        "mrt-row-select",
         "mrt-row-drag",
         "order",
         "name",
         "description",
         "price",
+        "types",
+        "weight",
+        "dimensions",
         "mrt-row-expand",
         "branch",
         "category",
@@ -803,52 +886,103 @@ const ProductsTable = () => {
             : "rgba(0,0,0,0.1)",
       }),
     }),
-    //custom expand button rotation
     muiExpandButtonProps: ({ row, table }) => ({
-      onClick: () => table.setExpanded({ [row.id]: !row.getIsExpanded() }), //only 1 detail panel open at a time
+      onClick: () => table.setExpanded({ [row.id]: !row.getIsExpanded() }),
       sx: {
         transform: row.getIsExpanded() ? "rotate(180deg)" : "rotate(-90deg)",
         transition: "transform 0.2s",
       },
     }),
-    //conditionally render detail panel
-    renderDetailPanel: ({ row }) =>
-      row.original.branch ? (
-        <div className="d-flex justify-content-evenly">
-          <div>
-            Branches :
-            {row.original.branch.map((branch, index) => (
-              <span key={index} className="badge badge-secondary me-1">
-                {branch?.name}
-              </span>
-            ))}
+    renderDetailPanel: ({ row }) => {
+      const p = row.original;
+      if (!p) return null;
+      const thumbnail = p.imgCover?.[0]?.url || p.images?.[0];
+      const shortDesc = (() => {
+        const src = p.shortDesc || p.description || "";
+        const el = document.createElement("div");
+        el.innerHTML = src;
+        return (el.textContent || el.innerText || "").trim().substring(0, 300);
+      })();
+
+      return (
+        <div
+          className="d-flex justify-content-between align-items-start"
+          style={{ gap: 12 }}
+        >
+          <div style={{ minWidth: 140 }}>
+            {thumbnail ? (
+              <img
+                src={thumbnail}
+                alt={p.name}
+                style={{ width: 140, height: "auto", borderRadius: 8 }}
+              />
+            ) : (
+              <div
+                style={{
+                  width: 140,
+                  height: 100,
+                  background: "#f3f3f3",
+                  borderRadius: 8,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                No image
+              </div>
+            )}
           </div>
-          <div>
-            Categories :
-            {row.original.category.map((category, index) => (
-              <span key={index} className="badge badge-warning me-1">
-                {category?.category?.name}
-              </span>
-            ))}
-          </div>
-          <div>
-            subCategories :
-            {row.original.subCategory.map((subCategory, index) => (
-              <span key={index} className="badge badge-primary me-1">
-                {subCategory?.subCategory?.name}
-              </span>
-            ))}
-          </div>
-          <div>
-            childSubCategories :
-            {row.original.childSubCategory.map((childSubCategory, index) => (
-              <span key={index} className="badge badge-primary me-1">
-                {childSubCategory?.childSubCategory?.name}
-              </span>
-            ))}
+
+          <div style={{ flex: 1 }}>
+            <div style={{ marginBottom: 8 }}>
+              <strong>{p.name}</strong>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                gap: 16,
+                marginBottom: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              <div>
+                <div style={{ fontSize: 12, color: "#666" }}>Price</div>
+                <div>
+                  <strong>
+                    {p.price ?? "-"} {p.price && "EGP"}
+                  </strong>
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: 12, color: "#666" }}>
+                  Price After Discount
+                </div>
+                <div>
+                  <strong>{p.priceAfterDiscount ?? "-"}</strong>
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: 12, color: "#666" }}>Stock</div>
+                <div>{p.stock ?? "-"}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 12, color: "#666" }}>Min Qty</div>
+                <div>{p.minQty ?? "-"}</div>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: 8 }}>
+              <div style={{ fontSize: 12, color: "#666" }}>Description</div>
+              <div>
+                {shortDesc}
+                {(p.shortDesc || p.description)?.length > 300 ? "..." : ""}
+              </div>
+            </div>
           </div>
         </div>
-      ) : null,
+      );
+    },
     muiRowDragHandleProps: ({ table }) => ({
       onDragEnd: async () => {
         const { draggingRow, hoveredRow } = table.getState();
@@ -896,7 +1030,6 @@ const ProductsTable = () => {
               onClick={() => openAddProductModal("new")}
               className="rounded bg-primary rounded-circle p-0 border-0"
             >
-              {/* Add Product */}
               <i className="fa-solid fa-plus text-white fa-2xl p-3"></i>
             </button>
           </Tooltip>
@@ -938,7 +1071,7 @@ const ProductsTable = () => {
             <button
               type="button"
               onClick={async () => {
-                let selcetedIDs = [];
+                const selcetedIDs = [];
                 table
                   .getSelectedRowModel()
                   .rows.map((item) => selcetedIDs.push(item.original._id));
@@ -947,7 +1080,6 @@ const ProductsTable = () => {
               }}
               className="rounded bg-danger rounded-circle p-0 border-0"
             >
-              {/* Add Product */}
               <i className="fa-solid fa-trash text-white fa-2xl p-3"></i>
             </button>
           </Tooltip>
@@ -957,7 +1089,7 @@ const ProductsTable = () => {
     data: activeProducts,
     onEditingRowCancel: () => setValidationErrors({}),
     onEditingRowSave: (originalRow) => handleSaveCategories(originalRow),
-    getRowId: (originalRow) => `table-1-${originalRow.name}`,
+    getRowId: (originalRow) => `table-1-${originalRow._id}`,
     muiTablePaperProps: {
       onDragEnter: () => setHoveredTable("table-1"),
       sx: {
@@ -967,7 +1099,7 @@ const ProductsTable = () => {
     displayColumnDefOptions: {
       "mrt-row-actions": {
         muiTableHeadCellProps: {
-          align: "center", //change head cell props
+          align: "center",
         },
       },
     },
@@ -1025,12 +1157,15 @@ const ProductsTable = () => {
     rowCount: archived.total || 0,
     state: {
       columnOrder: [
-        "mrt-row-select", //move the built-in selection column to the end of the table
+        "mrt-row-select",
         "mrt-row-drag",
         "order",
         "name",
         "description",
         "price",
+        "types",
+        "weight",
+        "dimensions",
         "mrt-row-expand",
         "branch",
         "category",
@@ -1052,41 +1187,123 @@ const ProductsTable = () => {
       }),
     }),
     muiExpandButtonProps: ({ row, table }) => ({
-      onClick: () => table.setExpanded({ [row.id]: !row.getIsExpanded() }), //only 1 detail panel open at a time
+      onClick: () => table.setExpanded({ [row.id]: !row.getIsExpanded() }),
       sx: {
         transform: row.getIsExpanded() ? "rotate(180deg)" : "rotate(-90deg)",
         transition: "transform 0.2s",
       },
     }),
-    renderDetailPanel: ({ row }) =>
-      row.original.branch ? (
-        <div className="d-flex justify-content-evenly">
-          <div>
-            Branches :
-            {row.original.branch.map((branch, index) => (
-              <span key={index} className="badge badge-secondary me-1">
-                {branch.name}
-              </span>
-            ))}
+    renderDetailPanel: ({ row }) => {
+      const p = row.original;
+      if (!p) return null;
+      const thumbnail = p.imgCover?.[0]?.url || p.images?.[0];
+      const shortDesc = (() => {
+        const src = p.shortDesc || p.description || "";
+        const el = document.createElement("div");
+        el.innerHTML = src;
+        return (el.textContent || el.innerText || "").trim().substring(0, 300);
+      })();
+
+      return (
+        <div
+          className="d-flex justify-content-between align-items-start"
+          style={{ gap: 12 }}
+        >
+          <div style={{ minWidth: 140 }}>
+            {thumbnail ? (
+              <img
+                src={thumbnail}
+                alt={p.name}
+                style={{ width: 140, height: "auto", borderRadius: 8 }}
+              />
+            ) : (
+              <div
+                style={{
+                  width: 140,
+                  height: 100,
+                  background: "#f3f3f3",
+                  borderRadius: 8,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                No image
+              </div>
+            )}
           </div>
-          <div>
-            Categories :
-            {row.original.category.map((category, index) => (
-              <span key={index} className="badge badge-warning me-1">
-                {category.category?.name}
-              </span>
-            ))}
-          </div>
-          <div>
-            subCategories :
-            {row.original.subCategory.map((subCategory, index) => (
-              <span key={index} className="badge badge-primary me-1">
-                {subCategory?.subCategory?.name}
-              </span>
-            ))}
+
+          <div style={{ flex: 1 }}>
+            <div style={{ marginBottom: 8 }}>
+              <strong>{p.name}</strong>
+              <div style={{ fontSize: 12, color: "#666" }}>
+                ID: {p._id} {p.slug ? `· ${p.slug}` : null}
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                gap: 16,
+                marginBottom: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              <div>
+                <div style={{ fontSize: 12, color: "#666" }}>Price</div>
+                <div>
+                  <strong>
+                    {p.price ?? "-"} {p.price && "EGP"}
+                  </strong>
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: 12, color: "#666" }}>
+                  Price After Discount
+                </div>
+                <div>
+                  <strong>{p.priceAfterDiscount ?? "-"}</strong>
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: 12, color: "#666" }}>Stock</div>
+                <div>{p.stock ?? "-"}</div>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: 8 }}>
+              <div style={{ fontSize: 12, color: "#666" }}>Description</div>
+              <div>
+                {shortDesc}
+                {(p.shortDesc || p.description)?.length > 300 ? "..." : ""}
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {p.category?.map((c, i) => {
+                const label = getLabel(c?.category ?? c, memoizedCategories);
+                return (
+                  <span key={i} className="badge badge-warning me-1">
+                    {label}
+                  </span>
+                );
+              })}
+              {p.subCategory?.map((s, i) => {
+                const label = getLabel(
+                  s?.subCategory ?? s,
+                  memoizedSubCategories
+                );
+                return (
+                  <span key={"s-" + i} className="badge badge-primary me-1">
+                    {label}
+                  </span>
+                );
+              })}
+            </div>
           </div>
         </div>
-      ) : null,
+      );
+    },
 
     muiRowDragHandleProps: ({ table }) => ({
       onDragEnd: async () => {
@@ -1148,7 +1365,7 @@ const ProductsTable = () => {
           <Button
             color="error"
             onClick={async () => {
-              let selcetedIDs = [];
+              const selcetedIDs = [];
               table
                 .getSelectedRowModel()
                 .rows.map((item) => selcetedIDs.push(item.original._id));
@@ -1168,7 +1385,7 @@ const ProductsTable = () => {
     },
     onEditingRowCancel: () => setValidationErrors({}),
     onEditingRowSave: (originalRow) => handleSaveCategories(originalRow),
-    getRowId: (originalRow) => `table-2-${originalRow.name}`,
+    getRowId: (originalRow) => `table-2-${originalRow._id}`,
     muiTablePaperProps: {
       onDragEnter: () => setHoveredTable("table-2"),
       sx: {
@@ -1178,7 +1395,7 @@ const ProductsTable = () => {
     displayColumnDefOptions: {
       "mrt-row-actions": {
         muiTableHeadCellProps: {
-          align: "center", //change head cell props
+          align: "center",
         },
       },
     },
@@ -1247,10 +1464,8 @@ const ProductsTable = () => {
         }}
       >
         <MaterialReactTable table={table2} />
-
-        {/* <ArchivedCategoriesTable/> */}
       </Box>
-      {/* Delete Modal */}
+
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>Confirm Deletion</Modal.Title>
@@ -1272,15 +1487,14 @@ const ProductsTable = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* Arrange Products Modal */}
       <Modal show={showProductsModal} onHide={handleCloseProductsModal}>
         <Modal.Header closeButton>
           <Modal.Title>
-            Arrange Procusts Order in {CategoriesDelete?.name} Category
+            Arrange Products Order in {CategoriesDelete?.name} Category
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {/* <CategoryProductsTable  id={CategoriesDelete?._id } /> */}
+          {/* arrange products UI placeholder - implement as needed */}
         </Modal.Body>
         <Modal.Footer>
           <Box sx={{ display: "flex", gap: "1rem", p: "4px" }}>
@@ -1295,7 +1509,6 @@ const ProductsTable = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* Arrange Duplicate Product Modal */}
       <Modal
         show={showSubCategoriesModal}
         onHide={handleCloseSubCategoriesModal}
@@ -1345,5 +1558,67 @@ const ProductsTable = () => {
     </>
   );
 };
+
+function extractDefaultOptions(
+  items: any[] | undefined,
+  key: string,
+  options: { value: string; label: string }[]
+): { value: string; label: string }[] {
+  if (!items || !Array.isArray(items)) return [];
+
+  const isHex24 = (s: any) =>
+    typeof s === "string" && /^[0-9a-fA-F]{24}$/.test(s);
+
+  const mapped = items
+    .map((item) => {
+      // If item is a string ID
+      if (typeof item === "string") {
+        const found = options.find((o) => o.value === item);
+        return found ?? { value: item, label: isHex24(item) ? "—" : item };
+      }
+
+      // If item has the nested key (e.g. { category: { _id, name } })
+      const nested = item?.[key];
+      if (nested) {
+        // nested can be a string id or an object
+        if (typeof nested === "string") {
+          const found = options.find((o) => o.value === nested);
+          return (
+            found ?? { value: nested, label: isHex24(nested) ? "—" : nested }
+          );
+        }
+        const id = nested._id ?? nested.id ?? nested.value;
+        const name = nested.name ?? nested.label;
+        if (id) {
+          const found = options.find((o) => o.value === id);
+          return (
+            found ?? {
+              value: id,
+              label: String(name ?? (isHex24(id) ? "—" : id)),
+            }
+          );
+        }
+      }
+
+      // Fallback: item itself may have _id/name structure
+      const id = item._id ?? item.id ?? item.value;
+      const name = item.name ?? item.label;
+      if (id) {
+        const found = options.find((o) => o.value === id);
+        return (
+          found ?? {
+            value: id,
+            label: String(name ?? (isHex24(id) ? "—" : id)),
+          }
+        );
+      }
+
+      return null;
+    })
+    .filter(Boolean) as { value: string; label: string }[];
+
+  // remove any entries with empty label
+  return mapped.filter((m) => m.label && String(m.label).trim() !== "");
+}
 
 export { ProductsTable };

@@ -371,16 +371,33 @@ const ProductForm: FC<Props> = ({ product }) => {
     })) || [];
 
   const extractedExtras =
-    productFromState?.product?.extras?.map((e: any) => ({
-      value: e.extra._id,
-      label: e.extra.name,
-    })) || [];
+    (productFromState?.product?.extras || [])
+      .map((e: any) => {
+        if (!e) return null;
+        const id =
+          typeof e.extra === "string" ? e.extra : e.extra?._id ?? e._id ?? e.id;
+        const name = typeof e.extra === "object" ? e.extra?.name : e.name;
+        if (!id) return null;
+        return { value: id, label: name || "Unknown" };
+      })
+      .filter(Boolean) || [];
 
   const extractedGroupOfOptions =
-    productFromState?.product?.groupOfOptions?.map((g: any) => ({
-      value: g.optionGroup._id,
-      label: g.optionGroup.name,
-    })) || [];
+    (productFromState?.product?.groupOfOptions || [])
+      .map((g: any) => {
+        if (!g) return null;
+        const id =
+          typeof g.optionGroup === "string"
+            ? g.optionGroup
+            : g.optionGroup?._id ?? g._id ?? g.id;
+        const name =
+          typeof g.optionGroup === "object"
+            ? g.optionGroup?.name
+            : g.name || undefined;
+        if (!id) return null;
+        return { value: id, label: name || "Unknown" };
+      })
+      .filter(Boolean) || [];
 
   const images = productFromState?.product?.images || [];
   const imgCover = productFromState?.product?.imgCover?.[0]?.url || "";
@@ -599,11 +616,15 @@ const ProductForm: FC<Props> = ({ product }) => {
         : [],
       groupOfOptions: Array.isArray(productForEdit?.groupOfOptions)
         ? productForEdit.groupOfOptions
-            .map((option: any) =>
-              memoizedGroupsOfOptions.find(
-                (grp) => grp.value === option.optionGroup._id
-              )
-            )
+            .map((option: any) => {
+              if (!option) return null;
+              const id =
+                typeof option.optionGroup === "string"
+                  ? option.optionGroup
+                  : option.optionGroup?._id ?? option._id ?? option.id;
+              if (!id) return null;
+              return memoizedGroupsOfOptions.find((grp) => grp.value === id);
+            })
             .filter(Boolean)
         : extractedGroupOfOptions.length > 0
         ? extractedGroupOfOptions
@@ -859,6 +880,40 @@ const ProductForm: FC<Props> = ({ product }) => {
       }
     },
   });
+
+  // Ensure groupOfOptions are set on the form when provider data arrives
+  // (handles the case where provider fetch finishes after form initialisation)
+  // Only run when memoizedGroupsOfOptions changes or productForEdit changes
+  // and only if the form currently has no selected groupOfOptions.
+  // This avoids showing raw ids and ensures the Select has matching option objects.
+  (function attachGroupOptionsSync() {
+    try {
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const { useEffect } = require("react");
+      useEffect(() => {
+        if (!memoizedGroupsOfOptions || memoizedGroupsOfOptions.length === 0)
+          return;
+        const current = (formik.values as any).groupOfOptions || [];
+        if (Array.isArray(current) && current.length > 0) return; // already set
+        const src = productForEdit?.groupOfOptions || [];
+        if (!Array.isArray(src) || src.length === 0) return;
+        const mapped = src
+          .map((g: any) => {
+            const id =
+              typeof g.optionGroup === "string"
+                ? g.optionGroup
+                : g.optionGroup?._id;
+            return memoizedGroupsOfOptions.find((grp) => grp.value === id);
+          })
+          .filter(Boolean);
+        if (mapped.length) {
+          formik.setFieldValue("groupOfOptions", mapped);
+        }
+      }, [memoizedGroupsOfOptions, productForEdit]);
+    } catch (e) {
+      // fallback: do nothing if hooks cannot be attached here
+    }
+  })();
 
   // Debug: Log formik values when they change
 

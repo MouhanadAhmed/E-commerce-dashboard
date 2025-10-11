@@ -203,7 +203,7 @@ const BranchesTable = () => {
           <Button
             color="error"
             onClick={async () => {
-              let selcetedIDs = [];
+              const selcetedIDs = [];
               table
                 .getSelectedRowModel()
                 .rows.map((item) => selcetedIDs.push(item.original._id));

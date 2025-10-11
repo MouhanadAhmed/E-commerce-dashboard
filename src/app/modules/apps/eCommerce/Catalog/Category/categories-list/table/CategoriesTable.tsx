@@ -138,7 +138,7 @@ const CategoriesTable = () => {
         Edit: ({ cell }) => {
           const branchs =
             cell.getValue<{ branch: { name: string; _id: string } }[]>();
-          let defV = [];
+          const defV = [];
           branchs.map((branch) => {
             defV.push({ value: branch.branch._id, label: branch.branch.name });
           });
@@ -423,7 +423,7 @@ const CategoriesTable = () => {
           <Button
             color="error"
             onClick={async () => {
-              let selcetedIDs = [];
+              const selcetedIDs = [];
               table
                 .getSelectedRowModel()
                 .rows.map((item) => selcetedIDs.push(item.original._id));
