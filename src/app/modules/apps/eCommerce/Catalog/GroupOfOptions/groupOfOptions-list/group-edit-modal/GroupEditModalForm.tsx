@@ -17,7 +17,7 @@ interface OptionField {
   name: string;
   price: number;
   available: boolean;
-  isDefault: boolean;
+  defaultOption: boolean;
 }
 
 type Props = {
@@ -45,7 +45,7 @@ const editGroupSchema = Yup.object().shape({
           .min(0, "Price cannot be negative")
           .required("Price is required"),
         available: Yup.boolean().required("Option availability is required"),
-        isDefault: Yup.boolean().required("Default selection is required"),
+        defaultOption: Yup.boolean().required("Default selection is required"),
       }),
     )
     .test(
@@ -54,7 +54,7 @@ const editGroupSchema = Yup.object().shape({
       function (options) {
         if (!options || options.length === 0) return true;
         const defaultCount = options.filter(
-          (option) => option.isDefault,
+          (option) => option.defaultOption,
         ).length;
         return defaultCount <= 1;
       },
@@ -94,7 +94,7 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
           name: "",
           price: 0,
           available: true,
-          isDefault: index === 0, // First option is default by default
+          defaultOption: index === 0, // First option is default by default
         }),
       );
 
@@ -113,9 +113,9 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
     const updatedOptions = [...options];
 
     // If setting as default, ensure only one option is default
-    if (field === "isDefault" && value === true) {
+    if (field === "defaultOption" && value === true) {
       updatedOptions.forEach((option, idx) => {
-        option.isDefault = idx === index;
+        option.defaultOption = idx === index;
       });
     } else {
       updatedOptions[index] = { ...updatedOptions[index], [field]: value };
@@ -136,7 +136,7 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
         name: option.name,
         price: option.price,
         available: option.available,
-        // isDefault: option.isDefault,
+        // defaultOption: option.defaultOption,
         groupOfOptions: [{groupOfOptions: groupId}],
       };
 
@@ -483,9 +483,9 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
                         className="form-check-input"
                         type="radio"
                         name="defaultOption"
-                        checked={option.isDefault}
+                        checked={option.defaultOption}
                         onChange={(e) =>
-                          updateOption(index, "isDefault", e.target.checked)
+                          updateOption(index, "defaultOption", e.target.checked)
                         }
                         disabled={formik.isSubmitting || isGroupLoading}
                       />

@@ -21,7 +21,7 @@ export type Option = {
   name: string;
   price: number;
   available: boolean;
-  isDefault: boolean;
+  defaultOption: boolean;
   groupOfOptions: {groupOfOptions: string; _id?: string}[];
   createdAt?: string;
   updatedAt?: string;

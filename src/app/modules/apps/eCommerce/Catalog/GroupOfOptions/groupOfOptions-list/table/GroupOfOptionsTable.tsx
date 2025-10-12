@@ -248,8 +248,8 @@ const GroupTable = () => {
           order: option.order,
           available: option.available,
           groupOfOptions: { groupOfOptions: selectedGroup?._id },
-          // isDefault: option.isDefault,
-          // Note: We don't send isDefault to the option creation/update
+          defaultOption: option.defaultOption,
+          // Note: We don't send defaultOption to the option creation/update
         };
 
         if (option.isNew) {
@@ -335,7 +335,7 @@ const GroupTable = () => {
       price: 0,
       order: groupOptions.length + 1,
       available: true,
-      isDefault: groupOptions.length === 0, // Mark as default if it's the first option
+      defaultOption: groupOptions.length === 0, // Mark as default if it's the first option
       isNew: true,
     };
     setGroupOptions((prev) => [...prev, newOption]);
@@ -346,7 +346,7 @@ const GroupTable = () => {
     setGroupOptions((prev) =>
       prev.map((option) => ({
         ...option,
-        isDefault: option.id === optionId || option._id === optionId,
+        defaultOption: option.id === optionId || option._id === optionId,
       }))
     );
   };
@@ -1069,7 +1069,7 @@ const GroupTable = () => {
                         <FormControlLabel
                           control={
                             <Switch
-                              checked={option.isDefault}
+                              checked={option.defaultOption}
                               onChange={() =>
                                 handleDefaultChange(option.id || option._id)
                               }
@@ -1077,7 +1077,7 @@ const GroupTable = () => {
                               color="primary"
                             />
                           }
-                          label={option.isDefault ? 'Default' : ''}
+                          label={option.defaultOption ? 'Default' : ''}
                         />
                       </td>
                       {isEditingOptions && (
