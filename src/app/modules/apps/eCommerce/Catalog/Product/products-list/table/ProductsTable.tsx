@@ -165,7 +165,7 @@ const ProductsTable = () => {
         if (found) return found.label;
       }
 
-      if (maybe._id) return ""; // avoid exposing raw IDs
+      if (maybe._id) return maybe._id; //  exposing raw IDs
 
       // Final fallback
       return String(maybe);

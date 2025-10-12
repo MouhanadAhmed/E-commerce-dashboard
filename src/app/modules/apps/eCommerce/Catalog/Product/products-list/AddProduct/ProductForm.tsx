@@ -15,13 +15,10 @@ import {
   getProductById,
   updateProduct,
 } from "../core/_requests";
-import ReactQuill, { Quill } from "react-quill";
+import ReactQuill from "react-quill";
 import { isNotEmpty } from "../../../../../../../../_metronic/helpers";
 import { useActiveBranchesData as branchesData } from "../../../Branch/branches-list/core/QueryResponseProvider";
-import {
-  useActiveCategoriesData,
-  useQueryResponseData as useCategoriesResponseData,
-} from "../../../Category/categories-list/core/QueryResponseProvider";
+import { useActiveCategoriesData } from "../../../Category/categories-list/core/QueryResponseProvider";
 import { useActiveSubCategoriesData as subcategoriesData } from "../../../SubCategory/Subcategories-list/core/QueryResponseProvider";
 import { useActiveChildSubCategoriesData as childSubCategoryData } from "../../../ChildSubCategory/ChildSubcategories-list/core/QueryResponseProvider";
 import { useActiveTypesData as typesData } from "../../../Type/types-list/core/QueryResponseProvider";
@@ -35,7 +32,7 @@ import { useParams, useLocation } from "react-router-dom";
 import { uploadToCloudinary } from "../../../../../../../../_metronic/helpers/cloudinaryUpload";
 import Swal from "sweetalert2";
 
-import {} from "react-router-dom";
+// react-router-dom imports above are used (useParams, useLocation)
 
 type Props = {
   product?: Product;
@@ -221,10 +218,37 @@ const editProductSchema = Yup.object().shape({
       Array.isArray(originalValue) ? originalValue : [originalValue]
     )
     .optional(),
-  minQty: Yup.number().min(0).optional(),
+  minQty: Yup.number()
+    .transform((value, originalValue) => {
+      // treat empty string or null/undefined as undefined so field becomes optional
+      if (
+        originalValue === "" ||
+        originalValue === null ||
+        originalValue === undefined
+      ) {
+        return undefined;
+      }
+      return Number(originalValue);
+    })
+    .min(0)
+    .nullable()
+    .optional(),
   dimensions: Yup.string().optional(),
   rewardPoint: Yup.string().optional(),
-  sold: Yup.number().min(0).optional(),
+  sold: Yup.number()
+    .transform((value, originalValue) => {
+      if (
+        originalValue === "" ||
+        originalValue === null ||
+        originalValue === undefined
+      ) {
+        return undefined;
+      }
+      return Number(originalValue);
+    })
+    .min(0)
+    .nullable()
+    .optional(),
   deleted: Yup.boolean().optional(),
   order: Yup.number().min(0).optional(),
   quantity: Yup.number().min(0).optional(),
@@ -269,58 +293,7 @@ const ProductForm: FC<Props> = ({ product }) => {
   const productFromState = location.state as { product: Product } | undefined;
 
   // Extract and enrich branch data by merging separate arrays from backend
-  const extractedBranches = useMemo(() => {
-    const product = productFromState?.product;
-    if (!product) return [];
-
-    // Get all unique branch IDs from all branch arrays
-    const branchIds = new Set<string>();
-
-    product.branchStock?.forEach((b: any) => branchIds.add(b.branch));
-    product.branchAvailable?.forEach((b: any) => branchIds.add(b.branch));
-    product.branchPrice?.forEach((b: any) => branchIds.add(b.branch));
-    product.branchPriceAfterDiscount?.forEach((b: any) =>
-      branchIds.add(b.branch)
-    );
-
-    // Also check legacy branch array if it exists
-    product.branch?.forEach((b: any) => {
-      const branchId = typeof b.branch === "string" ? b.branch : b.branch._id;
-      branchIds.add(branchId);
-    });
-
-    // Build complete branch objects by merging data from all arrays
-    return Array.from(branchIds).map((branchId, index) => {
-      const fullBranch = branches.find((branch) => branch._id === branchId);
-
-      const stockData = product.branchStock?.find(
-        (b: any) => b.branch === branchId
-      );
-      const availableData = product.branchAvailable?.find(
-        (b: any) => b.branch === branchId
-      );
-      const priceData = product.branchPrice?.find(
-        (b: any) => b.branch === branchId
-      );
-      const discountData = product.branchPriceAfterDiscount?.find(
-        (b: any) => b.branch === branchId
-      );
-
-      return {
-        key: index,
-        branch: branchId,
-        name: fullBranch?.name || "Unknown",
-        price: priceData?.price || "",
-        available: availableData?.available ?? true,
-        stock: stockData?.stock || "",
-        priceAfterDiscount: discountData?.priceAfterDiscount || "",
-        priceAfterExpiresAt: "",
-        order: "",
-        sold: "",
-        _id: branchId,
-      };
-    });
-  }, [productFromState, branches]);
+  // extractedBranches removed: it was unused and created lint noise
 
   const extractedCategories =
     productFromState?.product?.category?.map((c: any) => {
@@ -399,8 +372,7 @@ const ProductForm: FC<Props> = ({ product }) => {
       })
       .filter(Boolean) || [];
 
-  const images = productFromState?.product?.images || [];
-  const imgCover = productFromState?.product?.imgCover?.[0]?.url || "";
+  // images/imgCover local constants removed (unused)
 
   const handleTabClick = (tab: string) => {
     setActiveTab(tab);
@@ -430,61 +402,126 @@ const ProductForm: FC<Props> = ({ product }) => {
     const fetchProduct = async () => {
       try {
         const data = await getProductById(id);
-        setProductForEdit(data);
-        data.imgCover &&
-          data.imgCover[0] &&
-          setPreviewUrl(data?.imgCover[0].url);
-        formik.setValues(data);
+        if (data) {
+          // Transform branch data to match the expected format
+          const transformedData = {
+            ...data,
+            branch:
+              data.branch?.map((b: any, index: number) => ({
+                key: index,
+                branch: typeof b.branch === "string" ? b.branch : b.branch._id,
+                name: typeof b.branch === "string" ? "" : b.branch.name,
+                price: b.price || "",
+                available: b.available || false,
+                stock: b.stock || "",
+                priceAfterDiscount: b.priceAfterDiscount || "",
+                priceAfterExpiresAt: b.priceAfterExpiresAt || "",
+                order: b.order || "",
+                sold: b.sold || "",
+                _id: b._id || index.toString(),
+              })) || initialBranches,
+          };
+
+          setProductForEdit(transformedData);
+          if (data.imgCover?.[0]?.url) setPreviewUrl(data.imgCover[0].url);
+          if (data.images && data.images.length > 0) {
+            const imageUrls = data.images.map((img: any) =>
+              typeof img === "string" ? img : img.url
+            );
+            setExistingGalleryUrls(imageUrls);
+          }
+          // form values will be set by the product->form mapper effect below
+          return; // done, fetched product used
+        }
       } catch (error) {
         console.error("Error fetching product", error);
       }
+
+      // Fallback: if fetch failed or returned no data, use navigation state if available
+      if (productFromState?.product) {
+        const product = productFromState.product;
+
+        const transformedProduct = {
+          ...product,
+          branch:
+            product.branch?.map((b: any, index: number) => ({
+              key: index,
+              branch:
+                typeof b.branch === "string"
+                  ? b.branch
+                  : b.branch._id ?? b.branch._id,
+              name: typeof b.branch === "string" ? "" : b.branch.name,
+              price: b.price || "",
+              available: b.available || false,
+              stock: b.stock || "",
+              priceAfterDiscount: b.priceAfterDiscount || "",
+              priceAfterExpiresAt: b.priceAfterExpiresAt || "",
+              order: b.order || "",
+              sold: b.sold || "",
+              _id: b._id || index.toString(),
+            })) || initialBranches,
+        };
+
+        setProductForEdit(transformedProduct);
+        if (product.imgCover?.[0]?.url) setPreviewUrl(product.imgCover[0].url);
+        if (product.images && product.images.length > 0) {
+          const imageUrls = product.images.map((img: any) =>
+            typeof img === "string" ? img : img.url
+          );
+          setExistingGalleryUrls(imageUrls);
+        }
+        // form values will be set by the product->form mapper effect below
+        return;
+      }
+
+      // If new product, set defaults
+      if (id === "new") {
+        setProductForEdit(initialProduct);
+      }
     };
 
-    // If we have product data from navigation state, use it instead of fetching
-    if (productFromState?.product) {
-      const product = productFromState.product;
-
-      // Transform branch data to match the expected format
-      const transformedProduct = {
-        ...product,
-        branch:
-          product.branch?.map((b: any, index: number) => ({
-            key: index,
-            branch: typeof b.branch === "string" ? b.branch : b.branch._id,
-            name: typeof b.branch === "string" ? "" : b.branch.name,
-            price: b.price || "",
-            available: b.available || false,
-            stock: b.stock || "",
-            priceAfterDiscount: b.priceAfterDiscount || "",
-            priceAfterExpiresAt: b.priceAfterExpiresAt || "",
-            order: b.order || "",
-            sold: b.sold || "",
-            _id: b._id || index.toString(),
-          })) || initialBranches,
-      };
-
-      setProductForEdit(transformedProduct);
-
-      // Set preview URL for cover image
-      if (product.imgCover?.[0]?.url) {
-        setPreviewUrl(product.imgCover[0].url);
-      }
-
-      // Set existing gallery images
-      if (product.images && product.images.length > 0) {
-        // Images can be either strings (URLs) or objects with url property
-        const imageUrls = product.images.map((img: any) =>
-          typeof img === "string" ? img : img.url
-        );
-        setExistingGalleryUrls(imageUrls);
-      }
-    } else if (id !== "new") {
-      // Only fetch from API if we don't have data from navigation state
+    // Kick off fetch for existing products; for 'new' we set defaults or navigation state below
+    if (id !== "new") {
       fetchProduct();
     } else {
-      setProductForEdit(initialProduct);
+      // new product: prefer fetched product (none), otherwise navigation state, otherwise defaults
+      if (productFromState?.product) {
+        const product = productFromState.product;
+        const transformedProduct = {
+          ...product,
+          branch:
+            product.branch?.map((b: any, index: number) => ({
+              key: index,
+              branch: typeof b.branch === "string" ? b.branch : b.branch._id,
+              name: typeof b.branch === "string" ? "" : b.branch.name,
+              price: b.price || "",
+              available: b.available || false,
+              stock: b.stock || "",
+              priceAfterDiscount: b.priceAfterDiscount || "",
+              priceAfterExpiresAt: b.priceAfterExpiresAt || "",
+              order: b.order || "",
+              sold: b.sold || "",
+              _id: b._id || index.toString(),
+            })) || initialBranches,
+        };
+
+        setProductForEdit(transformedProduct);
+        if (product.imgCover?.[0]?.url) setPreviewUrl(product.imgCover[0].url);
+        if (product.images && product.images.length > 0) {
+          const imageUrls = product.images.map((img: any) =>
+            typeof img === "string" ? img : img.url
+          );
+          setExistingGalleryUrls(imageUrls);
+        }
+        // form values will be set by the product->form mapper effect below
+      } else {
+        setProductForEdit(initialProduct);
+      }
     }
   }, [id, setProductForEdit, productFromState, initialBranches]);
+
+  // Map the server product shape into Formik values (especially react-select option objects)
+  // This effect is moved below so it runs after memoized option arrays are available.
 
   const memoizedCategories = useMemo(
     () =>
@@ -528,7 +565,131 @@ const ProductForm: FC<Props> = ({ product }) => {
     [types]
   );
 
-  const keysToRemove = ["key", "name", "_id"];
+  // Map the server product shape into Formik values (especially react-select option objects)
+  useEffect(() => {
+    if (!productForEdit) return;
+
+    const mapCategory = () => {
+      if (!Array.isArray(productForEdit.category)) return [];
+      return productForEdit.category
+        .map((option: any) => {
+          const categoryId =
+            typeof option.category === "string"
+              ? option.category
+              : option.category?._id;
+          const found = memoizedCategories.find(
+            (cat) => cat.value === categoryId
+          );
+          if (found) return found;
+          const name =
+            typeof option.category === "object"
+              ? option.category?.name
+              : undefined;
+          return { value: categoryId, label: name || categoryId };
+        })
+        .filter(Boolean);
+    };
+
+    const mapSubCategory = () => {
+      if (!Array.isArray(productForEdit.subCategory)) return [];
+      return productForEdit.subCategory
+        .map((option: any) => {
+          const id =
+            typeof option.subCategory === "string"
+              ? option.subCategory
+              : option.subCategory?._id;
+          const found = memoizedSubCategories.find((sub) => sub.value === id);
+          if (found) return found;
+          const name =
+            typeof option.subCategory === "object"
+              ? option.subCategory?.name
+              : undefined;
+          return { value: id, label: name || id };
+        })
+        .filter(Boolean);
+    };
+
+    const mapChildSubCategory = () => {
+      if (!Array.isArray(productForEdit.childSubCategory)) return [];
+      return productForEdit.childSubCategory
+        .map((option: any) => {
+          const id =
+            typeof option.childSubCategory === "string"
+              ? option.childSubCategory
+              : option.childSubCategory?._id;
+          const found = memoizedChildSubCategories.find(
+            (child) => child.value === id
+          );
+          if (found) return found;
+          const name =
+            typeof option.childSubCategory === "object"
+              ? option.childSubCategory?.name
+              : undefined;
+          return { value: id, label: name || id };
+        })
+        .filter(Boolean);
+    };
+
+    const mapTypes = () => {
+      if (!Array.isArray(productForEdit.types)) return [];
+      return productForEdit.types
+        .map((t: any) => {
+          const id = t._id ?? t.id ?? (typeof t === "string" ? t : undefined);
+          return memoizedTypes.find((type) => type.value === id) || null;
+        })
+        .filter(Boolean);
+    };
+
+    const mapExtras = () => {
+      if (!Array.isArray(productForEdit.extras)) return [];
+      return productForEdit.extras
+        .map((e: any) => {
+          const id =
+            typeof e.extra === "string"
+              ? e.extra
+              : e.extra?._id ?? e._id ?? e.id;
+          return memoizedExtras.find((ext) => ext.value === id) || null;
+        })
+        .filter(Boolean);
+    };
+
+    const mapGroups = () => {
+      if (!Array.isArray(productForEdit.groupOfOptions)) return [];
+      return productForEdit.groupOfOptions
+        .map((g: any) => {
+          const id =
+            typeof g.optionGroup === "string"
+              ? g.optionGroup
+              : g.optionGroup?._id ?? g._id ?? g.id;
+          return (
+            memoizedGroupsOfOptions.find((grp) => grp.value === id) || null
+          );
+        })
+        .filter(Boolean);
+    };
+
+    const mapped = {
+      ...(formik.initialValues as any),
+      ...productForEdit,
+      category: mapCategory(),
+      subCategory: mapSubCategory(),
+      childSubCategory: mapChildSubCategory(),
+      types: mapTypes(),
+      extras: mapExtras(),
+      groupOfOptions: mapGroups(),
+      imgCover: (productForEdit.imgCover as any)?.[0]?.url || "",
+    };
+
+    formik.setValues(mapped as any);
+  }, [
+    productForEdit,
+    memoizedCategories,
+    memoizedSubCategories,
+    memoizedChildSubCategories,
+    memoizedTypes,
+    memoizedExtras,
+    memoizedGroupsOfOptions,
+  ]);
 
   const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -588,9 +749,9 @@ const ProductForm: FC<Props> = ({ product }) => {
       weight: productForEdit?.weight || initialProduct.weight,
       dimensions: productForEdit?.dimensions || initialProduct.dimensions,
       quantity: productForEdit?.quantity || initialProduct.quantity,
-      minQty: productForEdit?.minQty || initialProduct.minQty,
       stock: productForEdit?.stock || initialProduct.stock,
-      sold: productForEdit?.sold || initialProduct.sold,
+      minQty: productForEdit?.minQty ?? initialProduct.minQty,
+      sold: productForEdit?.sold ?? initialProduct.sold,
       book: productForEdit?.book || initialProduct.book,
       descTableName:
         productForEdit?.descTableName || initialProduct.descTableName,
@@ -886,34 +1047,27 @@ const ProductForm: FC<Props> = ({ product }) => {
   // Only run when memoizedGroupsOfOptions changes or productForEdit changes
   // and only if the form currently has no selected groupOfOptions.
   // This avoids showing raw ids and ensures the Select has matching option objects.
-  (function attachGroupOptionsSync() {
-    try {
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      const { useEffect } = require("react");
-      useEffect(() => {
-        if (!memoizedGroupsOfOptions || memoizedGroupsOfOptions.length === 0)
-          return;
-        const current = (formik.values as any).groupOfOptions || [];
-        if (Array.isArray(current) && current.length > 0) return; // already set
-        const src = productForEdit?.groupOfOptions || [];
-        if (!Array.isArray(src) || src.length === 0) return;
-        const mapped = src
-          .map((g: any) => {
-            const id =
-              typeof g.optionGroup === "string"
-                ? g.optionGroup
-                : g.optionGroup?._id;
-            return memoizedGroupsOfOptions.find((grp) => grp.value === id);
-          })
-          .filter(Boolean);
-        if (mapped.length) {
-          formik.setFieldValue("groupOfOptions", mapped);
-        }
-      }, [memoizedGroupsOfOptions, productForEdit]);
-    } catch (e) {
-      // fallback: do nothing if hooks cannot be attached here
+  // Ensure groupOfOptions are set on the form when provider data arrives
+  useEffect(() => {
+    if (!memoizedGroupsOfOptions || memoizedGroupsOfOptions.length === 0)
+      return;
+    const current = (formik.values as any).groupOfOptions || [];
+    if (Array.isArray(current) && current.length > 0) return; // already set
+    const src = productForEdit?.groupOfOptions || [];
+    if (!Array.isArray(src) || src.length === 0) return;
+    const mapped = src
+      .map((g: any) => {
+        const id =
+          typeof g.optionGroup === "string"
+            ? g.optionGroup
+            : g.optionGroup?._id;
+        return memoizedGroupsOfOptions.find((grp) => grp.value === id) || null;
+      })
+      .filter(Boolean);
+    if (mapped.length) {
+      formik.setFieldValue("groupOfOptions", mapped);
     }
-  })();
+  }, [memoizedGroupsOfOptions, productForEdit, formik]);
 
   // Debug: Log formik values when they change
 
@@ -1922,7 +2076,6 @@ const ProductForm: FC<Props> = ({ product }) => {
                         }
                       )}
                       autoComplete="off"
-                      readOnly
                       disabled={formik.isSubmitting}
                     />
                     {formik.touched.sold && formik.errors.sold && (

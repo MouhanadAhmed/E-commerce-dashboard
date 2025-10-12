@@ -46,9 +46,9 @@ export default function BranchesForm({
     return () => cancelAnimationFrame(rafId);
   }, [formik.values.price, setUpdatedBranches, newBranches.length]);
 
-  const getBranchId = (branch: string | Branch): string => {
+  const getBranchId = (branch: string | { _id?: string }): string => {
     if (typeof branch === "string") return branch;
-    return branch._id || (branch._id as string);
+    return branch._id ?? "";
   };
 
   function updateOrPush(array: BranchOfProduct[], newObject: BranchOfProduct) {
