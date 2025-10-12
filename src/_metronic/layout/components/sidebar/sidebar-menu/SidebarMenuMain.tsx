@@ -149,6 +149,11 @@ const SidebarMenuMain = () => {
             hasBullet={true}
           />
           <SidebarMenuItem
+            to="/apps/eCommerce/orders"
+            title="Orders"
+            hasBullet={true}
+          />
+          <SidebarMenuItem
             to="/apps/eCommerce/groupOfOptions"
             title="Group Of Options"
             hasBullet={true}

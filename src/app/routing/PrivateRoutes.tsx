@@ -27,38 +27,42 @@ const PrivateRoutes = () => {
   const WidgetsPage = lazy(() => import("../modules/widgets/WidgetsPage"));
   const ChatPage = lazy(() => import("../modules/apps/chat/ChatPage"));
   const UsersPage = lazy(
-    () => import("../modules/apps/user-management/UsersPage"),
+    () => import("../modules/apps/user-management/UsersPage")
   );
   // const AddProductsPage = lazy(()=> import('../modules/apps/eCommerce/Catalog/Product/products-list/AddProduct/AddProductPage'))
   // const ProductForm = lazy(()=> import('../modules/apps/eCommerce/Catalog/Product/products-list/AddProduct/ProductForm'))
   // const ProductsPage = lazy(()=> import('../modules/apps/eCommerce/Catalog/Product/ProductsPage'))
   const BranchesPage = lazy(
-    () => import("../modules/apps/eCommerce/Catalog/Branch/BranchesPage"),
+    () => import("../modules/apps/eCommerce/Catalog/Branch/BranchesPage")
   );
   const ChildSubCategoriesPage = lazy(
     () =>
       import(
         "../modules/apps/eCommerce/Catalog/ChildSubCategory/ChildSubCategoriesPage"
-      ),
+      )
   );
   const ExtrasPage = lazy(
-    () => import("../modules/apps/eCommerce/Catalog/Extra/ExtrasPage"),
+    () => import("../modules/apps/eCommerce/Catalog/Extra/ExtrasPage")
   );
   const TypesPage = lazy(
-    () => import("../modules/apps/eCommerce/Catalog/Type/Type"),
+    () => import("../modules/apps/eCommerce/Catalog/Type/Type")
   );
   const SubCategoriesPage = lazy(
     () =>
-      import("../modules/apps/eCommerce/Catalog/SubCategory/SubCategoriesPage"),
+      import("../modules/apps/eCommerce/Catalog/SubCategory/SubCategoriesPage")
   );
   const CategoriesPage = lazy(
-    () => import("../modules/apps/eCommerce/Catalog/Category/CategoriesPage"),
+    () => import("../modules/apps/eCommerce/Catalog/Category/CategoriesPage")
   );
+  const OrderPage = lazy(
+    () => import("../modules/apps/eCommerce/Catalog/Order/OrderPage")
+  );
+
   const GroupOfOptionsPage = lazy(
     () =>
       import(
         "../modules/apps/eCommerce/Catalog/GroupOfOptions/GroupOfOptionsPage"
-      ),
+      )
   );
   // const OptionsPage = lazy(()=> import('../modules/apps/eCommerce/Catalog/Options/OptionsPage'))
 
@@ -136,6 +140,7 @@ const PrivateRoutes = () => {
               <ProductsPage />
               <AddProductsPage />
               <GroupOfOptionsPage />
+              <OrderPage />
               {/* <OptionsPage/> */}
             </SuspensedView>
           }
