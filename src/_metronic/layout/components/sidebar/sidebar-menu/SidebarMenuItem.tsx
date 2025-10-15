@@ -1,9 +1,9 @@
 import { FC } from "react";
 import clsx from "clsx";
-import { Link } from "react-router-dom";
 import { useLocation } from "react-router";
 import { checkIsActive, KTIcon, WithChildren } from "../../../../helpers";
 import { useLayout } from "../../../core";
+import { Link } from "../../../../../app/routing/TenantLink";
 
 type Props = {
   to: string;

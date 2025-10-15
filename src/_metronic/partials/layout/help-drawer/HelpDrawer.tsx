@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom";
-import { KTIcon } from "../../../helpers";
+import { Link } from '../../../../app/routing/TenantLink';
+import { KTIcon } from '../../../helpers';
 
 const HelpDrawer = () => {
   return (
@@ -51,7 +51,7 @@ const HelpDrawer = () => {
             <div className="rounded border border-dashed border-gray-300 p-6 p-lg-8 mb-10">
               {/* begin::Heading */}
               <h2 className="fw-bolder mb-5">
-                Support at{" "}
+                Support at{' '}
                 <a href="https://devs.keenthemes.com" className="">
                   devs.keenthemes.com
                 </a>

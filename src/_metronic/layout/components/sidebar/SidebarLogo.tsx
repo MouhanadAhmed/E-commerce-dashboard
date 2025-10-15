@@ -1,9 +1,9 @@
-import { Link } from "react-router-dom";
 import clsx from "clsx";
 import { KTIcon, toAbsoluteUrl } from "../../../helpers";
 import { useLayout } from "../../core";
 import { MutableRefObject, useEffect, useRef } from "react";
 import { ToggleComponent } from "../../../assets/ts/components";
+import { Link } from "../../../../app/routing/TenantLink";
 
 type PropsType = {
   sidebarRef: MutableRefObject<HTMLDivElement | null>;
