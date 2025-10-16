@@ -1,4 +1,3 @@
-// src/app/context/tenantContext.tsx
 import React, {
   createContext,
   useContext,
@@ -9,9 +8,13 @@ import React, {
 
 interface TenantContextType {
   tenant: string | null;
+  isValidTenant: boolean;
 }
 
-const TenantContext = createContext<TenantContextType>({ tenant: null });
+const TenantContext = createContext<TenantContextType>({
+  tenant: null,
+  isValidTenant: false,
+});
 
 interface TenantProviderProps {
   children: ReactNode;
@@ -19,24 +22,37 @@ interface TenantProviderProps {
 
 export const TenantProvider: React.FC<TenantProviderProps> = ({ children }) => {
   const [tenant, setTenant] = useState<string | null>(null);
+  const [isValidTenant, setIsValidTenant] = useState<boolean>(false);
 
   useEffect(() => {
     const pathSegments = window.location.pathname.split('/').filter(Boolean);
     const possibleTenant = pathSegments[0];
 
-    // Only set tenant if we have a valid client ID in the URL
-    // Don't set tenant for root path or invalid paths
     if (possibleTenant && !['error', 'logout'].includes(possibleTenant)) {
+      // Get allowed tenants from env
+      const allowedTenants =
+        import.meta.env.VITE_ALLOWED_TENANTS?.split(',').map((t) => t.trim()) ||
+        [];
+      const isValid = allowedTenants.includes(possibleTenant);
+
       setTenant(possibleTenant);
+      setIsValidTenant(isValid);
+
+      // Redirect to 404 if invalid tenant
+      if (!isValid) {
+        window.location.href = '/error/404';
+        return;
+      }
+
       (window as any).tenantId = possibleTenant;
     } else {
       setTenant(null);
-      (window as any).tenantId = null;
+      setIsValidTenant(false);
     }
   }, []);
 
   return (
-    <TenantContext.Provider value={{ tenant }}>
+    <TenantContext.Provider value={{ tenant, isValidTenant }}>
       {children}
     </TenantContext.Provider>
   );

@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { KTIcon } from "../../../../../_metronic/helpers";
-import { Link } from "react-router-dom";
+import { Link } from "../../../../routing/TenantLink";
 
 const Step5: FC = () => {
   return (

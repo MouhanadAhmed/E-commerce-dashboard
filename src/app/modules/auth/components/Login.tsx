@@ -1,11 +1,12 @@
 import { useState } from "react";
 import * as Yup from "yup";
 import clsx from "clsx";
-import { Link } from "react-router-dom";
 import { useFormik } from "formik";
 import { getUserByToken, login } from "../core/_requests";
 import { toAbsoluteUrl } from "../../../../_metronic/helpers";
 import { useAuth } from "../core/Auth";
+import { Link } from "../../../routing/TenantLink";
+import { useNavigate, useParams } from "react-router-dom";
 
 const loginSchema = Yup.object().shape({
   email: Yup.string()
@@ -33,6 +34,8 @@ const initialValues = {
 export function Login() {
   const [loading, setLoading] = useState(false);
   const { saveAuth, setCurrentUser } = useAuth();
+  const navigate = useNavigate(); // Add this
+  const { clientId } = useParams<{ clientId?: string }>(); // Add this
 
   const formik = useFormik({
     initialValues,
@@ -44,10 +47,22 @@ export function Login() {
         saveAuth(auth);
         const { data: user } = await getUserByToken(auth.api_token);
         setCurrentUser(user);
+
+        // ADD THIS: Redirect to tenant-aware dashboard after successful login
+        const pathSegments = window.location.pathname
+          .split('/')
+          .filter(Boolean);
+        const tenant = pathSegments[0] || clientId;
+
+        if (tenant && !['error', 'logout', 'auth'].includes(tenant)) {
+          navigate(`/${tenant}/dashboard`, { replace: true });
+        } else {
+          navigate('/dashboard', { replace: true });
+        }
       } catch (error) {
         console.error(error);
         saveAuth(undefined);
-        setStatus("The login details are incorrect");
+        setStatus('The login details are incorrect');
         setSubmitting(false);
         setLoading(false);
       }
@@ -81,7 +96,7 @@ export function Login() {
           >
             <img
               alt="Logo"
-              src={toAbsoluteUrl("media/svg/brand-logos/google-icon.svg")}
+              src={toAbsoluteUrl('media/svg/brand-logos/google-icon.svg')}
               className="h-15px me-3"
             />
             Sign in with Google
@@ -99,12 +114,12 @@ export function Login() {
           >
             <img
               alt="Logo"
-              src={toAbsoluteUrl("media/svg/brand-logos/apple-black.svg")}
+              src={toAbsoluteUrl('media/svg/brand-logos/apple-black.svg')}
               className="theme-light-show h-15px me-3"
             />
             <img
               alt="Logo"
-              src={toAbsoluteUrl("media/svg/brand-logos/apple-black-dark.svg")}
+              src={toAbsoluteUrl('media/svg/brand-logos/apple-black-dark.svg')}
               className="theme-dark-show h-15px me-3"
             />
             Sign in with Apple
@@ -130,7 +145,7 @@ export function Login() {
       ) : (
         <div className="mb-10 bg-light-info p-8 rounded">
           <div className="text-info">
-            Use account <strong>admin@demo.com</strong> and password{" "}
+            Use account <strong>admin@demo.com</strong> and password{' '}
             <strong>demo</strong> to continue.
           </div>
         </div>
@@ -141,13 +156,13 @@ export function Login() {
         <label className="form-label fs-6 fw-bolder text-gray-900">Email</label>
         <input
           placeholder="Email"
-          {...formik.getFieldProps("email")}
+          {...formik.getFieldProps('email')}
           className={clsx(
-            "form-control bg-transparent",
-            { "is-invalid": formik.touched.email && formik.errors.email },
+            'form-control bg-transparent',
+            { 'is-invalid': formik.touched.email && formik.errors.email },
             {
-              "is-valid": formik.touched.email && !formik.errors.email,
-            },
+              'is-valid': formik.touched.email && !formik.errors.email,
+            }
           )}
           type="email"
           name="email"
@@ -169,15 +184,15 @@ export function Login() {
         <input
           type="password"
           autoComplete="off"
-          {...formik.getFieldProps("password")}
+          {...formik.getFieldProps('password')}
           className={clsx(
-            "form-control bg-transparent",
+            'form-control bg-transparent',
             {
-              "is-invalid": formik.touched.password && formik.errors.password,
+              'is-invalid': formik.touched.password && formik.errors.password,
             },
             {
-              "is-valid": formik.touched.password && !formik.errors.password,
-            },
+              'is-valid': formik.touched.password && !formik.errors.password,
+            }
           )}
         />
         {formik.touched.password && formik.errors.password && (
@@ -212,7 +227,7 @@ export function Login() {
         >
           {!loading && <span className="indicator-label">Continue</span>}
           {loading && (
-            <span className="indicator-progress" style={{ display: "block" }}>
+            <span className="indicator-progress" style={{ display: 'block' }}>
               Please wait...
               <span className="spinner-border spinner-border-sm align-middle ms-2"></span>
             </span>
@@ -222,7 +237,7 @@ export function Login() {
       {/* end::Action */}
 
       <div className="text-gray-500 text-center fw-semibold fs-6">
-        Not a Member yet?{" "}
+        Not a Member yet?{' '}
         <Link to="/auth/registration" className="link-primary">
           Sign up
         </Link>
