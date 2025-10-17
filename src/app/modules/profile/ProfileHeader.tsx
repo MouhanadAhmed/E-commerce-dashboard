@@ -1,9 +1,10 @@
 import { FC } from "react";
 import { KTIcon, toAbsoluteUrl } from "../../../_metronic/helpers";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Dropdown1 } from "../../../_metronic/partials";
 import { ToolbarWrapper } from "../../../_metronic/layout/components/toolbar";
 import { Content } from "../../../_metronic/layout/components/content";
+import { Link } from "../../routing/TenantLink";
 
 const ProfileHeader: FC = () => {
   const location = useLocation();

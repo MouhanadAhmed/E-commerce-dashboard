@@ -35,10 +35,12 @@ import { Modal } from "react-bootstrap";
 import { useListView } from "../core/ListViewProvider";
 import { useNavigate } from "react-router-dom";
 import { useQueryRequest } from "../core/QueryRequestProvider";
+import { useTenantNavigation } from "../../../../../../../routing/useTenantNavigation";
 
 const ProductsTable = () => {
   const duplicateRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+  const { getTenantPath } = useTenantNavigation();
   const { state, updateState } = useQueryRequest();
   const { selected, clearSelected } = useListView();
   const queryClient = useQueryClient();
@@ -759,15 +761,15 @@ const ProductsTable = () => {
     setShowModal(false);
   };
   const openEditProductModal = (product: Product) => {
-    navigate(`/apps/eCommerce/productForm/${product._id}`, {
+    navigate(getTenantPath(`/apps/eCommerce/productForm/${product._id}`), {
       state: { product },
     });
   };
   const openAddProductModal = (id: string) => {
     if (id === "new") {
-      navigate(`/apps/eCommerce/productForm/new`);
+      navigate(getTenantPath(`/apps/eCommerce/productForm/new`));
     } else {
-      navigate(`/apps/eCommerce/productForm/${id}`);
+      navigate(getTenantPath(`/apps/eCommerce/productForm/${id}`));
     }
   };
   const handleClose = () => {

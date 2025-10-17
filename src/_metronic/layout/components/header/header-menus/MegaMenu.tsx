@@ -1,7 +1,7 @@
 import { FC } from "react";
-import { Link } from "react-router-dom";
 import { toAbsoluteUrl } from "../../../../helpers";
 import { useLayout } from "../../../core";
+import { Link } from "../../../../../app/routing/TenantLink";
 
 const MegaMenu: FC = () => {
   const { setLayoutType, setToolbarType } = useLayout();

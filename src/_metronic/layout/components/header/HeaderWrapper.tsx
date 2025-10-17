@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { Link } from "react-router-dom";
+import { Link } from "../../../../app/routing/TenantLink";
 import { KTIcon, toAbsoluteUrl } from "../../../helpers";
 import { LayoutSetup, useLayout } from "../../core";
 import { Header } from "./Header";

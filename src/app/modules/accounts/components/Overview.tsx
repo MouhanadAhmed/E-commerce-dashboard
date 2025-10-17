@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import { KTIcon } from "../../../../_metronic/helpers";
 import {
   ChartsWidget1,
@@ -7,6 +6,7 @@ import {
   TablesWidget5,
 } from "../../../../_metronic/partials/widgets";
 import { Content } from "../../../../_metronic/layout/components/content";
+import { Link } from "../../../routing/TenantLink";
 
 export function Overview() {
   return (

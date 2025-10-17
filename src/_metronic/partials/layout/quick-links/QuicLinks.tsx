@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { Link } from "react-router-dom";
+import { Link } from '../../../../app/routing/TenantLink';
 import { KTIcon, toAbsoluteUrl } from "../../../helpers";
 
 const QuickLinks: FC = () => (

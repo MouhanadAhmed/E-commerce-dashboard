@@ -1,6 +1,5 @@
 import clsx from "clsx";
 import { FC } from "react";
-import { Link } from "react-router-dom";
 import {
   defaultAlerts,
   defaultLogs,
@@ -8,6 +7,7 @@ import {
   toAbsoluteUrl,
   useIllustrationsPath,
 } from "../../../helpers";
+import { Link } from "../../../../app/routing/TenantLink";
 
 const HeaderNotificationsMenu: FC = () => (
   <div

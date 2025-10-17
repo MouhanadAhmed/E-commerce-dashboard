@@ -1,7 +1,7 @@
 import clsx from "clsx";
-import { Link } from "react-router-dom";
 import { useLayout } from "../../../core";
 import { usePageData } from "../../../core/PageData";
+import { Link } from "../../../../../app/routing/TenantLink";
 
 const PageTitle = () => {
   const { pageTitle, pageDescription, pageBreadcrumbs } = usePageData();

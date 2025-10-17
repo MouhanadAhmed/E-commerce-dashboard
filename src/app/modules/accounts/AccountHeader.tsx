@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { KTIcon, toAbsoluteUrl } from "../../../_metronic/helpers";
-import { Link } from "react-router-dom";
+import { Link } from "../../../app/routing/TenantLink";
 import { Dropdown1 } from "../../../_metronic/partials";
 import { useLocation } from "react-router";
 import { ToolbarWrapper } from "../../../_metronic/layout/components/toolbar";

@@ -7,12 +7,13 @@ import {
   useContext,
   Dispatch,
   SetStateAction,
-} from "react";
-import { LayoutSplashScreen } from "../../../../_metronic/layout/core";
-import { AuthModel, UserModel } from "./_models";
-import * as authHelper from "./AuthHelpers";
-import { getUserByToken } from "./_requests";
-import { WithChildren } from "../../../../_metronic/helpers";
+} from 'react';
+import { useNavigate, useParams } from 'react-router-dom'; // Add these imports
+import { LayoutSplashScreen } from '../../../../_metronic/layout/core';
+import { AuthModel, UserModel } from './_models';
+import * as authHelper from './AuthHelpers';
+import { getUserByToken } from './_requests';
+import { WithChildren } from '../../../../_metronic/helpers';
 
 type AuthContextProps = {
   auth: AuthModel | undefined;
@@ -65,6 +66,8 @@ const AuthProvider: FC<WithChildren> = ({ children }) => {
 const AuthInit: FC<WithChildren> = ({ children }) => {
   const { auth, currentUser, logout, setCurrentUser } = useAuth();
   const [showSplashScreen, setShowSplashScreen] = useState(true);
+  const navigate = useNavigate(); // Add this
+  const { clientId } = useParams<{ clientId?: string }>(); // Add this
 
   // We should request user by authToken (IN OUR EXAMPLE IT'S API_TOKEN) before rendering the application
   useEffect(() => {
@@ -74,6 +77,17 @@ const AuthInit: FC<WithChildren> = ({ children }) => {
           const { data } = await getUserByToken(apiToken);
           if (data) {
             setCurrentUser(data);
+
+            // ADD THIS: Redirect to tenant-aware dashboard after successful login
+            const pathSegments = window.location.pathname
+              .split('/')
+              .filter(Boolean);
+            const tenant = pathSegments[0] || clientId;
+
+            if (tenant && !['error', 'logout', 'auth'].includes(tenant)) {
+              // Redirect to tenant-specific dashboard
+              navigate(`/${tenant}/dashboard`, { replace: true });
+            }
           }
         }
       } catch (error) {
@@ -99,3 +113,5 @@ const AuthInit: FC<WithChildren> = ({ children }) => {
 };
 
 export { AuthProvider, AuthInit, useAuth };
+
+export default AuthContext;
