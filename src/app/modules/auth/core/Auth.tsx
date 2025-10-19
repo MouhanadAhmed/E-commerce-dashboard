@@ -84,10 +84,10 @@ const AuthInit: FC<WithChildren> = ({ children }) => {
               .filter(Boolean);
             const tenant = pathSegments[0] || clientId;
 
-            if (tenant && !['error', 'logout', 'auth'].includes(tenant)) {
-              // Redirect to tenant-specific dashboard
-              navigate(`/${tenant}/dashboard`, { replace: true });
-            }
+            // if (tenant && !['error', 'logout', 'auth'].includes(tenant)) {
+            //   // Redirect to tenant-specific dashboard
+            //   navigate(`/${tenant}/dashboard`, { replace: true });
+            // }
           }
         }
       } catch (error) {
