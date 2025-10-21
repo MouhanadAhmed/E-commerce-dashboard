@@ -53,13 +53,13 @@ export function setupAxios(axios: any) {
   axios.interceptors.request.use(
     (config: {
       headers: {
-        Authorization: string;
+        token: string;
         'Tenant': string;
       };
     }) => {
       const auth = getAuth();
-      if (auth && auth.api_token) {
-        config.headers.Authorization = `Bearer ${auth.api_token}`;
+      if (auth && auth.token) {
+        config.headers.token =auth.token;
       }
 
       // Always try to get tenant from URL
