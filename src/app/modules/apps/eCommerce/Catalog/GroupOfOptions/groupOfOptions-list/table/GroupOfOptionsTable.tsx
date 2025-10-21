@@ -113,6 +113,36 @@ const GroupTable = () => {
         },
       },
       {
+        accessorKey: "max",
+        header: "Maximum",
+        muiEditTextFieldProps: {
+          type: "number",
+          required: true,
+          error: !!validationErrors?.max,
+          helperText: validationErrors?.max,
+          onFocus: () =>
+            setValidationErrors({
+              ...validationErrors,
+              max: undefined,
+            }),
+        },
+      },
+      {
+        accessorKey: "stock",
+        header: "Stock",
+        muiEditTextFieldProps: {
+          type: "number",
+          required: false,
+          error: !!validationErrors?.stock,
+          helperText: validationErrors?.stock,
+          onFocus: () =>
+            setValidationErrors({
+              ...validationErrors,
+              stock: undefined,
+            }),
+        },
+      },
+      {
         accessorKey: "order",
         header: "Order",
         muiEditTextFieldProps: {
@@ -157,6 +187,18 @@ const GroupTable = () => {
     min: Yup.number()
       .min(0, "Minimum value is 0")
       .required("Minimum is required"),
+    max: Yup.number()
+      .min(0, "Maximum value is 0")
+      .required("Maximum is required")
+      .test(
+        "max-gte-min",
+        "Maximum must be greater than or equal to Minimum",
+        function (value) {
+          const { min } = this.parent as any;
+          if (typeof value !== "number" || typeof min !== "number") return true;
+          return value >= min;
+        }
+      ),
     stock: Yup.number()
       .nullable()
       .min(0, "Stock cannot be negative")
@@ -175,21 +217,7 @@ const GroupTable = () => {
     price: Yup.number()
       .min(0, "Price cannot be negative")
       .required("Price is required"),
-    min: Yup.number()
-      .min(0, "Min cannot be negative")
-      .required("Min is required"),
-    max: Yup.number()
-      .min(0, "Max cannot be negative")
-      .required("Max is required")
-      .test(
-        "max-gte-min",
-        "Max must be greater than or equal to Min",
-        function (value) {
-          const { min } = this.parent as any;
-          if (typeof value !== "number" || typeof min !== "number") return true;
-          return value >= min;
-        }
-      ),
+
     available: Yup.boolean().required("Availability is required"),
   });
 
@@ -204,7 +232,25 @@ const GroupTable = () => {
   // Handle expand button click
   const handleExpandClick = (group: GroupOfOptions) => {
     setSelectedGroup(group);
-    setGroupOptions(group.options || []);
+    // Ensure each option has required numeric fields to pass validation
+    const normalizedOptions = (group.options || []).map(
+      (opt: any, idx: number) => ({
+        ...opt,
+        id: opt.id || opt._id || `opt-${idx}`,
+        name: opt.name ?? "",
+        price:
+          typeof opt.price === "undefined" || opt.price === null
+            ? 0
+            : opt.price,
+        order:
+          typeof opt.order === "undefined" || opt.order === null
+            ? idx + 1
+            : opt.order,
+        available: typeof opt.available === "undefined" ? true : opt.available,
+        defaultOption: !!opt.defaultOption,
+      })
+    );
+    setGroupOptions(normalizedOptions);
     setShowOptionsModal(true);
     setIsEditingOptions(false);
     setOptionValidationErrors({});
@@ -256,29 +302,90 @@ const GroupTable = () => {
     try {
       // First, process all options and find the default option
       const savePromises = groupOptions.map(async (option) => {
-        const optionData = {
-          name: option.name,
-          price: option.price,
-          order: option.order,
-          available: option.available,
-          groupOfOptions: { groupOfOptions: selectedGroup?._id },
-          defaultOption: option.defaultOption,
-          // Note: group-level min/max are handled at the Group create/update
+        const cleaned = {
+          ...option,
+          price:
+            option.price === "" || option.price === null
+              ? 0
+              : typeof option.price === "string"
+              ? Number(option.price)
+              : option.price,
+          order:
+            option.order === "" || option.order === null
+              ? 1
+              : typeof option.order === "string"
+              ? Number(option.order)
+              : option.order,
+          available:
+            typeof option.available === "string"
+              ? option.available === "true"
+              : option.available,
+        } as any;
+
+        const optionData: any = {
+          name: cleaned.name,
+          price: cleaned.price,
+          order: Math.max(1, Number(cleaned.order || 1)),
+          available: cleaned.available,
+          groupOfOptions: [{ groupOfOptions: selectedGroup?._id }],
+          defaultOption: cleaned.defaultOption,
         };
 
-        if (option.isNew) {
-          // Create new option
-          const result = await createOptionMutation.mutateAsync(optionData);
+        try {
+          if (option.isNew) {
+            // Create new option
+            const result = await createOptionMutation.mutateAsync(optionData);
+            return result;
+          } else {
+            // Update existing option
+            const result = await updateOptionMutation.mutateAsync({
+              optionId: option._id || option.id,
+              option: optionData,
+            });
+            return result;
+          }
+        } catch (err: any) {
+          // Parse server-side validation errors and attach to optionValidationErrors
+          const resp = err?.response?.data;
+          if (resp && resp.errors) {
+            const newErrors: Record<string, string> = {};
+            if (Array.isArray(resp.errors)) {
+              resp.errors.forEach((e: any) => {
+                if (typeof e === "string") {
+                  const m = e.match(/^"?([\w.]+)"?\s+(.*)$/);
+                  if (m) {
+                    newErrors[`${option.id || option._id}_${m[1]}`] = m[2];
+                    return;
+                  }
+                }
+                const key =
+                  e.field || e.param || e.path || e.property || e.key || e.name;
+                const msg =
+                  e.message ||
+                  e.msg ||
+                  e.error ||
+                  (typeof e === "string" ? e : undefined);
+                if (key)
+                  newErrors[`${option.id || option._id}_${key}`] =
+                    msg || JSON.stringify(e);
+              });
+            } else if (typeof resp.errors === "object") {
+              Object.entries(resp.errors).forEach(([k, v]) => {
+                newErrors[`${option.id || option._id}_${k}`] = Array.isArray(v)
+                  ? (v as any[]).join(", ")
+                  : typeof v === "string"
+                  ? (v as string)
+                  : JSON.stringify(v);
+              });
+            }
 
-          return result;
-        } else {
-          // Update existing option
-          const result = await updateOptionMutation.mutateAsync({
-            optionId: option._id || option.id,
-            option: optionData,
-          });
+            setOptionValidationErrors((prev) => ({ ...prev, ...newErrors }));
+            showNotification("Please fix option validation errors", "error");
+            throw err;
+          }
 
-          return result;
+          // If not a validation error, rethrow to be caught by outer try/catch
+          throw err;
         }
       });
 
@@ -347,8 +454,6 @@ const GroupTable = () => {
       id: `opt${Date.now()}`,
       name: "New Option",
       price: 0,
-      min: 0,
-      max: 0,
       order: groupOptions.length + 1,
       available: true,
       defaultOption: groupOptions.length === 0, // Mark as default if it's the first option
@@ -408,15 +513,159 @@ const GroupTable = () => {
   // UPDATE group
   const handleSaveGroup = async (originalRow: any) => {
     try {
-      await editGroupSchema.validate(originalRow.row.original);
+      showNotification("Saving group...", "success");
+      // originalRow.row.original = original data
+      // originalRow.values = edited values from the table row
+      const merged = { ...originalRow.row.original, ...originalRow.values };
+
+      // Coerce numeric/string fields and set sensible defaults so validation passes
+      const mergedClean = {
+        ...merged,
+        min:
+          merged.min === "" || merged.min === null
+            ? 0
+            : typeof merged.min === "string"
+            ? Number(merged.min)
+            : merged.min,
+        max:
+          merged.max === "" || merged.max === null
+            ? undefined
+            : typeof merged.max === "string"
+            ? Number(merged.max)
+            : merged.max,
+        order:
+          merged.order === "" || merged.order === null
+            ? 0
+            : typeof merged.order === "string"
+            ? Number(merged.order)
+            : merged.order,
+        sold:
+          typeof merged.sold === "undefined" || merged.sold === null
+            ? 0
+            : typeof merged.sold === "string"
+            ? Number(merged.sold)
+            : merged.sold,
+        stock:
+          typeof merged.stock === "undefined" || merged.stock === ""
+            ? null
+            : typeof merged.stock === "string"
+            ? Number(merged.stock)
+            : merged.stock,
+        available:
+          typeof merged.available === "string"
+            ? merged.available === "true"
+            : merged.available,
+      } as any;
+
+      // Validate merged object
+      await editGroupSchema.validate(mergedClean, { abortEarly: false });
       setValidationErrors({});
-      await updateGroupAvailable.mutateAsync({
+
+      // Build a cleaned update payload with only allowed fields to avoid sending server-managed fields
+      // Transform payload to match backend expectations
+      const updatePayload: any = {
+        name: mergedClean.name,
+        min: mergedClean.min,
+        max: mergedClean.max,
+        order: Math.max(1, Number(mergedClean.order || 1)),
+        available: mergedClean.available,
+        sold: mergedClean.sold ?? 0,
+      };
+
+      // Make stock optional: only include it if provided (not null/empty/undefined)
+      if (
+        typeof mergedClean.stock !== "undefined" &&
+        mergedClean.stock !== null &&
+        mergedClean.stock !== ""
+      ) {
+        updatePayload.stock = String(mergedClean.stock);
+      }
+
+      // Send update to backend (PUT /groupOfOptions/:id)
+      const result = await updateGroupAvailable.mutateAsync({
         id: originalRow.row.original._id,
-        update: originalRow.values,
+        update: updatePayload,
       });
-      table1.setEditingRow(null);
+
+      // Force refetch so updated data comes from backend
+      try {
+        queryClient.invalidateQueries([`${QUERIES.GROUPS_LIST}`]);
+      } catch (e) {
+        console.warn("Failed to invalidate queries", e);
+      }
+
+      setValidationErrors({});
+      setOptionValidationErrors({});
+      showNotification("Group updated successfully", "success");
+
+      try {
+        if (originalRow.exitEditingMode) originalRow.exitEditingMode();
+        else table1.setEditingRow(null);
+      } catch (e) {
+        console.warn(
+          "Failed to exit editing mode via originalRow, falling back",
+          e
+        );
+        table1.setEditingRow(null);
+      }
     } catch (err: any) {
-      setValidationErrors({ [err.path]: err.message });
+      console.error("handleSaveGroup error:", err);
+      // Check for server-side validation errors from axios
+      const resp = err?.response?.data;
+      if (resp && resp.errors) {
+        const fieldErrors: Record<string, string> = {};
+
+        if (Array.isArray(resp.errors)) {
+          resp.errors.forEach((e: any) => {
+            if (typeof e === "string") {
+              // Try to parse strings like '"stock" must be a string'
+              const m = e.match(/^"?([\w.]+)"?\s+(.*)$/);
+              if (m) {
+                const key = m[1];
+                const msg = m[2];
+                fieldErrors[key] = msg;
+                return;
+              }
+            }
+
+            const key =
+              e.field || e.param || e.path || e.property || e.key || e.name;
+            const msg =
+              e.message ||
+              e.msg ||
+              e.error ||
+              (typeof e === "string" ? e : undefined);
+            if (key) fieldErrors[key] = msg || JSON.stringify(e);
+          });
+        } else if (typeof resp.errors === "object") {
+          Object.entries(resp.errors).forEach(([k, v]) => {
+            fieldErrors[k] = Array.isArray(v)
+              ? (v as any[]).join(", ")
+              : typeof v === "string"
+              ? (v as string)
+              : JSON.stringify(v);
+          });
+        }
+
+        setValidationErrors(fieldErrors);
+        showNotification("Please fix validation errors", "error");
+        return;
+      }
+      // If Yup validation error with multiple inner errors
+      if (err && err.name === "ValidationError" && Array.isArray(err.inner)) {
+        const fieldErrors: Record<string, string> = {};
+        err.inner.forEach((e: any) => {
+          if (e.path) fieldErrors[e.path] = e.message;
+        });
+
+        setValidationErrors(fieldErrors);
+      } else if (err && err.path) {
+        setValidationErrors({ [err.path]: err.message });
+      } else {
+        // Non-validation error - show generic notification
+        showNotification("Error saving group", "error");
+        console.error(err);
+      }
     }
   };
 
@@ -572,6 +821,8 @@ const GroupTable = () => {
         "mrt-row-drag",
         "name",
         "min",
+        "max",
+        "stock",
         "order",
         "available",
       ],
@@ -715,12 +966,16 @@ const GroupTable = () => {
         "mrt-row-drag",
         "name",
         "min",
+        "max",
+        "stock",
         "order",
         "available",
       ],
       isLoading: isArchivedLoading,
     },
     getRowId: (originalRow) => `table-2-${originalRow._id || originalRow.name}`,
+    onEditingRowCancel: () => setValidationErrors({}),
+    onEditingRowSave: (originalRow) => handleSaveGroup(originalRow),
     muiRowDragHandleProps: {
       onDragEnd: async () => {
         if (hoveredTable === "table-1" && draggingRow) {
@@ -889,6 +1144,14 @@ const GroupTable = () => {
                 </div>
                 <div>
                   <Typography variant="body2" color="textSecondary">
+                    Maximum Options:
+                  </Typography>
+                  <Typography variant="body1" fontWeight="medium">
+                    {selectedGroup?.max}
+                  </Typography>
+                </div>
+                <div>
+                  <Typography variant="body2" color="textSecondary">
                     Order:
                   </Typography>
                   <Typography variant="body1" fontWeight="medium">
@@ -933,6 +1196,7 @@ const GroupTable = () => {
                   {isEditingOptions && <th style={{ width: "30px" }}></th>}
                   <th>Order</th>
                   <th>Name</th>
+
                   <th>Price</th>
                   <th>Available</th>
                   <th>Default</th>
@@ -1020,6 +1284,7 @@ const GroupTable = () => {
                           </Typography>
                         )}
                       </td>
+
                       <td>
                         {isEditingOptions ? (
                           <Box>
