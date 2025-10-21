@@ -2,6 +2,7 @@ import { Response } from "../../../../../../../../_metronic/helpers";
 
 export type GroupOfOptions = {
   min: number;
+  max?: number;
   deleted: boolean;
   _id: string;
   name: string;
@@ -22,7 +23,7 @@ export type Option = {
   price: number;
   available: boolean;
   defaultOption: boolean;
-  groupOfOptions: {groupOfOptions: string; _id?: string}[];
+  groupOfOptions: { groupOfOptions: string; _id?: string }[];
   createdAt?: string;
   updatedAt?: string;
   __v?: number;
@@ -33,6 +34,7 @@ export type OptionsQueryResponse = Response<Array<Option>>;
 
 export const initialGroupOfOptions: GroupOfOptions = {
   min: 0,
+  max: undefined,
   deleted: false,
   _id: "655b18a5f1827b633973a295",
   name: "اول جروب",
