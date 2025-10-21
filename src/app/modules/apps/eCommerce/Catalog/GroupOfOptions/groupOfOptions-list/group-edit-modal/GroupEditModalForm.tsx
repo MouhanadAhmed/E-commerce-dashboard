@@ -6,11 +6,7 @@ import { useListView } from "../core/ListViewProvider";
 import { UsersListLoading } from "../components/loading/UsersListLoading";
 import { useQueryResponse } from "../core/QueryResponseProvider";
 import { GroupOfOptions } from "../core/_models";
-import {
-  createGroup,
-  updateGroup,
-  createOption,
-} from "../core/_requests";
+import { createGroup, updateGroup, createOption } from "../core/_requests";
 import { isNotEmpty } from "../../../../../../../../_metronic/helpers";
 
 interface OptionField {
@@ -18,6 +14,8 @@ interface OptionField {
   price: number;
   available: boolean;
   defaultOption: boolean;
+  min?: number | null;
+  max?: number | null;
 }
 
 type Props = {
@@ -30,6 +28,9 @@ const editGroupSchema = Yup.object().shape({
   min: Yup.number()
     .min(0, "Minimum value is 0")
     .required("Minimum is required"),
+  max: Yup.number()
+    .min(0, "Maximum value is 0")
+    .required("Maximum is required"),
   stock: Yup.number().nullable().min(0, "Stock cannot be negative").optional(),
   order: Yup.number()
     .min(0, "Order cannot be negative")
@@ -46,7 +47,7 @@ const editGroupSchema = Yup.object().shape({
           .required("Price is required"),
         available: Yup.boolean().required("Option availability is required"),
         defaultOption: Yup.boolean().required("Default selection is required"),
-      }),
+      })
     )
     .test(
       "single-default",
@@ -54,10 +55,10 @@ const editGroupSchema = Yup.object().shape({
       function (options) {
         if (!options || options.length === 0) return true;
         const defaultCount = options.filter(
-          (option) => option.defaultOption,
+          (option) => option.defaultOption
         ).length;
         return defaultCount <= 1;
-      },
+      }
     ),
 });
 
@@ -70,6 +71,7 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
 
   const [groupForEdit] = useState({
     min: group?.min || 0,
+    max: (group as any)?.max ?? 0,
     name: group?.name || "",
     available: group?.available ?? true,
     stock: group?.stock || null,
@@ -86,7 +88,6 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
   };
 
   const generateOptions = () => {
-
     if (optionCount > 0) {
       const newOptions: OptionField[] = Array.from(
         { length: optionCount },
@@ -95,7 +96,7 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
           price: 0,
           available: true,
           defaultOption: index === 0, // First option is default by default
-        }),
+        })
       );
 
       setOptions(newOptions);
@@ -107,9 +108,8 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
   const updateOption = (
     index: number,
     field: keyof OptionField,
-    value: any,
+    value: any
   ) => {
-
     const updatedOptions = [...options];
 
     // If setting as default, ensure only one option is default
@@ -128,7 +128,7 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
   // Helper function to create options in parallel using Promise.all
   const createOptionsInParallel = async (
     optionsData: any[],
-    groupId: string,
+    groupId: string
   ) => {
     // Create all option promises
     const optionPromises = optionsData.map((option, index) => {
@@ -137,7 +137,7 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
         price: option.price,
         available: option.available,
         // defaultOption: option.defaultOption,
-        groupOfOptions: [{groupOfOptions: groupId}],
+        groupOfOptions: [{ groupOfOptions: groupId }],
       };
 
       return createOption(optionWithGroupId)
@@ -179,7 +179,7 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
         // Validate that we have a valid group ID before proceeding
         if (!groupId || groupId === "") {
           throw new Error(
-            `Failed to get group ID after creating/updating group. Received: ${groupId}`,
+            `Failed to get group ID after creating/updating group. Received: ${groupId}`
           );
         }
 
@@ -236,7 +236,7 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
               className={clsx(
                 "form-control form-control-solid mb-3 mb-lg-0",
                 { "is-invalid": formik.touched.name && formik.errors.name },
-                { "is-valid": formik.touched.name && !formik.errors.name },
+                { "is-valid": formik.touched.name && !formik.errors.name }
               )}
               autoComplete="off"
               disabled={formik.isSubmitting || isGroupLoading}
@@ -252,25 +252,48 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
           {/* end::Input group */}
 
           {/* begin::Input group - Min */}
-          <div className="fv-row mb-7">
-            <label className="required fw-bold fs-6 mb-2">Minimum</label>
-            <input
-              placeholder="Minimum quantity"
-              {...formik.getFieldProps("min")}
-              type="number"
-              min="0"
-              className={clsx(
-                "form-control form-control-solid mb-3 mb-lg-0",
-                { "is-invalid": formik.touched.min && formik.errors.min },
-                { "is-valid": formik.touched.min && !formik.errors.min },
+          <div className="fv-row mb-7 d-flex" style={{ gap: "1rem" }}>
+            <div style={{ flex: 1 }}>
+              <label className="required fw-bold fs-6 mb-2">Minimum</label>
+              <input
+                placeholder="Minimum quantity"
+                {...formik.getFieldProps("min")}
+                type="number"
+                min="0"
+                className={clsx(
+                  "form-control form-control-solid mb-3 mb-lg-0",
+                  { "is-invalid": formik.touched.min && formik.errors.min },
+                  { "is-valid": formik.touched.min && !formik.errors.min }
+                )}
+                disabled={formik.isSubmitting || isGroupLoading}
+              />
+              {formik.touched.min && formik.errors.min && (
+                <div className="fv-plugins-message-container">
+                  <span role="alert">{String(formik.errors.min)}</span>
+                </div>
               )}
-              disabled={formik.isSubmitting || isGroupLoading}
-            />
-            {formik.touched.min && formik.errors.min && (
-              <div className="fv-plugins-message-container">
-                <span role="alert">{formik.errors.min}</span>
-              </div>
-            )}
+            </div>
+
+            <div style={{ width: "200px" }}>
+              <label className="required fw-bold fs-6 mb-2">Maximum</label>
+              <input
+                placeholder="Maximum quantity"
+                {...formik.getFieldProps("max")}
+                type="number"
+                min="0"
+                className={clsx(
+                  "form-control form-control-solid mb-3 mb-lg-0",
+                  { "is-invalid": formik.touched.max && formik.errors.max },
+                  { "is-valid": formik.touched.max && !formik.errors.max }
+                )}
+                disabled={formik.isSubmitting || isGroupLoading}
+              />
+              {formik.touched.max && formik.errors.max && (
+                <div className="fv-plugins-message-container">
+                  <span role="alert">{String(formik.errors.max)}</span>
+                </div>
+              )}
+            </div>
           </div>
           {/* end::Input group */}
 
@@ -285,7 +308,7 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
               className={clsx(
                 "form-control form-control-solid mb-3 mb-lg-0",
                 { "is-invalid": formik.touched.stock && formik.errors.stock },
-                { "is-valid": formik.touched.stock && !formik.errors.stock },
+                { "is-valid": formik.touched.stock && !formik.errors.stock }
               )}
               disabled={formik.isSubmitting || isGroupLoading}
             />
@@ -308,7 +331,7 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
               className={clsx(
                 "form-control form-control-solid mb-3 mb-lg-0",
                 { "is-invalid": formik.touched.order && formik.errors.order },
-                { "is-valid": formik.touched.order && !formik.errors.order },
+                { "is-valid": formik.touched.order && !formik.errors.order }
               )}
               disabled={formik.isSubmitting || isGroupLoading}
             />
@@ -427,7 +450,7 @@ const GroupEditModalForm: FC<Props> = ({ group, isGroupLoading }) => {
                         updateOption(
                           index,
                           "price",
-                          Number(e.target.value) || 0,
+                          Number(e.target.value) || 0
                         )
                       }
                       type="number"

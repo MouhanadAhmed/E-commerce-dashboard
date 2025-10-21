@@ -18,7 +18,7 @@ if (
   const queryString = Object.entries(initialQueryRequest.state)
     .map(
       ([key, value]) =>
-        `${encodeURIComponent(key)}=${encodeURIComponent(value as string)}`,
+        `${encodeURIComponent(key)}=${encodeURIComponent(value as string)}`
     )
     .join("&");
   baseUrl = GET_GROUPS_URL + "&" + queryString;
@@ -48,7 +48,7 @@ const getGroupById = (id: string): Promise<GroupOfOptions | undefined> => {
 };
 
 const createGroup = (
-  Group: Partial<GroupOfOptions>,
+  Group: Partial<GroupOfOptions>
 ): Promise<GroupOfOptions | undefined> => {
   return axios
     .post(GROUP_URL, Group)
@@ -61,23 +61,17 @@ const createGroup = (
 
         return response.data.data;
       } else {
-        console.warn("Unexpected response structure:", response.data);
         return response.data;
       }
     })
     .catch((error) => {
-      console.error("Create group error:", error);
-      if (error.response) {
-        console.error("Error response:", error.response.data);
-        console.error("Error status:", error.response.status);
-      }
       throw error;
     });
 };
 
 const updateGroup = (
   GroupId: string | undefined,
-  Group: object,
+  Group: object
 ): Promise<GroupOfOptions | undefined> => {
   return axios
     .put(`${GROUP_URL}/${GroupId}`, Group)
@@ -90,23 +84,17 @@ const updateGroup = (
 
         return response.data.data;
       } else {
-        console.warn("Unexpected response structure:", response.data);
         return response.data;
       }
     })
     .catch((error) => {
-      console.error("Update group error:", error);
-      if (error.response) {
-        console.error("Error response:", error.response.data);
-        console.error("Error status:", error.response.status);
-      }
       throw error;
     });
 };
 
 const updateGroupOrder = (
   GroupId: string,
-  Order: number,
+  Order: number
 ): Promise<GroupOfOptions | undefined> => {
   return axios
     .patch(`${GROUP_URL}/${GroupId}`, { order: Order })
@@ -132,7 +120,7 @@ const getOptionById = (id: ID): Promise<string | undefined> => {
 
 // Option CRUD operations
 const createOption = (
-  option: Omit<Partial<Option>, "_id" | "createdAt" | "updatedAt" | "__v">,
+  option: Omit<Partial<Option>, "_id" | "createdAt" | "updatedAt" | "__v">
 ): Promise<Option | undefined> => {
   return axios
     .post(`${API_URL}/option`, option)
@@ -143,15 +131,13 @@ const createOption = (
       return response.data;
     })
     .catch((error) => {
-      console.error("Create option error:", error);
-
       throw error;
     });
 };
 
 const updateOption = (
   optionId: string,
-  option: Omit<Option, "_id" | "createdAt" | "updatedAt" | "__v">,
+  option: Omit<Option, "_id" | "createdAt" | "updatedAt" | "__v">
 ): Promise<Option | undefined> => {
   return axios
     .put(`${API_URL}/option/${optionId}`, option)
