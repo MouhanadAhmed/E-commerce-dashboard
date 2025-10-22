@@ -45,7 +45,7 @@ export function Login() {
       try {
         const { data: auth } = await login(values.email, values.password);
         saveAuth(auth);
-        const { data: user } = await getUserByToken(auth.api_token);
+        const { data: user } = await getUserByToken(auth.token);
         setCurrentUser(user);
 
         // ADD THIS: Redirect to tenant-aware dashboard after successful login
