@@ -211,7 +211,10 @@ const editProductSchema = Yup.object().shape({
   showWeight: Yup.boolean().optional(),
   fractionalQuantity: Yup.boolean().optional(),
   book: Yup.string().optional(),
-  bookAt: Yup.date().optional(),
+  // bookAt is a short duration string like '1h23m' or '1d13h'
+  bookAt: Yup.string()
+    .matches(/^[0-9dDhHmMsS]+([0-9dDhHmMsS]+)*$/i, "Invalid format for BookAt")
+    .optional(),
   groupOfOptions: Yup.array()
     .of(groupOfOptions)
     .transform((value, originalValue) =>
@@ -748,6 +751,7 @@ const ProductForm: FC<Props> = ({ product }) => {
       showWeight: productForEdit?.showWeight || initialProduct.showWeight,
       weight: productForEdit?.weight || initialProduct.weight,
       dimensions: productForEdit?.dimensions || initialProduct.dimensions,
+  bookAt: productForEdit?.bookAt || initialProduct.bookAt,
       quantity: productForEdit?.quantity || initialProduct.quantity,
       stock: productForEdit?.stock || initialProduct.stock,
       minQty: productForEdit?.minQty ?? initialProduct.minQty,
@@ -2132,6 +2136,37 @@ const ProductForm: FC<Props> = ({ product }) => {
                         <div className="fv-help-block">
                           <span role="alert">{formik.errors.book}</span>
                         </div>
+                      </div>
+                    )}
+                    {/* Conditional BookAt input */}
+                    {(formik.values.book === "book" ||
+                      formik.values.book === "onlyBook") && (
+                      <div className="fv-row mb-7 mt-3">
+                        <label className="fw-semibold fs-7 ps-4 mb-2">Book At</label>
+                        <input
+                          {...formik.getFieldProps("bookAt")}
+                          name="bookAt"
+                          type="text"
+                          className={clsx(
+                            "form-control form-control-solid ms-2 mb-3 border border-2",
+                            {
+                              "is-invalid": formik.touched.bookAt && formik.errors.bookAt,
+                            },
+                            {
+                              "is-valid": formik.touched.bookAt && !formik.errors.bookAt,
+                            }
+                          )}
+                          placeholder="e.g. 1h23m or 1d13h"
+                          disabled={formik.isSubmitting}
+                          value={formik.values.bookAt || ""}
+                        />
+                        {formik.touched.bookAt && formik.errors.bookAt && (
+                          <div className="fv-plugins-message-container">
+                            <div className="fv-help-block">
+                              <span role="alert">{formik.errors.bookAt}</span>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                     {/* end::Input */}

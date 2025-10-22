@@ -46,6 +46,7 @@ export type Product = {
   weight?: string;
   showWeight?: boolean;
   book?: string;
+  bookAt?: string;
   groupOfOptions?: {
     _id?: string;
     id?: string;
@@ -137,6 +138,7 @@ export interface ProductFormValues {
   stock?: string;
   sold?: string;
   book?: string;
+  bookAt?: string;
   extras?: any[]; // Select values before transformation
   types?: any[]; // Select values before transformation
   descTableName?: string;
@@ -168,6 +170,7 @@ export const initialProduct: Product = {
   weight: "",
   showWeight: false,
   book: "",
+  bookAt: "",
 
   minQty: "",
   dimensions: "",

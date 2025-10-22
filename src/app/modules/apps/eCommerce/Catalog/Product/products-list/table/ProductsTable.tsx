@@ -266,6 +266,28 @@ const ProductsTable = () => {
         size: 80,
       },
       {
+        accessorKey: "bookAt",
+        header: "Book At",
+        size: 80,
+        Cell: ({ cell, row }) => {
+          // only show for products marked as 'book' or 'only book' (case-insensitive)
+          const product = row.original as any;
+          const bookFlag = (product?.book || "").toString().toLowerCase();
+          if (
+            bookFlag !== "book" &&
+            bookFlag !== "only book" &&
+            bookFlag !== "onlybook"
+          ) {
+            return <span>-</span>;
+          }
+          const val = cell.getValue() as string | undefined;
+          return <span>{val ?? "-"}</span>;
+        },
+        muiEditTextFieldProps: {
+          placeholder: "e.g. 1h23m or 1d13h",
+        },
+      },
+      {
         accessorKey: "available",
         header: "Available",
         size: 100,
@@ -868,6 +890,7 @@ const ProductsTable = () => {
         "types",
         "weight",
         "dimensions",
+        "bookAt",
         "mrt-row-expand",
         "branch",
         "category",
@@ -1168,6 +1191,7 @@ const ProductsTable = () => {
         "types",
         "weight",
         "dimensions",
+        "bookAt",
         "mrt-row-expand",
         "branch",
         "category",
