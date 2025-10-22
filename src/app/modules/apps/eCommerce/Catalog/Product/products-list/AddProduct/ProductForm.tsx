@@ -751,7 +751,7 @@ const ProductForm: FC<Props> = ({ product }) => {
       showWeight: productForEdit?.showWeight || initialProduct.showWeight,
       weight: productForEdit?.weight || initialProduct.weight,
       dimensions: productForEdit?.dimensions || initialProduct.dimensions,
-  bookAt: productForEdit?.bookAt || initialProduct.bookAt,
+      bookAt: productForEdit?.bookAt || initialProduct.bookAt,
       quantity: productForEdit?.quantity || initialProduct.quantity,
       stock: productForEdit?.stock || initialProduct.stock,
       minQty: productForEdit?.minQty ?? initialProduct.minQty,
@@ -2142,7 +2142,9 @@ const ProductForm: FC<Props> = ({ product }) => {
                     {(formik.values.book === "book" ||
                       formik.values.book === "onlyBook") && (
                       <div className="fv-row mb-7 mt-3">
-                        <label className="fw-semibold fs-7 ps-4 mb-2">Book At</label>
+                        <label className="fw-semibold fs-7 ps-4 mb-2">
+                          Book At
+                        </label>
                         <input
                           {...formik.getFieldProps("bookAt")}
                           name="bookAt"
@@ -2150,10 +2152,12 @@ const ProductForm: FC<Props> = ({ product }) => {
                           className={clsx(
                             "form-control form-control-solid ms-2 mb-3 border border-2",
                             {
-                              "is-invalid": formik.touched.bookAt && formik.errors.bookAt,
+                              "is-invalid":
+                                formik.touched.bookAt && formik.errors.bookAt,
                             },
                             {
-                              "is-valid": formik.touched.bookAt && !formik.errors.bookAt,
+                              "is-valid":
+                                formik.touched.bookAt && !formik.errors.bookAt,
                             }
                           )}
                           placeholder="e.g. 1h23m or 1d13h"

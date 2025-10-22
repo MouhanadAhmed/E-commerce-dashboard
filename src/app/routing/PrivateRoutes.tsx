@@ -57,6 +57,9 @@ const PrivateRoutes = () => {
   const OrderPage = lazy(
     () => import("../modules/apps/eCommerce/Catalog/Order/OrderPage")
   );
+  const CouponsPage = lazy(
+    () => import("../modules/apps/eCommerce/Catalog/Coupon/CouponPage")
+  );
 
   const GroupOfOptionsPage = lazy(
     () =>
@@ -141,6 +144,7 @@ const PrivateRoutes = () => {
               <AddProductsPage />
               <GroupOfOptionsPage />
               <OrderPage />
+              <CouponsPage />
               {/* <OptionsPage/> */}
             </SuspensedView>
           }
