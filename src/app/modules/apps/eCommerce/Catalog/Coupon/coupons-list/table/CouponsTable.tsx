@@ -76,14 +76,15 @@ const CouponsTable: React.FC<CouponsTableProps> = ({ deletedOnly = false }) => {
 
   // Create modal state + form fields
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditSimpleModal, setShowEditSimpleModal] = useState(false);
   const [form, setForm] = useState<any>({
     code: "",
-    type: "percentage",
     discount: "",
     expiresAt: "",
     minAmount: "",
     maxAmount: "",
     limit: "",
+    type: "percentage",
     validFor: "all",
     appliedOn: [] as string[],
   });
@@ -278,12 +279,6 @@ const CouponsTable: React.FC<CouponsTableProps> = ({ deletedOnly = false }) => {
 
   const totalCount = serverTotal ?? guessedRowCount ?? 0;
 
-  // Determine visible row count (what the UI should show) — for the main
-  // coupons table (deletedOnly=false) we want to exclude deleted items.
-  // If the server provides a precise total for deleted items we could
-  // subtract it, but most backends don't. Prefer a conservative client-side
-  // approach: if serverTotal exists but there's no deleted-count metadata,
-  // fall back to the length of the filtered page(s) we have.
   const visibleRowCount: number = useMemo(() => {
     if (deletedOnly)
       return Number.isFinite(Number(serverTotal))
@@ -359,13 +354,14 @@ const CouponsTable: React.FC<CouponsTableProps> = ({ deletedOnly = false }) => {
                     expiresAt: o.expiresAt ?? "",
                     minAmount: o.minAmount != null ? String(o.minAmount) : "",
                     maxAmount: o.maxAmount != null ? String(o.maxAmount) : "",
-                    limit: o.limit != null ? Number(o.limit) : 0,
+                    limit: o.limit != null ? String(o.limit) : "",
                     validFor:
                       (o.validFor && (o.validFor as string).toLowerCase()) ||
                       "category",
                     appliedOn: Array.isArray(o.appliedOn) ? o.appliedOn : [],
                   });
-                  setShowCreateModal(true);
+                  // always open the simple edit modal so advanced fields are hidden while editing
+                  setShowEditSimpleModal(true);
                 }}
               >
                 <i className="fa-solid fa-pen-to-square"></i>
@@ -420,6 +416,17 @@ const CouponsTable: React.FC<CouponsTableProps> = ({ deletedOnly = false }) => {
               onClick={() => {
                 // ensure we're not in editing mode when opening create modal
                 setEditingId(null);
+                setForm({
+                  code: "",
+                  type: "percentage",
+                  discount: "",
+                  expiresAt: "",
+                  minAmount: "",
+                  maxAmount: "",
+                  limit: "",
+                  validFor: "all",
+                  appliedOn: [],
+                });
                 setShowCreateModal(true);
               }}
               className="rounded bg-primary rounded-circle p-0 border-0"
@@ -521,6 +528,14 @@ const CouponsTable: React.FC<CouponsTableProps> = ({ deletedOnly = false }) => {
             />
           </div>
           <div className="mb-3">
+            <label className="form-label">Discount</label>
+            <input
+              className="form-control"
+              value={form.discount}
+              onChange={(e) => setForm({ ...form, discount: e.target.value })}
+            />
+          </div>
+          <div className="mb-3">
             <label className="form-label">Type</label>
             <select
               className="form-select"
@@ -529,14 +544,6 @@ const CouponsTable: React.FC<CouponsTableProps> = ({ deletedOnly = false }) => {
             >
               <option value="percentage">Percentage</option>
             </select>
-          </div>
-          <div className="mb-3">
-            <label className="form-label">Discount</label>
-            <input
-              className="form-control"
-              value={form.discount}
-              onChange={(e) => setForm({ ...form, discount: e.target.value })}
-            />
           </div>
           <div className="mb-3">
             <label className="form-label">Expires At</label>
@@ -570,15 +577,10 @@ const CouponsTable: React.FC<CouponsTableProps> = ({ deletedOnly = false }) => {
           <div className="mb-3">
             <label className="form-label">Limit</label>
             <input
-              type="number"
+              type="text"
               className="form-control"
               value={form.limit}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  limit: e.target.value === "" ? 0 : Number(e.target.value),
-                })
-              }
+              onChange={(e) => setForm({ ...form, limit: e.target.value })}
             />
           </div>
           <div className="mb-3">
@@ -655,17 +657,18 @@ const CouponsTable: React.FC<CouponsTableProps> = ({ deletedOnly = false }) => {
             onClick={async () => {
               const body: any = {
                 code: form.code,
-                type: form.type,
                 discount: form.discount,
                 expiresAt: form.expiresAt,
                 minAmount: form.minAmount,
                 maxAmount: form.maxAmount,
                 limit: form.limit,
-                // map UI key to backend enum; default to sending value unchanged if no mapping
-                validFor: validForOptions[form.validFor] || form.validFor,
               };
-              if (form.appliedOn && form.appliedOn.length > 0)
-                body.appliedOn = form.appliedOn;
+              if (!editingId) {
+                body.type = form.type;
+                body.validFor = form.validFor;
+                if (form.appliedOn && form.appliedOn.length > 0)
+                  body.appliedOn = form.appliedOn;
+              }
               try {
                 if (editingId) {
                   await updateMutation.mutateAsync({ id: editingId, body });
@@ -673,6 +676,109 @@ const CouponsTable: React.FC<CouponsTableProps> = ({ deletedOnly = false }) => {
                   setShowCreateModal(false);
                 } else {
                   await createMutation.mutateAsync(body);
+                }
+              } finally {
+                setEditingId(null);
+              }
+            }}
+          >
+            Save
+          </button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Simple edit modal for coupons that don't have type/validFor/appliedOn */}
+      <Modal
+        show={showEditSimpleModal}
+        onHide={() => {
+          setShowEditSimpleModal(false);
+          setEditingId(null);
+        }}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Edit Coupon</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="mb-3">
+            <label className="form-label">Code</label>
+            <input
+              className="form-control"
+              value={form.code}
+              onChange={(e) => setForm({ ...form, code: e.target.value })}
+            />
+          </div>
+          <div className="mb-3">
+            <label className="form-label">Discount</label>
+            <input
+              className="form-control"
+              value={form.discount}
+              onChange={(e) => setForm({ ...form, discount: e.target.value })}
+            />
+          </div>
+          <div className="mb-3">
+            <label className="form-label">Expires At</label>
+            <input
+              type="date"
+              className="form-control"
+              value={
+                form.expiresAt
+                  ? new Date(form.expiresAt).toISOString().slice(0, 10)
+                  : ""
+              }
+              onChange={(e) => setForm({ ...form, expiresAt: e.target.value })}
+            />
+          </div>
+          <div className="mb-3">
+            <label className="form-label">Min Amount</label>
+            <input
+              className="form-control"
+              value={form.minAmount}
+              onChange={(e) => setForm({ ...form, minAmount: e.target.value })}
+            />
+          </div>
+          <div className="mb-3">
+            <label className="form-label">Max Amount</label>
+            <input
+              className="form-control"
+              value={form.maxAmount}
+              onChange={(e) => setForm({ ...form, maxAmount: e.target.value })}
+            />
+          </div>
+          <div className="mb-3">
+            <label className="form-label">Limit</label>
+            <input
+              type="text"
+              className="form-control"
+              value={form.limit}
+              onChange={(e) => setForm({ ...form, limit: e.target.value })}
+            />
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <button
+            className="btn btn-secondary"
+            onClick={() => {
+              setShowEditSimpleModal(false);
+              setEditingId(null);
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            className="btn btn-primary"
+            onClick={async () => {
+              const body: any = {
+                code: form.code,
+                discount: form.discount,
+                expiresAt: form.expiresAt,
+                minAmount: form.minAmount,
+                maxAmount: form.maxAmount,
+                limit: form.limit,
+              };
+              try {
+                if (editingId) {
+                  await updateMutation.mutateAsync({ id: editingId, body });
+                  setShowEditSimpleModal(false);
                 }
               } finally {
                 setEditingId(null);
